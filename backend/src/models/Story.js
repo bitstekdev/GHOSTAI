@@ -1,0 +1,71 @@
+const mongoose = require('mongoose');
+
+const conversationSchema = new mongoose.Schema({
+  question: String,
+  answer: String
+}, { _id: false });
+
+const storySchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  title: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  genre: {
+    type: String,
+    required: true,
+    enum: ['Family', 'Romance', 'Adventure', 'Fantasy', 'Birthday', 
+           'Corporate Promotion', 'Housewarming', 'Marriage', 'Wedding', 'Baby Shower']
+  },
+  gist: {
+    type: String,
+    required: true
+  },
+  conversation: [conversationSchema],
+  numCharacters: {
+    type: Number,
+    required: true
+  },
+  characterDetails: {
+    type: String,
+    required: true
+  },
+  orientation: {
+    type: String,
+    enum: ['Portrait', 'Landscape', 'Square'],
+    default: 'Portrait'
+  },
+  status: {
+    type: String,
+    enum: ['draft', 'generating', 'completed', 'failed'],
+    default: 'draft'
+  },
+  coverImage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Image'
+  },
+  backCoverImage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Image'
+  },
+  backCoverBlurb: String,
+  qrUrl: String,
+  generationMetadata: {
+    startedAt: Date,
+    completedAt: Date,
+    errorMessage: String
+  }
+}, {
+  timestamps: true
+});
+
+// Index for faster queries
+storySchema.index({ user: 1, createdAt: -1 });
+storySchema.index({ status: 1 });
+
+module.exports = mongoose.model('Story', storySchema);

@@ -1,0 +1,20 @@
+fastapi
+uvicorn[standard]
+
+pydantic
+pydantic-core
+
+openai
+
+requests
+
+Pillow
+qrcode
+python-dotenv
+
+# For JSON/YAML helpers (LLM parsing)
+orjson
+PyYAML
+
+# Optional but recommended for stability in hashing and utils
+python-multipart

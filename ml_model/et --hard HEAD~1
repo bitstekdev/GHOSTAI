@@ -1,0 +1,12 @@
+[33m7794825[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m txt ffile
+[33m42c50ed[m[33m ([m[1;31morigin/main[m[33m)[m txt ffile
+[33mf932999[m txt ffile
+[33m55f1649[m Removed runtime.txt (Render uses pyproject.toml)
+[33ma496c19[m Removed runtime.txt (Render uses pyproject.toml)
+[33m187b569[m Force Python 3.11 using pyproject.toml
+[33m759cc63[m Pin Python version to 3.11 for FastAPI compatibility
+[33mcd44b91[m replaced
+[33mc6f8c65[m added py
+[33mc451667[m deploy
+[33ma8aaa2c[m removed venv
+[33m82b53db[m Initial commit
