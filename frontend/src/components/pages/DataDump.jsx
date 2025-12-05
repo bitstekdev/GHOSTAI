@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, DollarSign, UploadCloud, Edit2 } from "lucide-react";
 import { FaGhost} from "react-icons/fa";
 
@@ -56,15 +56,15 @@ const DataDump = () => {
           </div>
           <div className="mb-6">
             <FaGhost className="absolute top-10 left-20 text-white/10 text-3xl animate-bounce" />
-                          <FaGhost className="absolute top-1/4 right-16 text-white/20 text-4xl animate-pulse" />
-                          <FaGhost className="absolute bottom-20 left-10 text-white/15 text-5xl animate-spin-slow" />
-                          <FaGhost className="absolute top-1/3 left-1/3 text-white/10 text-6xl animate-pulse" />
-                          <FaGhost className="absolute bottom-32 right-32 text-white/20 text-4xl animate-bounce" />
-                          <FaGhost className="absolute top-16 right-1/4 text-white/10 text-3xl animate-spin-slow" />
-                          <FaGhost className="absolute bottom-10 left-1/2 text-white/15 text-5xl animate-pulse" />
-                          <FaGhost className="absolute top-2/3 right-1/4 text-white/20 text-6xl animate-bounce" />
-                          <FaGhost className="absolute bottom-1/4 left-1/4 text-white/15 text-4xl animate-pulse" />
-                          <FaGhost className="absolute top-1/2 right-10 text-white/10 text-3xl animate-spin-slow" />
+            <FaGhost className="absolute top-1/4 right-16 text-white/20 text-4xl animate-pulse" />
+            <FaGhost className="absolute bottom-20 left-10 text-white/15 text-5xl animate-spin-slow" />
+            <FaGhost className="absolute top-1/3 left-1/3 text-white/10 text-6xl animate-pulse" />
+            <FaGhost className="absolute bottom-32 right-32 text-white/20 text-4xl animate-bounce" />
+            <FaGhost className="absolute top-16 right-1/4 text-white/10 text-3xl animate-spin-slow" />
+            <FaGhost className="absolute bottom-10 left-1/2 text-white/15 text-5xl animate-pulse" />
+            <FaGhost className="absolute top-2/3 right-1/4 text-white/20 text-6xl animate-bounce" />
+            <FaGhost className="absolute bottom-1/4 left-1/4 text-white/15 text-4xl animate-pulse" />
+            <FaGhost className="absolute top-1/2 right-10 text-white/10 text-3xl animate-spin-slow" />
             <label className="block text-gray-300 mb-2">Pen Name</label>
             <input
               type="text"
@@ -110,14 +110,14 @@ const DataDump = () => {
         <div className="flex-1 flex flex-col gap-8">
           {/* Stats */}
           <div className="flex gap-6 mb-2">
-            <div className="flex-1 bg-gradient-to-b from-[#4b2f66] to-[#2a1f3c] rounded-xl p-6 flex items-center justify-between">
+            <div className="flex-1 bg-gradient-to-b from-purple-600 to-purple-800 rounded-xl p-6 flex items-center justify-between">
               <div>
                 <div className="text-gray-200 text-sm mb-1">Total Author Styles</div>
                 <div className="text-3xl font-bold text-white">40</div>
               </div>
               <User className="h-8 w-8 text-white" />
             </div>
-            <div className="flex-1 bg-gradient-to-b from-[#4b2f66] to-[#2a1f3c] rounded-xl p-6 flex items-center justify-between">
+            <div className="flex-1 bg-gradient-to-b from-purple-600 to-purple-800 rounded-xl p-6 flex items-center justify-between">
               <div>
                 <div className="text-gray-200 text-sm mb-1">Credits</div>
                 <div className="text-3xl font-bold text-white">200</div>

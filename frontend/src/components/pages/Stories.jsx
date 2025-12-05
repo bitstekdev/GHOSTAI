@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Image from '../../assets/images/story-image-1.jpg';
 
 const storiesInProgress = [
   {
@@ -61,7 +62,7 @@ const Stories = () => {
           {storiesInProgress.map((story, index) => (
             <div 
               key={index}
-              className="bg-[#1c1c1e] rounded-lg p-4 flex items-center justify-between group hover:bg-[#23222a] transition-colors"
+              className="bg-[#1c1c1e] rounded-lg p-4 flex items-center justify-between group hover:bg-[#23222a] transition-colors min-h-[64px] md:min-h-[72px] lg:min-h-[80px]"
             >
               <div>
                 <h3 className="text-white font-medium">{story.title}</h3>
@@ -74,7 +75,7 @@ const Stories = () => {
                 >
                   Continue <ArrowUpRight className="h-4 w-4" />
                 </button>
-                <button className="text-gray-400 hover:text-white transition-colors">
+                <button className="text-gray-400 hover:text-white transition-colors p-2">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -98,9 +99,13 @@ const Stories = () => {
           {completedStories.map((story, index) => (
             <div 
               key={index}
-              className="bg-[#1c1c1e] rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-500/20 transition-all"
+              className="bg-[#1c1c1e] rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-500/20 transition-all w-full"
             >
-              <div className="aspect-square bg-purple-900/20"></div>
+              {/* responsive custom height/width for the cover area */}
+              <div className="w-full h-full md:h-[260px] lg:h-[320px] bg-purple-900/20">
+                <img src={Image} alt="Story Cover" className="w-full h-full object-cover" />
+              </div>
+
               <div className="p-4">
                 <h3 className="text-white font-semibold mb-2">{story.title}</h3>
                 <div className="space-y-2">
@@ -130,7 +135,7 @@ const Stories = () => {
                 </div>
                 <button
                   onClick={() => navigate('/generate/preview')}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors text-sm md:text-base"
                 >
                   View Book
                 </button>

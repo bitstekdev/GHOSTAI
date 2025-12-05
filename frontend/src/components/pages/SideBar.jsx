@@ -1,26 +1,57 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, LayoutDashboard, PenTool, BookOpen, User, History } from "lucide-react";
-import logoImg from "../../assets/images/logo.gif"; 
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  PenTool,
+  BookOpen,
+  BookMarked,
+  ChevronDown,
+  ChevronRight,
+  User,
+  History
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import logoImg from "../../assets/images/logo.gif";
 
-export default function Sidebar({ isOpen, setIsOpen, currentPage, setCurrentPage, setSidebarShown }) {
+export default function Sidebar({
+  isOpen,
+  setIsOpen,
+  sidebarShown,
+  setSidebarShown,
+}) {
   const [isHovered, setIsHovered] = useState(false);
-
-  const menuItems = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { id: "generate", icon: PenTool, label: "Generate Story" },
-    { id: "knowledge", icon: BookOpen, label: "Knowledge Base" },
-    { id: "stories", icon: BookOpen, label: "My Stories" },
-    { id: "profile", icon: User, label: "Profile" },
-    { id: "orders", icon: History, label: "Order History" }
-  ];
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Sidebar visible if manually opened OR hovered
   const shouldShow = isOpen || isHovered;
 
-  // Notify parent (App) so main content shifts
   useEffect(() => {
     setSidebarShown(shouldShow);
   }, [shouldShow, setSidebarShown]);
+
+  // Menu list + routing paths
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { id: "generate", label: "Generate Story", icon: PenTool, path: "/generatestory" },
+
+    // DROPDOWN SECTION (Knowledge Base)
+    {
+      id: "knowledge",
+      label: "Knowledge Base",
+      icon: BookMarked,
+      dropdown: true,
+      items: [
+        { id: "characterdump", label: "Character", path: "/characterdump" },
+        { id: "datadump", label: "Data Dump", path: "/datadump" },
+      ]
+    },
+
+    { id: "stories", label: "My Stories", icon: BookOpen, path: "/stories" },
+    { id: "profile", label: "Profile", icon: User, path: "/profile" },
+    { id: "orders", label: "Order History", icon: History, path: "/orderhistory" },
+  ];
 
   return (
     <div
@@ -28,7 +59,6 @@ export default function Sidebar({ isOpen, setIsOpen, currentPage, setCurrentPage
         ${shouldShow ? "w-64" : "w-16"}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
-        // DO NOT close if user opened it manually ↓
         if (!isOpen) setIsHovered(false);
       }}
       onClick={() => {
@@ -36,63 +66,84 @@ export default function Sidebar({ isOpen, setIsOpen, currentPage, setCurrentPage
         if (!isOpen) setIsOpen(true);
       }}
     >
+      {/* HEADER */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
 
-<div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center gap-2">
+          {!shouldShow && (
+            <button onClick={() => setIsOpen(true)} className="text-white">
+              <Menu size={24} />
+            </button>
+          )}
 
-  {/* LEFT SIDE — SHOWS DIFFERENT UI BASED ON SIDEBAR STATE */}
-  <div className="flex items-center gap-2">
-
-    {/* COLLAPSED → SHOW HAMBURGER */}
-    {!shouldShow && (
-      <button 
-        onClick={() => setIsOpen(true)} 
-        className="text-white"
-      >
-        <Menu size={24} />
-      </button>
-    )}
-
-    {/* EXPANDED → SHOW LOGO + TEXT */}
-    {shouldShow && (
-      <div className="flex items-center gap-2">
-        <img 
-          src={logoImg} 
-          alt="GHOST.ai Logo" 
-          className="h-15 w-auto object-contain"
-        />
-        <span className="text-white text-2xl font-bold ml-[-14px]">GHOST.ai</span>
-      </div>
-    )}
-  </div>
-
-  {/* CLOSE BUTTON — ONLY WHEN FULLY OPENED */}
-  {isOpen && (
-    <button onClick={() => setIsOpen(false)} className="text-white">
-      <X size={22} />
-    </button>
-  )}
-
-</div>
-
-
-
-      <nav className="mt-8">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setCurrentPage(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 transition-colors 
-              ${currentPage === item.id ? "bg-gray-800 text-white border-l-4 border-purple-500" : ""}`}
-          >
-            <div className="min-w-[24px] flex justify-center">
-               <item.icon size={20} />
+          {shouldShow && (
+            <div className="flex items-center gap-2">
+              <img src={logoImg} alt="GHOST.ai Logo" className="h-10 w-auto object-contain" />
+              <span className="text-white text-2xl font-bold ml-[-14px]">GHOST.ai</span>
             </div>
-            <span className={`${shouldShow ? "opacity-100" : "opacity-0"} transition-opacity`}>
-              {item.label}
-            </span>
+          )}
+        </div>
+
+        {isOpen && (
+          <button onClick={() => setIsOpen(false)} className="text-white">
+            <X size={22} />
           </button>
-        ))}
+        )}
+      </div>
+
+      {/* MENU */}
+      <nav className="mt-8">
+        {menuItems.map((item) => {
+          // Handle dropdown section
+          if (item.dropdown) {
+            return (
+              <div key={item.id}>
+                {/* MAIN DROPDOWN BUTTON */}
+                <button
+                  onClick={() => setKnowledgeOpen(!knowledgeOpen)}
+                  className="w-full flex items-center justify-between px-4 py-5 text-gray-300 hover:bg-gray-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon size={20} />
+                    {shouldShow && <span>{item.label}</span>}
+                  </div>
+
+                  {shouldShow &&
+                    (knowledgeOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
+                </button>
+
+                {/* SUB ITEMS */}
+                {knowledgeOpen && shouldShow && (
+                  <div className="ml-10 mt-1 flex flex-col gap-1">
+                    {item.items.map((sub) => (
+                      <button
+                        key={sub.id}
+                        onClick={() => navigate(sub.path)}
+                        className="text-gray-400 hover:text-white hover:bg-gray-800 px-2 py-1 text-left"
+                      >
+                        {sub.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Normal menu items
+          return (
+            <button
+              key={item.id}
+              onClick={() => navigate(item.path)}
+              className="w-full flex items-center gap-3 px-4 py-5 text-gray-300 hover:bg-gray-800"
+            >
+              <item.icon size={20} />
+              {shouldShow && <span>{item.label}</span>}
+            </button>
+          );
+        })}
       </nav>
+
     </div>
   );
 }

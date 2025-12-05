@@ -11,7 +11,7 @@ const Dashboard = () => {
                 <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6">
                     <h3 className="text-white text-sm mb-2">Total Stories Generated</h3>
                     <div className="flex items-end justify-between">
-                        <p className="text-5xl font-bold text-white">08</p>
+                        <p className="text-5xl font-bold text-white">0</p>
                         <div className="flex gap-1 items-end h-16">
                             {[40, 60, 50, 70, 55, 80, 65, 75].map((h, i) => (
                                 <div key={i} className="w-2 bg-purple-300 rounded" style={{ height: `${h}%` }} />
@@ -25,7 +25,7 @@ const Dashboard = () => {
                         <h3 className="text-white text-sm">Stories in Progress</h3>
                         <RefreshCcw size={20} className="text-gray-400" />
                     </div>
-                    <p className="text-5xl font-bold text-white">05</p>
+                    <p className="text-5xl font-bold text-white">0</p>
                 </div>
 
                 <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
@@ -41,7 +41,7 @@ const Dashboard = () => {
                         <h3 className="text-white text-sm">Orders Dispatched</h3>
                         <Truck size={20} className="text-gray-400" />
                     </div>
-                    <p className="text-5xl font-bold text-white">03</p>
+                    <p className="text-5xl font-bold text-white">0</p>
                 </div>
             </div>
 

@@ -9,9 +9,15 @@ import {
   Users,
 } from "lucide-react";
 
-import Image from "../../assets/images/about.jpg";
-import Image2 from "../../assets/images/backpage.png";
-import Image3 from "../../assets/images/coverpage.png";
+//square images------------------------------------
+// import Image from "../../assets/images/about.jpg";
+// import Image3 from "../../assets/images/coverpage.png";
+// import Image2 from "../../assets/images/backpage.png";
+//portrait images------------------------------------
+import Image from "../../assets/images/story-image-2.jpg";
+import Image2 from "../../assets/images/story-image-3.jpg";
+import Image3 from "../../assets/images/story-image-1.jpg";
+
 import Logo from "../../assets/images/logo.gif";
 import turnSound from "../../assets/audio/pageflip.mp3";
 
@@ -126,7 +132,9 @@ const FlipBookPage = () => {
     return `Page ${logicalIndex} / ${totalInside}`;
   };
 
-  //audio play page turn sound
+  // --------------------------
+  // AUDIO play page turn sound
+  // --------------------------
   const audioRef = useRef(null);
 
   const playSound = () => {
@@ -149,6 +157,40 @@ const FlipBookPage = () => {
 
     return () => api.off("flip", playSound);
   }, []);
+
+  // --------------------------
+  // PAGE SIZE DYNAMIC RENDER
+  // --------------------------
+  const [pageSize, setPageSize] = useState({ width: 400, height: 500 });
+
+  useEffect(() => {
+    const img = new window.Image();
+
+    img.src = Image3; // Cover image defines orientation
+
+    img.onload = () => {
+      const size = getBookSizeFromImage(img);
+      setPageSize(size);
+    };
+  }, []);
+
+  // Utility: calculate dimensions from aspect ratio
+  const getBookSizeFromImage = (img) => {
+    const aspect = img.width / img.height;
+
+    // Square
+    if (aspect === 1) {
+      return { width: 600, height: 500 };
+    }
+
+    // Landscape (width > height)
+    if (aspect > 1) {
+      return { width: 600, height: 400 };
+    }
+
+    // Portrait (height > width)
+    return { width: 400, height: 600 };
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-black to-gray-900 flex">
@@ -206,13 +248,12 @@ const FlipBookPage = () => {
         <div className="flex justify-center mt-4">
           <div className="bg-gray-800 p-6 rounded-xl shadow-2xl relative">
             <HTMLFlipBook
-              width={450}
-              height={600}
-              size="stretch"
-              minWidth={300}
-              maxWidth={600}
-              minHeight={400}
-              maxHeight={800}
+              width={pageSize.width}
+              height={pageSize.height}
+              minWidth={pageSize.width - 100}
+              maxWidth={pageSize.width + 200}
+              minHeight={pageSize.height - 100}
+              maxHeight={pageSize.height + 200}
               showCover={true}
               useMouseEvents={true}
               drawShadow={true}
@@ -229,9 +270,9 @@ const FlipBookPage = () => {
                 </div>
               ))}
             </HTMLFlipBook>
-
+            
             {/* NAV BUTTONS */}
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 mt-4">
               <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
                 Add to Cart
               </button>

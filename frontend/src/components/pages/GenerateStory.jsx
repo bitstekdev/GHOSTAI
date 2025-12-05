@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PenTool } from 'lucide-react';
 import TemplateSelection from '../pages/TemplateSelection'; // adjust path if needed
+import { FaGhost } from 'react-icons/fa';
 
 const GenerateStory = () => {
   const [step, setStep] = useState(1);
@@ -20,6 +21,19 @@ const GenerateStory = () => {
   if (step === 1) {
     return (
       <div className="p-4 md:p-8 max-w-2xl mx-auto">
+         <FaGhost className="absolute top-20 left-40 text-white/10 text-3xl animate-bounce" />
+          <FaGhost className="absolute top-1/4 right-16 text-white/20 text-4xl animate-pulse" />
+          <FaGhost className="absolute bottom-90 left-50 text-white/15 text-5xl animate-bounce" />
+          <FaGhost className="absolute bottom-30 left-30 text-white/15 text-5xl animate-spin-slow" />
+          <FaGhost className="absolute top-1/3 left-1/3 text-white/10 text-6xl animate-pulse" />
+          <FaGhost className="absolute bottom-32 right-32 text-white/20 text-4xl animate-bounce" />
+          <FaGhost className="absolute top-16 right-1/4 text-white/10 text-3xl animate-spin-slow" />
+          <FaGhost className="absolute bottom-10 left-1/2 text-white/15 text-5xl animate-pulse" />
+          <FaGhost className="absolute top-2/3 right-1/4 text-white/20 text-6xl animate-bounce" />
+          <FaGhost className="absolute bottom-1/4 left-1/4 text-white/15 text-4xl animate-pulse" />
+          <FaGhost className="absolute top-1/2 right-10 text-white/10 text-3xl animate-spin-slow" />
+
+          {/* title */}
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
           <PenTool size={32} className="text-purple-500" />
           Story Details
