@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -49,11 +50,12 @@ exports.signup = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully. Please check your email to verify your account.',
+      message: 'User registered successfully. Please check your email to verify and log in to your account.',
       data: {
         userId: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         isEmailVerified: user.isEmailVerified
       }
     });
@@ -110,22 +112,17 @@ exports.login = async (req, res, next) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      //should be ued in production level
-      secure: true, // Use secure cookies in production
-      sameSite: "None", // Prevent CSRF attacks
       path: "/",
+      secure: true,
+      sameSite: "None",
       maxAge: 60 * 60 * 1000, // 24 hour
     });
 
     res.cookie("refreshToken", refreshToken, {
-     httpOnly: true,
-      //should be ued in production level
-      secure: true, // Use secure cookies in production
-      sameSite: "None", // Prevent CSRF attacks
+      httpOnly: true,
       path: "/",
-      //should be ued in local
-      // secure: false,       // Set to true if using HTTPS
-      // sameSite: 'None',    // Allows cross-origin cookies
+      secure: true,
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -137,8 +134,10 @@ exports.login = async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
           role: user.role,
-          isEmailVerified: user.isEmailVerified
+          isEmailVerified: user.isEmailVerified,
+          createdAt: user.createdAt
         },
         accessToken,
         refreshToken
@@ -196,6 +195,7 @@ exports.verifyEmail = async (req, res, next) => {
 exports.resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
+    console.log("verify email:", email);
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -332,65 +332,100 @@ exports.changePassword = async (req, res, next) => {
   }
 };
 
+
+// @desc    Check if user is logged in
+// @route   GET /api/auth/is-logged-in
+// @access  Public (but checks access token)
+exports.isLoggedIn = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+
+    if (!token) {
+      return res.json({ loggedIn: false });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+    const user = await User.findById(decoded.id);
+
+    if (!user) return res.json({ loggedIn: false });
+
+
+    return res.json({
+      loggedIn: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      },
+    });
+
+  } catch (err) {
+    return res.json({ loggedIn: false });
+  }
+};
+
+
+
+
 // @desc    Refresh access token
 // @route   POST /api/auth/refresh-token
 // @access  Public
 exports.refreshToken = async (req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+  
   try {
-    const { refreshToken } = req.body;
-
     if (!refreshToken) {
       return res.status(400).json({
         success: false,
-        message: 'Refresh token is required'
+        message: "Refresh token missing"
       });
     }
 
-    // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
-
     const user = await User.findById(decoded.id);
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid refresh token'
+        message: "Invalid refresh token"
       });
     }
 
-    // Check if refresh token exists in database
     const tokenExists = user.refreshTokens.find(
       rt => rt.token === refreshToken && rt.expiresAt > Date.now()
     );
 
     if (!tokenExists) {
+      console.log("Expired refresh token:", refreshToken);
       return res.status(401).json({
         success: false,
-        message: 'Invalid or expired refresh token'
+        message: "Expired refresh token"
       });
     }
 
-    // Generate new access token
     const newAccessToken = generateAccessToken(user._id);
 
-      res.cookie("accessToken", newAccessToken, {
+    res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      //should be ued in production level
-      secure: true, // Use secure cookies in production
-      sameSite: "None", // Prevent CSRF attacks
+      secure: true,
+      sameSite: "None",
       path: "/",
-      maxAge: 60 * 60 * 1000, // 24 hour
+      maxAge: 60 * 60 * 1000,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: {
-        accessToken: newAccessToken
-      }
+      message: "Access token refreshed",
     });
   } catch (error) {
+    console.log("Error refreshing token:", error);
     next(error);
   }
 };
+
+
+
 
 // @desc    Logout
 // @route   POST /api/auth/logout
@@ -407,6 +442,18 @@ exports.logout = async (req, res, next) => {
       await user.save();
     }
 
+    // Clear cookies with same options as when they were set
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,     
+      sameSite: "None"
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,     
+      sameSite: "None",
+    });
+
     res.status(200).json({
       success: true,
       message: 'Logged out successfully'
@@ -421,7 +468,7 @@ exports.logout = async (req, res, next) => {
 // @access  Private
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('_id name email phone role isEmailVerified createdAt');
 
     res.status(200).json({
       success: true,
@@ -429,6 +476,7 @@ exports.getMe = async (req, res, next) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
         createdAt: user.createdAt
@@ -436,5 +484,30 @@ exports.getMe = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/update-profile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const user = await User.findById(req.user.id).select('name email phone');
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.phone = phone || user.phone;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (err) {
+    next(err);
   }
 };

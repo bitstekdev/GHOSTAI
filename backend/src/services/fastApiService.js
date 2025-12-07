@@ -33,11 +33,11 @@ exports.generateGist = async (conversation, genre) => {
 };
 
 // Story generation
-exports.generateStory = async (gist, numCharacters, characterDetails, genre, numPages) => {
+exports.generateStory = async (gist, numCharacters, fixedCharacterDetails, genre, numPages) => {
   const response = await fastApiClient.post('/story/generate', {
     gist,
     num_characters: numCharacters,
-    character_details: characterDetails,
+    character_details: fixedCharacterDetails,
     genre,
     num_pages: numPages
   });

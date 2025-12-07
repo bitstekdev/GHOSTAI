@@ -5,6 +5,20 @@ const conversationSchema = new mongoose.Schema({
   answer: String
 }, { _id: false });
 
+const characterDetailsSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  details: {
+    type: String,
+    required: true,
+    trim: true
+  }
+}, { _id: false });
+
+
 const storySchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -22,19 +36,25 @@ const storySchema = new mongoose.Schema({
     enum: ['Family', 'Romance', 'Adventure', 'Fantasy', 'Birthday', 
            'Corporate Promotion', 'Housewarming', 'Marriage', 'Wedding', 'Baby Shower']
   },
+  numOfPages: {
+    type: Number,
+    required: true
+  },
+  step: {
+    type: Number,
+    required: true,
+    default: 1
+  },
   gist: {
     type: String,
-    required: true
+    required: false
   },
   conversation: [conversationSchema],
   numCharacters: {
     type: Number,
     required: true
   },
-  characterDetails: {
-    type: String,
-    required: true
-  },
+  characterDetails: [characterDetailsSchema],
   orientation: {
     type: String,
     enum: ['Portrait', 'Landscape', 'Square'],

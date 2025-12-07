@@ -1,35 +1,43 @@
 const { body, validationResult } = require('express-validator');
 
 exports.validateSignup = [
-  body('name')
+  body("name")
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('Name must be between 2 and 50 characters'),
-  body('email')
+    .withMessage("Name must be between 2 and 50 characters"),
+  body("email")
     .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email'),
-  body('password')
+    .normalizeEmail({
+      gmail_remove_dots: false,
+      gmail_remove_subaddress: false,
+    })
+    .withMessage("Please provide a valid email"),
+  body("password")
     .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters')
+    .withMessage("Password must be at least 6 characters")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+    .withMessage(
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    ),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array()
+        errors: errors.array(),
       });
     }
     next();
-  }
+  },
 ];
 
 exports.validateLogin = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    .normalizeEmail({
+      gmail_remove_dots: false,
+      gmail_remove_subaddress: false,
+    })
     .withMessage('Please provide a valid email'),
   body('password')
     .notEmpty()

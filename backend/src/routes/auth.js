@@ -8,9 +8,11 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
+  isLoggedIn,
   refreshToken,
   logout,
-  getMe
+  getMe,
+  updateProfile
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const {
@@ -27,8 +29,10 @@ router.post('/resend-verification', resendVerification);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/change-password', protect, validateChangePassword, changePassword);
+router.get("/is-logged-in", isLoggedIn);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
+router.put('/update-profile', protect, updateProfile);
 
 module.exports = router;

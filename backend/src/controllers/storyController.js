@@ -6,14 +6,29 @@ const fastApiService = require('../services/fastApiService');
 // @route   POST /api/story/start
 // @access  Private
 exports.startQuestionnaire = async (req, res, next) => {
+    const { title, genre, length, characterDetails, numCharacters } = req.body;
   try {
+
+     // Create story document
+    const story = await Story.create({
+      user: req.user.id,
+      title,
+      genre,
+      numOfPages: length,
+      numCharacters,
+      characterDetails,
+      step: 1
+    });
+    
     const result = await fastApiService.startQuestionnaire();
 
     res.status(200).json({
       success: true,
+      storyId: story._id,
       data: result
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -23,12 +38,27 @@ exports.startQuestionnaire = async (req, res, next) => {
 // @access  Private
 exports.nextQuestion = async (req, res, next) => {
   try {
-    const { conversation, answer } = req.body;
+    const {storyId, conversation, answer } = req.body;
 
     const result = await fastApiService.nextQuestion(conversation, answer);
 
+    if (result) {
+      // Update story conversation
+      const story = await Story.findByIdAndUpdate(storyId);
+      if (story) {
+        conversation.push({
+          question: result.question,
+          answer: answer
+        });
+        story.conversation = conversation;
+        story.step = 2;
+        await story.save();
+      }
+    }
+
     res.status(200).json({
       success: true,
+      storyId,
       data: result
     });
   } catch (error) {
@@ -41,12 +71,24 @@ exports.nextQuestion = async (req, res, next) => {
 // @access  Private
 exports.generateGist = async (req, res, next) => {
   try {
-    const { conversation, genre } = req.body;
+    const { storyId, conversation } = req.body;
 
-    const result = await fastApiService.generateGist(conversation, genre);
+    const story = await Story.findById(storyId);
+
+    const result = await fastApiService.generateGist(conversation, story.genre);
+    
+    if (result) {
+      // Update story gist and step
+      if (story) {
+        story.gist = result.gist;
+        story.step = 3;
+        await story.save();
+      }
+    }
 
     res.status(200).json({
       success: true,
+      storyId,
       data: result
     });
   } catch (error) {
@@ -60,54 +102,69 @@ exports.generateGist = async (req, res, next) => {
 exports.createStory = async (req, res, next) => {
   try {
     const {
-      // title,
+      storyId,
       gist,
       genre,
       numCharacters,
       characterDetails,
       numPages,
-      conversation,
-      // orientation
+      orientation
     } = req.body;
 
-    // Create story document
-    const story = await Story.create({
-      user: req.user.id,
-      // title,
-      genre, //model
-      gist, //model
-      conversation,
-      numCharacters, //model
-      characterDetails, //model
-      // orientation: orientation || 'Portrait',
-      status: 'generating'
-    });
-
-    console.log('yaha tak aa aaya');
+    // console.log("request body:", req.body);
+    
+    const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('; ');
+    console.log("Fixed Character Details:", fixedCharacterDetails);
+    // await new Promise(resolve => setTimeout(resolve, 20000));
+    
+    
+    
+    
     // Generate story pages from FastAPI
     const storyResult = await fastApiService.generateStory(
       gist,
       numCharacters,
-      characterDetails,
+      fixedCharacterDetails,
       genre,
       numPages
     );
 
+
+    // update story document
+    const story = await Story.findByIdAndUpdate(storyId, {
+      gist,
+      orientation: orientation || 'Portrait',
+      step: 4,
+      status: 'generating'
+    }, { new: true });
+
     // Create story page documents
+    // const pagePromises = storyResult.pages.map(page =>
+    //   StoryPage.create({
+    //     story: story._id,
+    //     pageNumber: page.page,
+    //     text: page.text,
+    //     prompt: page.prompt,
+    //     status: 'pending'
+    //   })
+    // );
+
     const pagePromises = storyResult.pages.map(page =>
-      StoryPage.create({
-        story: story._id,
-        pageNumber: page.page,
-        text: page.text,
-        prompt: page.prompt,
-        status: 'pending'
-      })
-    );
+  StoryPage.findOneAndUpdate(
+    { story: story._id, pageNumber: page.page },   // Find existing page
+    {
+      text: page.text,
+      prompt: page.prompt,
+      status: 'pending'
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  )
+);
+
 
     await Promise.all(pagePromises);
 
-    // Update story status
-    story.status = 'completed';
+    // Update
     story.generationMetadata = {
       completedAt: Date.now()
     };
@@ -122,6 +179,7 @@ exports.createStory = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Story created successfully',
+      storyId,
       data: {
         story: populatedStory,
         pages
