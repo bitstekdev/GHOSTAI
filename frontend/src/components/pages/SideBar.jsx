@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Menu,
   X,
@@ -9,10 +9,12 @@ import {
   ChevronDown,
   ChevronRight,
   User,
-  History
+  History,
+  LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../../assets/images/logo.gif";
+import { AppContext } from "../../context/AppContext";
 
 export default function Sidebar({
   isOpen,
@@ -23,6 +25,8 @@ export default function Sidebar({
   const [isHovered, setIsHovered] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useContext(AppContext);
+
 
   // Sidebar visible if manually opened OR hovered
   const shouldShow = isOpen || isHovered;
@@ -143,6 +147,18 @@ export default function Sidebar({
           );
         })}
       </nav>
+
+
+{/* LOGOUT BUTTON - FIXED AT BOTTOM */}
+<div className="absolute bottom-6 w-full">
+  <button
+    onClick={logout}
+    className="w-full flex items-center gap-3 px-4 py-4 text-red-400 hover:bg-red-900/40 hover:text-red-300 transition"
+  >
+    <LogOut size={20} />
+    {shouldShow && <span>Logout</span>}
+  </button>
+</div>
 
     </div>
   );

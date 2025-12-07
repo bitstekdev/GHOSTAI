@@ -1,14 +1,63 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { User, MapPin, Lock } from "lucide-react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { AppContext } from "../../context/AppContext";
+
 
 export default function Profile() {
-  // State management - easily replaceable with API data
-  const [profile, setProfile] = useState({
-    firstName: "Syed",
-    lastName: "Naveedullah",
-    email: "syed.naveedullah@example.com",
-    phone: "+91 0000000000",
+
+const [showCurrent, setShowCurrent] = useState(false);
+const [showNew, setShowNew] = useState(false);
+const [showConfirm, setShowConfirm] = useState(false);
+
+const [newPassError, setNewPassError] = useState("");
+const [confirmPassError, setConfirmPassError] = useState("");
+const [msg, setMsg] = useState("");
+const [msgColor, setMsgColor] = useState("red");
+
+const [profile, setProfile] = useState({
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+});
+const [profileMsg, setProfileMsg] = useState("");
+
+  const [security, setSecurity] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    name: "",
+    phone: "",
+    address: "",
+  });
+
+const { getProfile, updateProfile, changePassword } = useContext(AppContext);
+
+// ----------- Fetch Profile Data ------------
+useEffect(() => {
+  const load = async () => {
+    const user = await getProfile();
+    if (user) {
+      const [firstName, ...rest] = user.name.split(" ");
+      setProfile({
+        firstName,
+        lastName: rest.join(" "),
+        email: user.email,
+        phone: user.phone,
+        createdAt: user.createdAt,
+      });
+    }
+  };
+  load();
+}, []);
+
+
+// ------------Address Management------------
 
   const [addresses, setAddresses] = useState([
     {
@@ -25,27 +74,8 @@ export default function Profile() {
     },
   ]);
 
-  const [security, setSecurity] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    name: "",
-    phone: "",
-    address: "",
-  });
-
-  // Handler functions for integration
-  const handleProfileUpdate = () => {
-    console.log("Update profile:", profile);
-    // TODO: Add API call here
-    // await updateProfile(profile);
-  };
-
-  const handleAddAddress = () => {
+    const handleAddAddress = () => {
     setShowAddForm(true);
   };
 
@@ -71,16 +101,59 @@ export default function Profile() {
     setShowAddForm(false);
   };
 
-  const handlePasswordChange = () => {
-    if (security.newPassword !== security.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-    console.log("Change password");
-    // TODO: Add API call here
-    // await changePassword(security);
+
+
+// ----------- Handle Profile Update ------------
+const handleProfileUpdate = async () => {
+  const name = `${profile.firstName} ${profile.lastName}`;
+
+  const result = await updateProfile({
+    name,
+    email: profile.email,
+    phone: profile.phone,
+  });
+
+  setProfileMsg(result.message );
+
+  if (result.success) {
+    setMsgColor("green");
+  }
+};
+
+
+
+// ----------- Handle Password Change ------------ 
+
+const passwordValidation = (password) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!regex.test(password)) {
+    setNewPassError(
+      "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
+    );
+    return false;
+  }
+  setNewPassError("");
+  return true;
+};
+
+
+const handlePasswordChange = async () => {
+  if (security.newPassword !== security.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  const res = await changePassword(security);
+
+  setMsg(res.message);
+
+  if (res.success) {
+    setMsgColor("green");
     setSecurity({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  };
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -153,11 +226,11 @@ export default function Profile() {
               />
             </div>
           </div>
+          {profileMsg && <p className={`text-${msgColor}-500 text-sm mt-2`}>{profileMsg}</p>}
 
           <button
             onClick={handleProfileUpdate}
-            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-          >
+            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
             Save Changes
           </button>
         </section>
@@ -171,8 +244,7 @@ export default function Profile() {
             </div>
             <button
               onClick={handleAddAddress}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-            >
+              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
               Add New Address
             </button>
           </div>
@@ -181,8 +253,7 @@ export default function Profile() {
             {addresses.map((addr, index) => (
               <div
                 key={addr.id}
-                className="border-t border-gray-800 pt-4 first:border-t-0 first:pt-0"
-              >
+                className="border-t border-gray-800 pt-4 first:border-t-0 first:pt-0">
                 <p className="text-sm text-purple-400 font-medium mb-1">
                   Address {index + 1}
                 </p>
@@ -217,7 +288,10 @@ export default function Profile() {
                         type="tel"
                         value={newAddress.phone}
                         onChange={(e) =>
-                          setNewAddress({ ...newAddress, phone: e.target.value })
+                          setNewAddress({
+                            ...newAddress,
+                            phone: e.target.value,
+                          })
                         }
                         className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
                       />
@@ -231,7 +305,10 @@ export default function Profile() {
                     <textarea
                       value={newAddress.address}
                       onChange={(e) =>
-                        setNewAddress({ ...newAddress, address: e.target.value })
+                        setNewAddress({
+                          ...newAddress,
+                          address: e.target.value,
+                        })
                       }
                       rows={3}
                       className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors resize-none"
@@ -241,14 +318,12 @@ export default function Profile() {
                   <div className="flex gap-2">
                     <button
                       onClick={handleSaveAddress}
-                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
                       Save Address
                     </button>
                     <button
                       onClick={handleCancelAdd}
-                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
+                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
                       Cancel
                     </button>
                   </div>
@@ -259,64 +334,102 @@ export default function Profile() {
         </section>
 
         {/* Security Section */}
-        <section className="bg-[#1a1a1a] rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="w-4 h-4 text-purple-500" />
-            <h2 className="text-base font-semibold">Security</h2>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={security.currentPassword}
-                onChange={(e) =>
-                  setSecurity({ ...security, currentPassword: e.target.value })
-                }
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
-              />
+       {/* Security Section */}
+          <section className="bg-[#1a1a1a] rounded-lg p-5 mt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Lock className="w-4 h-4 text-purple-500" />
+              <h2 className="text-base font-semibold">Security</h2>
             </div>
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">
-                New Password
-              </label>
-              <input
-                type="password"
-                value={security.newPassword}
-                onChange={(e) =>
-                  setSecurity({ ...security, newPassword: e.target.value })
-                }
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
-              />
-            </div>
+            <div className="space-y-4">
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                value={security.confirmPassword}
-                onChange={(e) =>
-                  setSecurity({ ...security, confirmPassword: e.target.value })
-                }
-                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
-              />
-            </div>
-          </div>
+              {/* CURRENT PASSWORD */}
+              <div className="relative">
+                <label className="block text-sm text-gray-400 mb-1.5">
+                  Current Password
+                </label>
+                <input
+                  type={showCurrent ? "text" : "password"}
+                  value={security.currentPassword}
+                  onChange={(e) =>
+                    setSecurity({ ...security, currentPassword: e.target.value })
+                  }
+                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+                />
+                <span
+                  onClick={() => setShowCurrent(!showCurrent)}
+                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
+                >
+                  {showCurrent ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
 
-          <button
-            onClick={handlePasswordChange}
-            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-          >
-            Change Password
-          </button>
-        </section>
+              {/* NEW PASSWORD */}
+              <div className="relative">
+                <label className="block text-sm text-gray-400 mb-1.5">
+                  New Password
+                </label>
+                <input
+                  type={showNew ? "text" : "password"}
+                  value={security.newPassword}
+                  onChange={(e) => {
+                    setSecurity({ ...security, newPassword: e.target.value });
+                    passwordValidation(e.target.value);
+                  }}
+                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+                />
+                <span
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
+                >
+                  {showNew ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+              {newPassError && <p className="text-red-500 text-sm">{newPassError}</p>}
+
+              {/* CONFIRM NEW PASSWORD */}
+              <div className="relative">
+                <label className="block text-sm text-gray-400 mb-1.5">
+                  Confirm New Password
+                </label>
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={security.confirmPassword}
+                  onChange={(e) => {
+                    setSecurity({ ...security, confirmPassword: e.target.value });
+
+                    if (e.target.value !== security.newPassword) {
+                      setConfirmPassError("Passwords do not match!");
+                    } else {
+                      setConfirmPassError("");
+                    }
+                  }}
+                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+                />
+                <span
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
+                >
+                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+              {confirmPassError && (
+                <p className="text-red-500 text-sm">{confirmPassError}</p>
+              )}
+            </div>
+            {msg && <p className={`text-${msgColor}-500 text-sm`}>{msg}</p>}
+
+            <button
+              onClick={handlePasswordChange}
+              disabled={newPassError || confirmPassError}
+              className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Change Password
+            </button>
+          </section>
+      <p className="text-right text-white text-sm mt-2 hover:text-purple-500 cursor-pointer">- Joined At {new Date(profile.createdAt).toLocaleDateString()} -</p>
       </div>
+
     </div>
   );
 }

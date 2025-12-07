@@ -1,237 +1,275 @@
-import { useState } from 'react';
-import { PenTool } from 'lucide-react';
-import TemplateSelection from '../pages/TemplateSelection'; // adjust path if needed
-import { FaGhost } from 'react-icons/fa';
+import { useState, useContext } from "react";
+import api from "../../services/axiosInstance";
+import { PenTool } from "lucide-react";
+import { AppContext } from '../../context/AppContext'
 
 const GenerateStory = () => {
-  const [step, setStep] = useState(1);
+  const {navigateTo} = useContext(AppContext)
+
   const [formData, setFormData] = useState({
-    title: '',
-    genre: '',
-    length: '3-5 Pages',
-    characters: [],
-    familyMembers: '',
-    theme: '',
-    setting: ''
+    title: "",
+    genre: "",
+    length: "3",
+    numCharacters: "2",
+    characterDetails: [],
   });
 
-  const handleNext = () => setStep((s) => s + 1);
-  const handleBack = () => setStep((s) => Math.max(1, s - 1));
+  const [showCharacterForm, setShowCharacterForm] = useState(false);
+  const [charName, setCharName] = useState("");
+  const [charDesc, setCharDesc] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
 
-  if (step === 1) {
-    return (
-      <div className="p-4 md:p-8 max-w-2xl mx-auto">
-         <FaGhost className="absolute top-20 left-40 text-white/10 text-3xl animate-bounce" />
-          <FaGhost className="absolute top-1/4 right-16 text-white/20 text-4xl animate-pulse" />
-          <FaGhost className="absolute bottom-90 left-50 text-white/15 text-5xl animate-bounce" />
-          <FaGhost className="absolute bottom-30 left-30 text-white/15 text-5xl animate-spin-slow" />
-          <FaGhost className="absolute top-1/3 left-1/3 text-white/10 text-6xl animate-pulse" />
-          <FaGhost className="absolute bottom-32 right-32 text-white/20 text-4xl animate-bounce" />
-          <FaGhost className="absolute top-16 right-1/4 text-white/10 text-3xl animate-spin-slow" />
-          <FaGhost className="absolute bottom-10 left-1/2 text-white/15 text-5xl animate-pulse" />
-          <FaGhost className="absolute top-2/3 right-1/4 text-white/20 text-6xl animate-bounce" />
-          <FaGhost className="absolute bottom-1/4 left-1/4 text-white/15 text-4xl animate-pulse" />
-          <FaGhost className="absolute top-1/2 right-10 text-white/10 text-3xl animate-spin-slow" />
+  // Add or Edit Character
+  const handleAddCharacter = () => {
+    if (!charName.trim() || !charDesc.trim()) return;
 
-          {/* title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
-          <PenTool size={32} className="text-purple-500" />
-          Story Details
-        </h1>
+    const newChar = { name: charName.trim(), details: charDesc.trim() };
 
-        <div className="space-y-6">
-          <div>
-            <label className="text-white block mb-2">Story Title</label>
-            <input
-              type="text"
-              placeholder="ex:"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-          </div>
+    setFormData((prev) => {
+      let updated = [...prev.characterDetails];
 
-          <div>
-            <label className="text-white block mb-2">Genre</label>
-            <select
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.genre}
-              onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-            >
-              <option value="">Select genre</option>
-              <option value="Fantasy">Fantasy</option>
-              <option value="Adventure">Adventure</option>
-              <option value="Family">Family</option>
-            </select>
-          </div>
+      if (editIndex !== null) {
+        updated[editIndex] = newChar;
+      } else {
+        updated.push(newChar);
+      }
 
-          <div>
-            <label className="text-white block mb-2">Story Length</label>
-            <select
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.length}
-              onChange={(e) => setFormData({ ...formData, length: e.target.value })}
-            >
-              <option value="3-5 Pages">3-5 Pages</option>
-              <option value="5-10 Pages">5-10 Pages</option>
-              <option value="10-15 Pages">10-15 Pages</option>
-            </select>
-          </div>
+      return { ...prev, characterDetails: updated };
+    });
 
-          <button
-            onClick={() => setStep(2)}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors"
+    setCharName("");
+    setCharDesc("");
+    setEditIndex(null);
+    setShowCharacterForm(false);
+  };
+
+  const handleDeleteCharacter = (i) => {
+    setFormData((prev) => ({
+      ...prev,
+      characterDetails: prev.characterDetails.filter((_, idx) => idx !== i),
+    }));
+  };
+
+  const handleEditCharacter = (i) => {
+    const char = formData.characterDetails[i];
+    setCharName(char.name);
+    setCharDesc(char.details);
+    setEditIndex(i);
+    setShowCharacterForm(true);
+  };
+
+
+  // Submit Form-------------------------------------
+const handleSubmit = async () => {
+  console.log("Submitting Form Data:", formData);
+
+  try {
+    setLoading(true);
+    const response = await api.post("/api/v1/story/start", formData);
+
+    console.log("API Response:", response.data);
+
+    const { storyId, data } = response.data;
+
+    // STORE first question & story ID
+    localStorage.setItem(
+      "conversationData",
+      JSON.stringify({
+        storyId,
+        conversation: data.conversation, // first question
+      })
+    );
+
+    // Navigate to Questioner UI
+    navigateTo("/questioner");
+
+  } catch (error) {
+    setMsg(error.response?.data?.message || "An error occurred");
+    console.error("Error submitting story:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  return (
+    <div className="relative p-4 md:p-8 max-w-2xl mx-auto">
+
+      {/* Title */}
+      <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
+        <PenTool size={32} className="text-purple-500" />
+        Story Details
+      </h1>
+
+      <div className="space-y-6">
+
+        {/* Story Title */}
+        <div>
+          <label className="text-white block mb-2">Story Title</label>
+          <input
+            type="text"
+            placeholder="Enter story title"
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+          />
+        </div>
+
+        {/* Genre */}
+        <div>
+          <label className="text-white block mb-2">Genre</label>
+          <select
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            value={formData.genre}
+            onChange={(e) =>
+              setFormData({ ...formData, genre: e.target.value })
+            }
           >
-            Select Characters
-          </button>
+            <option value="">Select genre</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Adventure">Adventure</option>
+            <option value="Family">Family</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Horror">Horror</option>
+            <option value="Romance">Romance</option>
+          </select>
+        </div>
 
-          <button
-            onClick={handleNext}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg transition-colors"
+{/* 3 row */}
+        <div className="flex justify-center gap-4">
+        {/* Story Length */}
+          <div className="w-1/2">
+          <label className="text-white block mb-2">Story Length</label>
+          <select
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            value={formData.length}
+            onChange={(e) =>
+              setFormData({ ...formData, length: e.target.value })
+            }
           >
-            Next
+            {[...Array(10)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1} Page{(i + 1) > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+          </div>
+          {/* number of characters */}
+          <div className="w-1/2">
+          <label className="text-white block mb-2">Number of Characters</label>
+          <select
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            value={formData.numCharacters}
+            onChange={(e) =>
+              setFormData({ ...formData, numCharacters: e.target.value })
+            }
+          >
+            {[...Array(10)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1} Character{(i + 1) > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+          </div>
+        </div>
+
+        {/* Character Section */}
+        <div className="space-y-3">
+          <label className="text-white block mb-2">Character Details</label>
+
+          {/* Pills */}
+          <div className="flex flex-wrap gap-2">
+            {formData.characterDetails.map((char, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 bg-purple-700 text-white px-3 py-1 rounded-full cursor-pointer"
+                onClick={() => handleEditCharacter(i)}
+              >
+                <span>{char.name}</span>
+                <button
+                  className="text-red-300 hover:text-red-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCharacter(i);
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Character Button */}
+          {!showCharacterForm && (
+            <button
+              onClick={() => setShowCharacterForm(true)}
+              className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
+            >
+              + Add Character Details
+            </button>
+          )}
+
+          {/* Character Add Form */}
+          {showCharacterForm && (
+            <div className="space-y-3 p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <input
+                type="text"
+                placeholder="Character Name (e.g., Sreeram)"
+                className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded"
+                value={charName}
+                onChange={(e) => setCharName(e.target.value)}
+              />
+
+              <textarea
+                placeholder="Character Details (comma separated)"
+                className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded"
+                rows={3}
+                value={charDesc}
+                onChange={(e) => setCharDesc(e.target.value)}
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAddCharacter}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg"
+                >
+                  {editIndex !== null ? "Update Character" : "Add Character"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCharacterForm(false);
+                    setCharName("");
+                    setCharDesc("");
+                    setEditIndex(null);
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+         {msg && <p className="text-red-500">{msg}</p>}
+
+        {/* Submit - aligned to the right */}
+        <div className="flex flex-col items-end">
+          <p className="text-gray-400 text-sm text-right">Let's begin your story</p> 
+          <button
+            onClick={handleSubmit}
+            className="bg-purple-600 hover:bg-purple-700 w-1/2 text-white py-3 px-6 rounded-lg mt-4"
+          >
+            {loading ? "Loading..." : "Next"}
           </button>
         </div>
       </div>
-    );
-  }
-
-  if (step === 2) {
-    return (
-      <div className="p-4 md:p-8 max-w-2xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
-          <PenTool size={32} className="text-purple-500" />
-          Fill out the Answers
-        </h1>
-
-        <div className="space-y-6">
-          <div>
-            <label className="text-white block mb-2">Who are the key family members?</label>
-            <input
-              type="text"
-              placeholder="ex:"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.familyMembers}
-              onChange={(e) => setFormData({ ...formData, familyMembers: e.target.value })}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-            <div className="h-2 bg-gray-700 rounded flex-1" />
-            <div className="h-2 bg-gray-700 rounded flex-1" />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleBack}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 3) {
-    return (
-      <div className="p-4 md:p-8 max-w-2xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
-          <PenTool size={32} className="text-purple-500" />
-          Fill out the Answers
-        </h1>
-
-        <div className="space-y-6">
-          <div>
-            <label className="text-white block mb-2">What is the central issue or emotional theme?</label>
-            <input
-              type="text"
-              placeholder="ex:"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.theme}
-              onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-            <div className="h-2 bg-gray-700 rounded flex-1" />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleBack}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 4) {
-    return (
-      <div className="p-4 md:p-8 max-w-2xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
-          <PenTool size={32} className="text-purple-500" />
-          Fill out the Answers
-        </h1>
-
-        <div className="space-y-6">
-          <div>
-            <label className="text-white block mb-2">Where does the story take place?</label>
-            <input
-              type="text"
-              placeholder="ex:"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-              value={formData.setting}
-              onChange={(e) => setFormData({ ...formData, setting: e.target.value })}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-            <div className="h-2 bg-purple-600 rounded flex-1" />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleBack}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return <TemplateSelection setStep={setStep} />;
+    </div>
+  );
 };
 
 export default GenerateStory;

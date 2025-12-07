@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./index.css";
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 
 // Components
 import Homee from "./components/Home/Homee";
@@ -15,10 +15,14 @@ import DataDump from "./components/pages/DataDump";
 import Profile from "./components/pages/Profile";
 import Stories from "./components/pages/Stories";
 import OrderHistory from "./components/pages/OrderHistory";
+import VerifyEmail from "./components/pages/VerifyEmail";
+import QuestionerPage from "./components/pages/QuestionerPage";
+import TemplateSelection from "./components/pages/TemplateSelection";
+import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
 
 // Route guards
-// import ProtectedRoute from "./components/routes/ProtectedRoute";
-// import PublicRoute from "./components/routes/PublicRoute";
+import ProtectedRoute from "./components/Routes/ProtectedRoute";
+import PublicRoute from "./components/Routes/PublicRoute";
 
 const ProtectedLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,31 +53,33 @@ const ProtectedLayout = () => {
 
 const App = () => {
   return (
-    <Router>
       <Routes>
         {/* Public routes */}
-        {/* <Route element={<PublicRoute />}> */}
+        <Route element={<PublicRoute />}>
         <Route path="/" element={<Homee />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
-        {/* </Route> */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        </Route>
 
         {/* Protected / private routes */}
-        {/* <Route element={<ProtectedRoute />}> */}
+        <Route element={<ProtectedRoute />}>
         <Route element={<ProtectedLayout />}>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/templateselection" element={<TemplateSelection />} />
           <Route path="/flipbook" element={<FlipBook />} />
           <Route path="/characterdump" element={<CharacterDump />} />
           <Route path="/datadump" element={<DataDump />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/orderhistory" element={<OrderHistory />} />
+          <Route path="/questioner" element={<QuestionerPage />} />
+          <Route path="/titlegenerator" element={<TitleGeneratorPage />} />
         </Route>
-        {/* </Route> */}
+        </Route>
       </Routes>
-    </Router>
   );
 };
 
