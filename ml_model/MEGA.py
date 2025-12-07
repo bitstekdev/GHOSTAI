@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import List, Tuple
 from openai import OpenAI
 import os
+from fastapi import UploadFile, File, Form
 
 # ============================================================
 # 🧠 Setup (Production Safe)
@@ -83,7 +84,7 @@ def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruc
     """Generate next conversational question."""
 
     if len(conversation) == 0:
-        return "Why write this book?"
+        return "Why you want to write this book and give every answer indetail"
 
     # Build the conversation context
     context = "\n".join(
@@ -245,12 +246,20 @@ def extract_json_from_text(text: str) -> Optional[Dict]:
     return None
 
 
-def inject_character_descriptions(prompt: str, character_map: Dict[str, str]) -> str:
+def inject_character_descriptions(prompt, character_map):
     """
-    Replace occurrences of character names with @Name[desc] anchors.
-    Case-insensitive replacement but keeps original case where possible.
+    Injects @Name[desc] logic with:
+    - Unicode normalization
+    - First 3 characters shown clearly
+    - Remaining characters implied softly
+    - Gender consistency hint
+    - Replaces ALL plain name occurrences (not just once)
+    - Still prevents double-injecting @Name[...] if already present
     """
-    # Normalize some unicode
+
+    # ------------------------------------------------------
+    # 1) Normalize unicode / punctuation
+    # ------------------------------------------------------
     prompt = (
         prompt.replace("\u00A0", " ")
               .replace("\u202F", " ")
@@ -261,12 +270,239 @@ def inject_character_descriptions(prompt: str, character_map: Dict[str, str]) ->
               .replace("—", "-")
     )
 
-    for name, desc in character_map.items():
-        pattern = rf"\b{re.escape(name)}\b"
+    # ------------------------------------------------------
+    # 2) Gender consistency detection
+    # ------------------------------------------------------
+    has_female = any(
+        any(word in desc.lower() for word in ["female", "woman", "girl"])
+        for desc in character_map.values()
+    )
+    has_male = any(
+        any(word in desc.lower() for word in ["male", "man", "boy"])
+        for desc in character_map.values()
+    )
+
+    if has_male and not has_female:
+        gender_hint = "All visible individuals are male; no female, woman, or girl figures appear."
+    elif has_female and not has_male:
+        gender_hint = "All visible individuals are female; no male, man, or boy figures appear."
+    else:
+        gender_hint = ""
+
+    # ------------------------------------------------------
+    # 3) Visible vs implied
+    # ------------------------------------------------------
+    names = list(character_map.keys())
+    visible_names = names[:3]
+    implied_names = names[3:]
+
+    # ------------------------------------------------------
+    # 4) Inject @Name[desc] for ALL occurrences
+    # ------------------------------------------------------
+    for name in visible_names:
+        desc = character_map[name].strip()
+
+        # If already injected, skip
+        if re.search(rf'@{re.escape(name)}\s*\[', prompt, flags=re.IGNORECASE):
+            continue
+
+        # Replace ALL plain name occurrences
+        pattern = rf'\b{re.escape(name)}\b'
         replacement = f"@{name}[{desc}]"
         prompt = re.sub(pattern, replacement, prompt, flags=re.IGNORECASE)
 
+    # ------------------------------------------------------
+    # 5) Add softly implied background characters
+    # ------------------------------------------------------
+    if implied_names:
+        implied_text = f" (the rest — {', '.join(implied_names)} — appear softly blurred in the background)"
+        if implied_text not in prompt:
+            prompt += implied_text
+
+    # ------------------------------------------------------
+    # 6) Add gender hint if missing
+    # ------------------------------------------------------
+    if gender_hint and gender_hint not in prompt:
+        prompt += f" {gender_hint}"
+
     return prompt
+
+
+def regenerate_page_api(page_obj, character_details, orientation="Landscape"):
+    global client
+
+    story_text = page_obj.text
+    old_prompt = page_obj.prompt
+    page_num = page_obj.page
+
+    if not story_text or not old_prompt:
+        return {
+            "page": page_num,
+            "text": story_text,
+            "prompt": old_prompt,
+            "hidream_image_base64": None,
+            "error": "Missing text or prompt"
+        }
+
+    # ======================================================
+    # PARSE CHARACTER DETAILS → character_map
+    # ======================================================
+    character_map = {}
+    for line in character_details.splitlines():
+        if ":" in line:
+            name, desc = line.split(":", 1)
+            character_map[name.strip()] = desc.strip()
+
+    # ======================================================
+    # 1) REWRITE STORY
+    # ======================================================
+    regen_story_system = """
+You are a skilled cinematic story rewriter.
+
+Your task:
+- Rewrite the paragraph using different wording
+- Keep EXACTLY the same meaning, events, actions, and characters
+- Keep 3–5 sentences
+- Maintain cinematic tone suitable for an illustrated storybook
+- Do NOT add new events, props, locations, or characters
+- Do NOT change the sequence of actions
+- Do NOT explain anything
+- Do NOT comment on the rewrite
+- Do NOT add titles, prefixes, or labels
+
+STRICT OUTPUT RULES:
+- Output ONLY the rewritten paragraph
+- NO lines like "Here is the rewritten paragraph:"
+- NO commentary
+- NO Markdown
+- NO quotes
+- NO bullet points
+"""
+
+    story_rewrite_prompt = f"""
+Rewrite the following story paragraph with different wording,
+but maintain identical meaning and actions:
+
+Original Paragraph:
+{story_text}
+"""
+
+    story_resp = client.chat.completions.create(
+        model="meta-llama/llama-3-8b-instruct",
+        messages=[
+            {"role": "system", "content": regen_story_system},
+            {"role": "user", "content": story_rewrite_prompt}
+        ],
+        temperature=0.6,
+    )
+
+    new_story_text = story_resp.choices[0].message.content.strip()
+
+    # ======================================================
+    # 2) REWRITE IMAGE PROMPT
+    # ======================================================
+    regen_prompt_system = """
+You are a professional cinematic visual prompt engineer for AI images.
+
+Your job:
+Rewrite the ORIGINAL image prompt into a new cinematic version while keeping:
+- SAME characters
+- SAME actions
+- SAME environment
+- SAME emotional tone
+- SAME story continuity
+
+You must follow the ORIGINAL prompt style rules exactly.
+
+======================
+ORIGINAL CINEMATIC RULES (STRICT)
+======================
+
+START every prompt with this exact prefix:
+
+"ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement,
+dynamic action, looking away from the camera, expressive body language, dramatic lighting,
+depth of field, atmospheric haze, environmental interaction, cinematic perspective of"
+
+REQUIREMENTS:
+- Include ALL character names explicitly (no pronouns)
+- Characters must NOT look at the camera
+- Show clear physical ACTION (walking, pointing, holding, exploring, discovering, turning, lifting)
+- Must show the environment clearly
+- Characters must interact with surroundings
+- If 2 characters are present, show both
+- If 3+ characters appear, show first 3 clearly
+- NO new characters allowed
+- NO new props allowed
+- NO invented outfits
+- No changes to the story content
+- Only the camera angle or composition may change
+
+END every prompt with the exact suffix:
+"consistent faces and outfits as before, cinematic, Hyperrealism, natural lighting."
+
+OUTPUT RULES:
+- Output ONLY the rewritten cinematic prompt
+- NO explanations
+- NO markdown
+- NO quotes
+- NO prefixes like “Here is the prompt:”
+"""
+
+    rewrite_prompt = f"""
+Story Page:
+{new_story_text}
+
+Original Prompt:
+{old_prompt}
+
+Rewrite a new cinematic prompt with:
+- SAME characters
+- SAME actions
+- SAME setting  
+But with a slightly different camera angle or composition.
+"""
+
+    prompt_resp = client.chat.completions.create(
+        model="meta-llama/llama-3-8b-instruct",
+        messages=[
+            {"role": "system", "content": regen_prompt_system},
+            {"role": "user", "content": rewrite_prompt}
+        ],
+        temperature=0.7,
+    )
+
+    new_prompt_raw = prompt_resp.choices[0].message.content.strip()
+
+    # Insert character descriptions
+    new_prompt = inject_character_descriptions(new_prompt_raw, character_map)
+
+    # ======================================================
+    # 3) GENERATE IMAGE
+    # ======================================================
+    image = generate_image_from_prompt(
+        new_prompt,
+        NEGATIVE_PROMPT_TEXT,
+        page_num=page_num,
+        orientation=orientation
+    )
+
+    b64_image = None
+    if image:
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        b64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    # ======================================================
+    # 4) RETURN API-FRIENDLY STRUCTURE
+    # ======================================================
+    return {
+        "page": page_num,
+        "text": new_story_text,
+        "prompt": new_prompt,
+        "hidream_image_base64": b64_image,
+        "error": None
+    }
 
 
 def extract_page_from_story(story: str, page_tag: str):
@@ -306,9 +542,19 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
     """
     # --- Build character map
     character_map = {}
+    segments = []
+
+# Split by newline first
     for line in character_details.splitlines():
-        if ":" in line:
-            name, desc = line.split(":", 1)
+        if line.strip():
+            # Also split by semicolon inside each line
+            parts = [p.strip() for p in line.split(";") if p.strip()]
+            segments.extend(parts)
+
+    # Parse "name: desc" pairs
+    for seg in segments:
+        if ":" in seg:
+            name, desc = seg.split(":", 1)
             character_map[name.strip()] = desc.strip()
 
     character_names = ", ".join(character_map.keys())
@@ -326,6 +572,7 @@ Guiding Principles:
 - Each page should unfold in 3–5 meaningful, well-crafted sentences.
 - Every page must include at least one named character (explicit name, not pronouns).
 - You may describe characters physically ONLY if it is already provided in character_details.
+- NEVER include or mention the character descriptions in the story text. ONLY use character names, not their traits, not physical descriptions, not personality keywords.
 - Never invent new characters or new names.
 - Maintain a consistent emotional tone that matches the genre: {genre}.
 - Genre must match: {genre}.
@@ -1426,6 +1673,51 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
     return blurb.strip(), final_back_prompt
 
 
+RUNPOD_BANANA_ENDPOINT = "https://api.runpod.ai/v2/nano-banana-edit/runsync"
+
+
+def convert_to_format(image_path, desired_format):
+    img = Image.open(image_path).convert("RGB")
+    base, _ = os.path.splitext(image_path)
+    new_path = f"{base}.{desired_format}"
+    img.save(new_path, desired_format.upper())
+    return new_path
+
+
+def encode_image_to_base64(image_path):
+    with open(image_path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+
+def run_banana_edit(prompt, image_b64, output_format):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {RUNPOD_API_KEY}"
+    }
+
+    data = {
+        "input": {
+            "prompt": prompt,
+            "images": [image_b64],  
+            "output_format": output_format,
+            "seed": -1,
+            "enable_safety_checker": True
+        }
+    }
+
+    response = requests.post(RUNPOD_BANANA_ENDPOINT, headers=headers, json=data)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"RunPod Error: {response.text}")
+    
+
+RUNPOD_FACESWAP_URL = "https://api.runpod.ai/v2/njyoog9u3bm8oa/runsync"
+def faceswap_to_base64(file: UploadFile):
+    return base64.b64encode(file.file.read()).decode("utf-8")
+
+
+
 # ============================================================
 # ⚡ FastAPI Endpoints
 # ============================================================
@@ -1438,7 +1730,7 @@ def root():
 @app.post("/start", response_model=StartResponse)
 def start_questionnaire():
     """Initialize a new questionnaire."""
-    first = QA(question="Why write this book?", answer="")
+    first = QA(question="Why do you want to write the book,Answer every question indetail", answer="")
     chat = [("System", "Let's begin your story journey!")]
 
     return {"chat": chat, "conversation": [first]}
@@ -1696,61 +1988,62 @@ def title_regenerate(req: RegenerateTitleRequest):
 # ----------------------------
 @app.post("/coverback/generate", response_model=CoverBackResponse)
 def coverback_generate(req: CoverBackRequest):
-    if not req.pages or len(req.pages) == 0:
+
+    if not req.pages:
         raise HTTPException(status_code=400, detail="No pages provided.")
 
-    # Merge story
     pages_sorted = sorted(req.pages, key=lambda p: p.page)
-    full_story_text = "\n\n".join([p.text.strip() for p in pages_sorted])
+    full_story_text = "\n\n".join([p.text for p in pages_sorted])
 
-    # Title: use provided or auto-generate
-    title_used = req.story_title.strip() if req.story_title and req.story_title.strip() else None
-    if not title_used:
-        try:
-            title_used = auto_generate_title(full_story_text)
-        except Exception:
-            title_used = "A Weekend at the Farmhouse"
+    title_used = req.story_title.strip() if req.story_title else None
+    # if not title_used:
+    #     try:
+    #         title_used = auto_generate_title(full_story_text)
+    #     except:
+    #         title_used = "Untitled Story"
 
-    # Cover: extract visuals -> cover prompt -> generate image
+    # COVER
     try:
         extracted = extract_visuals_from_story(full_story_text)
         cover_prompt = build_cover_prompt_from_visuals(extracted, req.genre)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Cover prompt generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Cover prompt generation failed: {e}")
 
     cover_b64 = None
     cover_err = None
     try:
         raw_cover = runpod_hidream_generate(cover_prompt, orientation=req.orientation)
-        data0 = raw_cover
-        if isinstance(data0, str) and data0.startswith("data:image"):
-            cover_b64 = data0.split(",", 1)[1]
-        elif isinstance(data0, str) and data0.startswith("http"):
-            r = requests.get(data0, timeout=30)
+
+        if isinstance(raw_cover, str) and raw_cover.startswith("data:image"):
+            cover_b64 = raw_cover.split(",", 1)[1]
+        elif isinstance(raw_cover, str) and raw_cover.startswith("http"):
+            r = requests.get(raw_cover, timeout=30)
             r.raise_for_status()
             cover_b64 = base64.b64encode(r.content).decode()
         else:
-            cover_b64 = data0
+            cover_b64 = raw_cover
 
-        # Draw title if exists
         if cover_b64 and title_used:
             img = Image.open(BytesIO(base64.b64decode(cover_b64))).convert("RGBA")
-            img_titled = draw_title_on_cover_image(img, title_used)
+            img2 = draw_title_on_cover_image(img, title_used)
             buf = BytesIO()
-            img_titled.save(buf, format="PNG")
+            img2.save(buf, format="PNG")
             cover_b64 = base64.b64encode(buf.getvalue()).decode()
+
     except Exception as e:
         cover_err = str(e)
         cover_b64 = None
 
-    # Back: blurb + prompt -> generate -> draw blurb + QR
+    # BACK COVER
     back_b64 = None
     back_prompt = None
     back_blurb = None
     back_err = None
+
     try:
         back_blurb, back_prompt = generate_back_blurb_and_prompt(full_story_text, req.genre)
         raw_back = runpod_hidream_generate(back_prompt, orientation=req.orientation)
+
         if isinstance(raw_back, str) and raw_back.startswith("data:image"):
             back_b64 = raw_back.split(",", 1)[1]
         elif isinstance(raw_back, str) and raw_back.startswith("http"):
@@ -1760,47 +2053,45 @@ def coverback_generate(req: CoverBackRequest):
         else:
             back_b64 = raw_back
 
-        # draw blurb + QR
         if back_b64:
             img_back = Image.open(BytesIO(base64.b64decode(back_b64))).convert("RGBA")
             W, H = img_back.size
-            # draw blurb
+
+            # blurb text
             try:
                 base_font_size = max(20, int(H * 0.035))
                 try:
                     font = ImageFont.truetype("SundayShine.otf", base_font_size)
-                except Exception:
+                except:
                     font = ImageFont.load_default()
-                max_chars = 55 if W < H else 45
-                wrapped = textwrap.fill(back_blurb, width=max_chars)
+                wrapped = textwrap.fill(back_blurb, width=55 if W < H else 45)
                 draw = ImageDraw.Draw(img_back)
                 lines = wrapped.split("\n")
                 line_spacing = int(base_font_size * 1.35)
                 text_block_height = len(lines) * line_spacing
-                text_x = W // 2
                 text_y = (H - text_block_height) // 4
-                shadow_color = (0,0,0,160)
+                text_x = W // 2
+
                 for i, line in enumerate(lines):
                     y = text_y + i * line_spacing
                     w, h = draw.textsize(line, font=font)
                     for dx, dy in [(2,2),(-2,-2),(2,-2),(-2,2)]:
-                        draw.text((text_x - w//2 + dx, y + dy), line, fill=shadow_color, font=font)
+                        draw.text((text_x - w//2 + dx, y + dy), line, fill=(0,0,0,160), font=font)
                     draw.text((text_x - w//2, y), line, fill="white", font=font)
-            except Exception:
+
+            except:
                 pass
 
-            # QR
+            # QR code
             try:
-                qr = qrcode.QRCode(version=2, error_correction=qrcode.constants.ERROR_CORRECT_H,
-                                   box_size=6, border=1)
+                qr = qrcode.QRCode(version=2, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=6, border=1)
                 qr.add_data(req.qr_url or DEFAULT_QR_URL)
                 qr.make()
                 qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGBA")
                 qr_size = int(min(W, H) * 0.16)
                 qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-                pos = (W - qr_size - 36, H - qr_size - 36)
-                img_back.alpha_composite(qr_img, pos)
-            except Exception:
+                img_back.alpha_composite(qr_img, (W - qr_size - 36, H - qr_size - 36))
+            except:
                 pass
 
             buf = BytesIO()
@@ -1820,5 +2111,125 @@ def coverback_generate(req: CoverBackRequest):
         error="; ".join(filter(None, [cover_err, back_err])) if (cover_err or back_err) else None
     )
 
-    return CoverBackResponse(pages=[page_out], title_used=title_used, message="Cover & Back generated (base64 only).")
+    return CoverBackResponse(
+        pages=[page_out],
+        title_used=title_used,
+        message="Cover & Back generated (base64 only)."
+    )
+#==================================================
+# 🍌 /edit-image — Nano Banana Edit Endpoint
+# ===================================================
+@app.post("/edit-image")
+async def edit_image_api(
+    file: UploadFile = File(...),
+    prompt: str = Form(...)
+):
+    """Edit an image using Nano-Banana and return Base64 output."""
+
+    # Save temporary file
+    temp_path = file.filename
+    with open(temp_path, "wb") as f:
+        f.write(await file.read())
+
+    ext = temp_path.split(".")[-1].lower()
+    if ext not in ["jpg", "jpeg", "png"]:
+        os.remove(temp_path)
+        return JSONResponse({"error": "Only JPG, JPEG, PNG allowed"}, status_code=400)
+
+    output_format = "jpeg" if ext in ["jpg", "jpeg"] else "png"
+
+    # Convert JPEG → JPG
+    if ext == "jpeg":
+        temp_path = convert_to_format(temp_path, "jpg")
+
+    # Encode → Base64
+    image_b64 = encode_image_to_base64(temp_path)
+
+    # Delete original file
+    if os.path.exists(temp_path):
+        os.remove(temp_path)
+
+    # Call Nano-Banana
+    try:
+        result = run_banana_edit(prompt, image_b64, output_format)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+    output_url = result.get("output", {}).get("result")
+    if not output_url:
+        return JSONResponse({"error": "Model returned no result URL", "raw": result})
+
+    # Download final image
+    img_bytes = requests.get(output_url).content
+
+    # Convert to Base64
+    output_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+    return {
+        "message": "Image edited successfully!",
+        "result_url": output_url,
+        "output_base64": output_b64
+    }
+# ============================
+# ==========================================================
+# 🧑‍🤝‍🧑 /faceswap — RunPod FaceSwap API
+# ==========================================================
+@app.post("/faceswap")
+async def faceswap_api(
+    source: UploadFile = File(...),
+    target: UploadFile = File(...),
+    source_index: int = Form(-1),
+    target_index: int = Form(-1),
+    upscale: int = Form(1),
+    codeformer_fidelity: float = Form(0.5),
+    background_enhance: bool = Form(True),
+    face_restore: bool = Form(True),
+    face_upsample: bool = Form(False),
+    output_format: str = Form("JPEG")
+):
+
+    # Convert to Base64
+    source_b64 = faceswap_to_base64(source)
+    target_b64 = faceswap_to_base64(target)
+
+    payload = {
+        "input": {
+            "source_image": source_b64,
+            "target_image": target_b64,
+            "source_indexes": str(source_index),
+            "target_indexes": str(target_index),
+            "background_enhance": background_enhance,
+            "face_restore": face_restore,
+            "face_upsample": face_upsample,
+            "upscale": upscale,
+            "codeformer_fidelity": codeformer_fidelity,
+            "output_format": output_format
+        }
+    }
+
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    # Call RunPod
+    rp = requests.post(RUNPOD_FACESWAP_URL, json=payload, headers=headers)
+
+    if rp.status_code != 200:
+        return JSONResponse({"error": rp.text}, status_code=500)
+
+    result = rp.json()
+
+    if "output" not in result or "image" not in result["output"]:
+        return JSONResponse({
+            "error": "No image returned from worker",
+            "raw_response": result
+        }, status_code=500)
+
+    return {
+        "swapped_image": result["output"]["image"],
+        "source_index": source_index,
+        "target_index": target_index
+    }
+
 
