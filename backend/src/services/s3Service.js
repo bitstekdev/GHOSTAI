@@ -9,7 +9,7 @@ exports.uploadToS3 = async (buffer, folder, filename, contentType = 'image/png')
     Key: key,
     Body: buffer,
     ContentType: contentType,
-    ACL: 'public-read'
+    // ACL: 'public-read'
   };
 
   const result = await s3.upload(params).promise();

@@ -14,6 +14,7 @@ const imageSchema = new mongoose.Schema({
     enum: ['character', 'background', 'composite', 'cover', 'backCover'],
     required: true
   },
+  base64Data: String,
   s3Key: {
     type: String,
     required: true

@@ -62,9 +62,9 @@ exports.generateSDXLBackgrounds = async (pages, orientation) => {
 };
 
 // Title generation
-exports.generateTitles = async (story, genre) => {
+exports.generateTitles = async (fullText, genre) => {
   const response = await fastApiClient.post('/title/generate', {
-    story,
+    story: fullText,
     genre
   });
   return response.data;

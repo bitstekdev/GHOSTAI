@@ -113,7 +113,7 @@ exports.createStory = async (req, res, next) => {
 
     // console.log("request body:", req.body);
     
-    const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('; ');
+    const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
     console.log("Fixed Character Details:", fixedCharacterDetails);
     // await new Promise(resolve => setTimeout(resolve, 20000));
     
@@ -239,10 +239,11 @@ exports.getStory = async (req, res, next) => {
   try {
     const story = await Story.findOne({
       _id: req.params.id,
-      user: req.user.id
+      // user: req.user.id
+      user: "69368a106b85d39345d24042"
     })
-      .populate('coverImage')
-      .populate('backCoverImage');
+      .populate('coverImage', '-base64Data')
+      .populate('backCoverImage', '-base64Data');
 
     if (!story) {
       return res.status(404).json({
@@ -253,9 +254,18 @@ exports.getStory = async (req, res, next) => {
 
     const pages = await StoryPage.find({ story: story._id })
       .sort({ pageNumber: 1 })
-      .populate('characterImage')
-      .populate('backgroundImage')
-      .populate('finalCompositeImage');
+      .populate({
+      path: 'characterImage',
+      select: '-base64Data'
+      })
+      .populate({
+      path: 'backgroundImage',
+      select: '-base64Data'
+      })
+      .populate({
+      path: 'finalCompositeImage',
+      select: '-base64Data'
+      });
 
     res.status(200).json({
       success: true,
@@ -274,9 +284,16 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    const { story, genre } = req.body;
+    const { storyId, selectedTitle, story, genre } = req.body;
 
-    const result = await fastApiService.generateTitles(story, genre);
+    const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
+
+    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+    const fullText = pages.map(page => page.text).join(' ');
+    // updatedStory.fullText = fullText;
+    await updatedStory.save();
+
+    const result = await fastApiService.generateTitles(fullText, genre);
 
     res.status(200).json({
       success: true,
