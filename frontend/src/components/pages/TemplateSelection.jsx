@@ -66,7 +66,7 @@ const TemplateSelection = () => {
   return (
     <div className="p-4 md:p-8">
       
-      <button className="bg-red-700" onClick={fetchdata}>test btn</button>
+      {/* <button className="bg-red-700" onClick={fetchdata}>test btn</button> */}
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-purple-400 mb-2">Story Title</h1>
@@ -105,7 +105,7 @@ const TemplateSelection = () => {
             {loading && (
               <div className="mt-6">
                 <p className="text-center text-purple-300 mb-2">
-                  Generating scenes…✨.
+                  Generating scenes…✨ wait for 1 to 2 minutes.
                 </p>
                 <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-[scroll_1.5s_linear_infinite]"></div>

@@ -166,18 +166,18 @@ useEffect(() => {
 }, []);
 
 
-useEffect(() => {
-  const checkSession = async () => {
-    try {
-      const res = await api.get("/api/auth/me");
-      setUserData(res.data.data);
-    } catch (err) {
-      setUserData(null);
-    }
-  };
+// useEffect(() => {
+//   const checkSession = async () => {
+//     try {
+//       const res = await api.get("/api/auth/me");
+//       setUserData(res.data.data);
+//     } catch (err) {
+//       setUserData(null);
+//     }
+//   };
 
-  checkSession();
-}, []);
+//   checkSession();
+// }, []);
 
 
 

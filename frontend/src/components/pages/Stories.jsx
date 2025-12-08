@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Image from '../../assets/images/story-image-1.jpg';
+import Image1 from '../../assets/images/story-image-2.jpg';
+import Image2 from '../../assets/images/story-image-3.jpg';
 
 const storiesInProgress = [
   {
@@ -26,6 +28,7 @@ const completedStories = [
   {
     title: "Rainbow Adventure",
     coverImage: "/path-to-rainbow-adventure.jpg",
+    src: Image,
     genre: "Family",
     storyLength: "3-5 Pages",
     characters: ["Saketh", "Lohith", "Shashi"],
@@ -34,6 +37,7 @@ const completedStories = [
   {
     title: "Sunny Day Surprise",
     coverImage: "/path-to-sunny-day.jpg",
+    src: Image1,
     genre: "Family",
     storyLength: "3-5 Pages",
     characters: ["Saketh", "Lohith", "Shashi"],
@@ -42,6 +46,7 @@ const completedStories = [
   {
     title: "Forest of Wonders",
     coverImage: "/path-to-forest-wonders.jpg",
+    src: Image2,
     genre: "Family",
     storyLength: "3-5 Pages",
     characters: ["Saketh", "Lohith", "Shashi"],
@@ -103,7 +108,7 @@ const Stories = () => {
             >
               {/* responsive custom height/width for the cover area */}
               <div className="w-full h-full md:h-[260px] lg:h-[320px] bg-purple-900/20">
-                <img src={Image} alt="Story Cover" className="w-full h-full object-cover" />
+                <img src={story.src} alt="Story Cover" className="w-full h-full object-cover" />
               </div>
 
               <div className="p-4">

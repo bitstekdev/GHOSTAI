@@ -57,8 +57,8 @@ export default function QuestionerPage() {
     }
   };
 
-//   const isFinished = conversation.length >= 10;
-  const isFinished = conversation.length >= 2;
+  const isFinished = conversation.length >= 10;
+  // const isFinished = conversation.length >= 2;
 
   const handleGetPrompt = async () => {
     try {

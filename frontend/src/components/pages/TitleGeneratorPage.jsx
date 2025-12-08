@@ -4,7 +4,7 @@ import api from "../../services/axiosInstance";
 import { Loader2, Sparkles, SquarePen } from "lucide-react";
 
 const TitleSelection = () => {
-  const { storyId } = useContext(AppContext);
+  const { storyId, navigateTo } = useContext(AppContext);
   const [storyData, setStoryData] = useState(null);
 
   const [aiTitles, setAiTitles] = useState([]); // MUST be array
@@ -15,6 +15,7 @@ const TitleSelection = () => {
 
   useEffect(() => {
     fetchStoryData();
+    console.log("Story ID:", storyData);
   }, []);
 
   const fetchStoryData = async () => {
@@ -35,12 +36,17 @@ const TitleSelection = () => {
 
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
+        selectedTitle,
         story: storyData?.gist, 
         genre: storyData?.genre
       });
 
       // Titles must be an array! 
-      setAiTitles(res.data.titles || []);
+      // setAiTitles(res.data.titles || []);
+      setAiTitles(res.data.data.titles || []);
+
+
+      console.log("AI Titles Response:", res.data);
     } catch (err) {
       console.error("AI Title fetch failed:", err);
     } finally {
@@ -53,7 +59,14 @@ const TitleSelection = () => {
       setCreatingBook(true);
 
       // YOU WILL ADD API CALL HERE
-      console.log("Final Title Submitted:", selectedTitle);
+      // console.log("Final Title Submitted:", selectedTitle);
+
+      const res = await api.post(`/api/v1/images/generate-characters/${storyData._id}`, {
+        title: selectedTitle,
+      });
+
+      console.log("Book creation response:", res.data);
+      navigateTo("/flipbook");
 
     } catch (err) {
       console.error(err);
@@ -62,9 +75,17 @@ const TitleSelection = () => {
     }
   };
 
+  const test = () => {
+    fetchStoryData();
+    console.log("Story Data:", storyData);
+    console.log("Test function called");
+  };
+
   return (
     <div className="p-6 py-10 max-w-3xl mx-auto text-white">
 
+
+     {/* <button onClick={test} className="bg-red-700">Test Fetch Story Data</button> */}
       {/* MAIN HEADING */}
       <h1 className="text-3xl font-bold text-purple-400 mb-4">
         Choose Your Book Title
@@ -152,17 +173,22 @@ const TitleSelection = () => {
         disabled={creatingBook}
       >
         {creatingBook ? (
-          <div className="flex flex-col items-center py-2">
-            <Loader2 className="animate-spin mb-2" />
-
-            <p className="text-sm">
-              Crafting your full magical book... ✨ this may take up to 10 minutes, take a coffee break while we work.
-            </p>
-          </div>
+         <p>loading</p>
         ) : (
           "Create My Book"
         )}
       </button>
+
+      {creatingBook ? (
+          <div className="mt-6">
+                <p className="text-center text-purple-300 mb-2">
+                  Generating scenes…✨ wait for 5 to 10 minutes.
+                </p>
+                <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-[scroll_1.5s_linear_infinite]"></div>
+                </div>
+              </div>
+        ) : null}
 
     </div>
   );
