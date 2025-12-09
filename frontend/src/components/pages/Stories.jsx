@@ -139,7 +139,7 @@ const Stories = () => {
                   )}
                 </div>
                 <button
-                  onClick={() => navigate('/generate/preview')}
+                  onClick={() => navigate('/flipbook')}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors text-sm md:text-base"
                 >
                   View Book
