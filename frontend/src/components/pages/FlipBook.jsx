@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader } from "lucide-react";
 import api from "../../services/axiosInstance";
-
+import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -23,6 +23,8 @@ const StoryFlipbook = ({ storyId = "69369845df64de927c9c8658" }) => {
   const [loading, setLoading] = useState(true);
   const [isFlipping, setIsFlipping] = useState(false);
   const [error, setError] = useState(null);
+  const [showFaceSwap, setShowFaceSwap] = useState(false);
+  const [faceSwapPage, setFaceSwapPage] = useState(null);
 
   const wrapperRef = useRef(null);
   const [scale, setScale] = useState(1);
@@ -66,6 +68,44 @@ const StoryFlipbook = ({ storyId = "69369845df64de927c9c8658" }) => {
 };
 //////////////////////////////////////////////////////////////////////////////////////
 
+  // ============================
+  // FACE SWAP HANDLER
+  // ============================
+const openFaceSwap = () => {
+  const story = storyData?.story || storyData;
+  const rawPages = storyData?.pages || [];
+
+  const current = pages[currentPage];
+  // console.log("Current page data for Face Swap:", current);
+  // Only allow spreads
+  if (current?.type !== "spread") {
+    console.log("Face Swap is only available on the LEFT page of a spread.");
+    return;
+  }
+
+  // Map UI page index → MongoDB page index
+  const mongoPageIndex = currentPage - 1;
+  const pageDoc = rawPages[mongoPageIndex];
+
+  if (!pageDoc) {
+    console.log("Could not find page data");
+    return;
+  }
+
+  // Only allow swapping if left-page character image exists
+  if (!pageDoc.characterImage?.s3Url) {
+    console.log("This page has no character image for face swapping.");
+    return;
+  }
+
+  setFaceSwapPage(pageDoc);
+  setShowFaceSwap(true);
+};
+
+
+  // ============================
+  // FETCH STORY DATA
+  // ============================
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -282,7 +322,10 @@ const StoryFlipbook = ({ storyId = "69369845df64de927c9c8658" }) => {
                   <Edit size={16} /> Edit
                 </button>
 
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors">
+                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors" 
+                 onClick={openFaceSwap}
+                //  disabled={pages[currentPage]?.type !== "spread"}
+                >
                   <Users size={16} /> Face Swap
                 </button>
 
@@ -344,8 +387,25 @@ const StoryFlipbook = ({ storyId = "69369845df64de927c9c8658" }) => {
           </button>
         </div>
       </div>
+
+       {showFaceSwap && faceSwapPage && (
+          <FaceSwapModal
+            storyId={storyId}
+            page={faceSwapPage}
+            onClose={() => setShowFaceSwap(false)}
+            onUpdated={async () => {
+              try {
+                const res = await api.get(`/api/v1/story/${storyId}`);
+                setStoryData(res.data.data);
+              } catch (err) {
+                console.error("Error refreshing story after face swap:", err);
+              }
+            }}
+          />
+        )}
     </div>
   );
+
 };
 
 export default StoryFlipbook;
