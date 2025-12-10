@@ -251,7 +251,7 @@ exports.getStory = async (req, res, next) => {
       });
     }
 
-    const pages = await StoryPage.findOne({ story: story._id })
+    const pages = await StoryPage.find({ story: story._id })
       .sort({ pageNumber: 1 })
       .populate({
       path: 'characterImage',

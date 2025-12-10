@@ -320,8 +320,8 @@ const generateCover = async (storyId) => {
       if (qr_url) {
         story.qrUrl = qr_url;
       }
-      const result = await story.save();
-      console.log('Story save result:', result);
+      const res = await story.save();
+      console.log('Story save result:', res);
 
       console.log('Cover and back cover generated successfully.', story);
       
