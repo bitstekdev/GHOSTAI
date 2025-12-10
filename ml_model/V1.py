@@ -633,20 +633,28 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 You are a masterful storyteller who creates coherent, a bit poetic, emotional, and cinematic narratives suitable for readers of all ages.
 
 Guiding Principles:
-- Begin the story with a warm, natural opening such as \u201cOne day,\u201d \u201cLong ago,\u201d or \u201cOn a quiet morning,\u201d to gently invite the reader in.
+- Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning,” to gently invite the reader in.
 - Avoid unnecessary side plots.
-- Each page MUST explicitly include at least one of the provided character names.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
 - Each page should unfold in 3–5 meaningful, well-crafted sentences.
-- Every page must include at least one named character (explicit name, not pronouns).
-- NEVER include or mention the character descriptions in the story text. ONLY use character names, not their traits, not physical descriptions, not personality keywords.
-- You may describe characters physically ONLY if it is already provided in character_details.
+- Every page MUST explicitly include at least one of the provided character names.
 - Never invent new characters or new names.
+
+STRICT RULES ABOUT CHARACTER DETAILS:
+- NEVER include, reference, hint at, or restate the provided character_details inside the narrative.
+- Do NOT describe characters physically unless the exact physical detail exists word-for-word in character_details.
+- If a physical detail is NOT explicitly present in character_details, you MUST NOT invent it, infer it, or imply it.
+- No invented clothing, no invented colors, no invented hairstyles, no invented body features, no invented accessories, no invented expressions.
+
+GENRE & TONE:
 - Maintain a consistent emotional tone that matches the genre: {genre}.
-- Genre must match: {genre}.
-- Label each part exactly as: Page 1, Page 2, ...
+- The narrative must fully align with the genre: {genre}.
+
+FORMATTING:
+- Label each section exactly as: Page 1, Page 2, Page 3, ...
 """
+
 
     # --- Single LLM call to generate story pages
     user_content = f"Write a {genre} story in exactly {num_pages} pages.\n\nStory Gist:\n{story_gist}\n\nCharacters:\n{character_names}\n\nCharacter details:\n{character_details}\n"
