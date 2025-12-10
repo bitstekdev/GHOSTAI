@@ -1,6 +1,16 @@
 # ============================================================
 # 🎨 Storybook Generator API (FastAPI + OpenRouter)
 # ============================================================
+from dotenv import load_dotenv
+import os
+
+# Always load .env from the SAME folder as this file
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
+print("API KEY =>", os.getenv("OPENROUTER_API_KEY"))
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -8,32 +18,45 @@ from typing import List, Tuple
 from openai import OpenAI
 import os
 from fastapi import UploadFile, File, Form
+import base64
+import logging
+from logging.handlers import RotatingFileHandler
+
+# ----------------------------
+# GLOBAL LOGGING SETUP
+# ----------------------------
+LOG_FILE = "app.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+    handlers=[
+        RotatingFileHandler(LOG_FILE, maxBytes=5_000_000, backupCount=5),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger("storybook_api")
 
 # ============================================================
 # 🧠 Setup (Production Safe)
 # ============================================================
-import os
-from dotenv import load_dotenv
 
-load_dotenv()   # loads .env locally; Render injects env automatically
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API_KEY:
-    raise Exception("❌ Missing OPENROUTER_API_KEY environment variable")
-
+API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 
-from openai import OpenAI
+if not API_KEY:
+    raise Exception("❌ OPENROUTER_API_KEY missing in .env")
 
-# Global client (NO recreation inside functions)
 client = OpenAI(
     base_url=BASE_URL,
-    api_key=OPENROUTER_API_KEY,
+    api_key=API_KEY,
     default_headers={
         "HTTP-Referer": "https://your-site.com",
         "X-Title": "Storybook Generator API"
     }
 )
+
 SECOND_QUESTION = (
     "What happened? List the key incidents in order, and also mention every important person."
 )
@@ -81,10 +104,12 @@ class GistResponse(BaseModel):
 # ============================================================
 
 def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruct:free"):
+    logger.info("LLM generating next question")
+
     """Generate next conversational question."""
 
     if len(conversation) == 0:
-        return "Why you want to write this book and give every answer indetail"
+        return "Why write this book?"
 
     # Build the conversation context
     context = "\n".join(
@@ -115,6 +140,8 @@ def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruc
 
 
 def generate_gist(conversation, genre="Family", model="meta-llama/llama-3.3-70b-instruct:free"):
+    logger.info("Calling LLM for story gist")
+
     """Generate cinematic story gist from questionnaire."""
 
     context = "\n".join(
@@ -175,16 +202,10 @@ BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 STORY_MODEL = os.getenv("STORY_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
 PROMPT_MODEL = os.getenv("PROMPT_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
 
-client = OpenAI(
-    base_url=BASE_URL,
-    api_key=OPENROUTER_API_KEY,
-    default_headers={
-        "HTTP-Referer": "https://your-site.com",
-        "X-Title": "Story Generator API"
-    }
-)
+client = OpenAI(base_url=BASE_URL, api_key=OPENROUTER_API_KEY,
+                default_headers={"HTTP-Referer": "https://your-site.com", "X-Title": "Story Generator API"})
 
-app = FastAPI(title="Story Page + Prompt Generator", version="1.0")
+#app = FastAPI(title="Story Page + Prompt Generator", version="1.0")
 
 # -----------------------------
 # Pydantic models
@@ -245,6 +266,172 @@ def extract_json_from_text(text: str) -> Optional[Dict]:
                         start_idx = None
     return None
 
+def regenerate_page(story_text, old_prompt, character_map, page_num, orientation="Landscape"):
+    global client 
+    """
+    Regenerates one page completely:
+    1) Rewrites the story paragraph (same meaning)
+    2) Rewrites the image prompt based on new story
+    3) Regenerates the image with deterministic consistency
+    """
+
+    if not story_text or not old_prompt:
+        return story_text, old_prompt, None
+
+    # ======================================================
+    # 1) REWRITE STORY TEXT
+    # ======================================================
+    regen_story_system = """
+You are a skilled cinematic story rewriter.
+
+Your task:
+- Rewrite the paragraph using different wording
+- Keep EXACTLY the same meaning, events, actions, and characters
+- Keep 3–5 sentences
+- Maintain cinematic tone suitable for an illustrated storybook
+- Do NOT add new events, props, locations, or characters
+- Do NOT change the sequence of actions
+- Do NOT explain anything
+- Do NOT comment on the rewrite
+- Do NOT add titles, prefixes, or labels
+
+STRICT OUTPUT RULES:
+- Output ONLY the rewritten paragraph
+- NO lines like "Here is the rewritten paragraph:"
+- NO commentary
+- NO Markdown
+- NO quotes
+- NO bullet points
+    """
+
+    story_rewrite_prompt = f"""
+Rewrite the following story paragraph with different wording,
+but maintain identical meaning and actions:
+
+Original Paragraph:
+{story_text}
+    """
+
+    story_resp = client.chat.completions.create(
+        model="meta-llama/llama-3.3-70b-instruct:free",
+        messages=[
+            {"role": "system", "content": regen_story_system},
+            {"role": "user", "content": story_rewrite_prompt}
+        ],
+        temperature=0.6,
+    )
+
+    new_story_text = story_resp.choices[0].message.content.strip()
+
+    # ======================================================
+    # 2) REWRITE IMAGE PROMPT
+    # ======================================================
+    regen_prompt_system = """
+You are a professional cinematic visual prompt engineer for AI images.
+
+Your job:
+Rewrite the ORIGINAL image prompt into a new cinematic version while keeping:
+- SAME characters
+- SAME actions
+- SAME environment
+- SAME emotional tone
+- SAME story continuity
+
+You must follow the ORIGINAL prompt style rules exactly.
+
+======================
+ORIGINAL CINEMATIC RULES (STRICT)
+======================
+
+START every prompt with this exact prefix:
+
+"ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement,
+dynamic action, looking away from the camera, expressive body language, dramatic lighting,
+depth of field, atmospheric haze, environmental interaction, cinematic perspective of"
+
+REQUIREMENTS:
+- Include ALL character names explicitly (no pronouns)
+- Characters must NOT look at the camera
+- Show clear physical ACTION (walking, pointing, holding, exploring, discovering, turning, lifting)
+- Must show the environment clearly
+- Characters must interact with surroundings
+- If 2 characters are present, show both
+- If 3+ characters appear, show first 3 clearly
+- NO new characters allowed
+- NO new props allowed
+- NO invented outfits
+- No changes to the story content
+- Only the camera angle or composition may change
+
+END every prompt with the exact suffix:
+"consistent faces and outfits as before, cinematic, Hyperrealism, natural lighting."
+
+OUTPUT RULES:
+- Output ONLY the rewritten cinematic prompt
+- NO explanations
+- NO markdown
+- NO quotes
+- NO prefixes like “Here is the prompt:”
+
+"""
+
+    rewrite_prompt = f"""
+Story Page:
+{new_story_text}
+
+Original Prompt:
+{old_prompt}
+
+Rewrite a new cinematic prompt with:
+- SAME characters
+- SAME actions
+- SAME setting  
+But with a slightly different camera angle or composition.
+"""
+
+    prompt_resp = client.chat.completions.create(
+        model="meta-llama/llama-3.3-70b-instruct:free",
+        messages=[
+            {"role": "system", "content": regen_prompt_system},
+            {"role": "user", "content": rewrite_prompt}
+        ],
+        temperature=0.7,
+    )
+
+    new_prompt_raw = prompt_resp.choices[0].message.content.strip()
+    new_prompt = inject_character_descriptions(new_prompt_raw, character_map)
+
+    # ======================================================
+    # 3) GENERATE IMAGE
+    # ======================================================
+    image = generate_image_from_prompt(
+        new_prompt,
+        NEGATIVE_PROMPT_TEXT,
+        page_num=page_num,
+        orientation=orientation
+    )
+
+    base64_image = None
+
+    if image:
+        from io import BytesIO
+        import base64
+
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    return new_story_text, new_prompt, base64_image
+
+
+def wrap_regen_page(story_text, old_prompt, character_details, page_num, orientation):
+    character_map = {}
+    for line in character_details.splitlines():
+        if ":" in line:
+            name, desc = line.split(":", 1)
+            character_map[name.strip()] = desc.strip()
+
+    return regenerate_page(story_text, old_prompt, character_map, page_num, orientation)
 
 def inject_character_descriptions(prompt, character_map):
     """
@@ -327,184 +514,6 @@ def inject_character_descriptions(prompt, character_map):
 
     return prompt
 
-
-def regenerate_page_api(page_obj, character_details, orientation="Landscape"):
-    global client
-
-    story_text = page_obj.text
-    old_prompt = page_obj.prompt
-    page_num = page_obj.page
-
-    if not story_text or not old_prompt:
-        return {
-            "page": page_num,
-            "text": story_text,
-            "prompt": old_prompt,
-            "hidream_image_base64": None,
-            "error": "Missing text or prompt"
-        }
-
-    # ======================================================
-    # PARSE CHARACTER DETAILS → character_map
-    # ======================================================
-    character_map = {}
-    for line in character_details.splitlines():
-        if ":" in line:
-            name, desc = line.split(":", 1)
-            character_map[name.strip()] = desc.strip()
-
-    # ======================================================
-    # 1) REWRITE STORY
-    # ======================================================
-    regen_story_system = """
-You are a skilled cinematic story rewriter.
-
-Your task:
-- Rewrite the paragraph using different wording
-- Keep EXACTLY the same meaning, events, actions, and characters
-- Keep 3–5 sentences
-- Maintain cinematic tone suitable for an illustrated storybook
-- Do NOT add new events, props, locations, or characters
-- Do NOT change the sequence of actions
-- Do NOT explain anything
-- Do NOT comment on the rewrite
-- Do NOT add titles, prefixes, or labels
-
-STRICT OUTPUT RULES:
-- Output ONLY the rewritten paragraph
-- NO lines like "Here is the rewritten paragraph:"
-- NO commentary
-- NO Markdown
-- NO quotes
-- NO bullet points
-"""
-
-    story_rewrite_prompt = f"""
-Rewrite the following story paragraph with different wording,
-but maintain identical meaning and actions:
-
-Original Paragraph:
-{story_text}
-"""
-
-    story_resp = client.chat.completions.create(
-        model="meta-llama/llama-3-8b-instruct",
-        messages=[
-            {"role": "system", "content": regen_story_system},
-            {"role": "user", "content": story_rewrite_prompt}
-        ],
-        temperature=0.6,
-    )
-
-    new_story_text = story_resp.choices[0].message.content.strip()
-
-    # ======================================================
-    # 2) REWRITE IMAGE PROMPT
-    # ======================================================
-    regen_prompt_system = """
-You are a professional cinematic visual prompt engineer for AI images.
-
-Your job:
-Rewrite the ORIGINAL image prompt into a new cinematic version while keeping:
-- SAME characters
-- SAME actions
-- SAME environment
-- SAME emotional tone
-- SAME story continuity
-
-You must follow the ORIGINAL prompt style rules exactly.
-
-======================
-ORIGINAL CINEMATIC RULES (STRICT)
-======================
-
-START every prompt with this exact prefix:
-
-"ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement,
-dynamic action, looking away from the camera, expressive body language, dramatic lighting,
-depth of field, atmospheric haze, environmental interaction, cinematic perspective of"
-
-REQUIREMENTS:
-- Include ALL character names explicitly (no pronouns)
-- Characters must NOT look at the camera
-- Show clear physical ACTION (walking, pointing, holding, exploring, discovering, turning, lifting)
-- Must show the environment clearly
-- Characters must interact with surroundings
-- If 2 characters are present, show both
-- If 3+ characters appear, show first 3 clearly
-- NO new characters allowed
-- NO new props allowed
-- NO invented outfits
-- No changes to the story content
-- Only the camera angle or composition may change
-
-END every prompt with the exact suffix:
-"consistent faces and outfits as before, cinematic, Hyperrealism, natural lighting."
-
-OUTPUT RULES:
-- Output ONLY the rewritten cinematic prompt
-- NO explanations
-- NO markdown
-- NO quotes
-- NO prefixes like “Here is the prompt:”
-"""
-
-    rewrite_prompt = f"""
-Story Page:
-{new_story_text}
-
-Original Prompt:
-{old_prompt}
-
-Rewrite a new cinematic prompt with:
-- SAME characters
-- SAME actions
-- SAME setting  
-But with a slightly different camera angle or composition.
-"""
-
-    prompt_resp = client.chat.completions.create(
-        model="meta-llama/llama-3-8b-instruct",
-        messages=[
-            {"role": "system", "content": regen_prompt_system},
-            {"role": "user", "content": rewrite_prompt}
-        ],
-        temperature=0.7,
-    )
-
-    new_prompt_raw = prompt_resp.choices[0].message.content.strip()
-
-    # Insert character descriptions
-    new_prompt = inject_character_descriptions(new_prompt_raw, character_map)
-
-    # ======================================================
-    # 3) GENERATE IMAGE
-    # ======================================================
-    image = generate_image_from_prompt(
-        new_prompt,
-        NEGATIVE_PROMPT_TEXT,
-        page_num=page_num,
-        orientation=orientation
-    )
-
-    b64_image = None
-    if image:
-        buffer = BytesIO()
-        image.save(buffer, format="PNG")
-        b64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-    # ======================================================
-    # 4) RETURN API-FRIENDLY STRUCTURE
-    # ======================================================
-    return {
-        "page": page_num,
-        "text": new_story_text,
-        "prompt": new_prompt,
-        "hidream_image_base64": b64_image,
-        "error": None
-    }
-
-
 def extract_page_from_story(story: str, page_tag: str):
     """
     Extracts text for 'Page X' supporting multiple tag styles.
@@ -536,48 +545,116 @@ def extract_page_from_story(story: str, page_tag: str):
 # Core generation function (keeps single-call behavior)
 # -----------------------------
 
+
+
+def genre_visual_style(genre):
+    genre_styles = {
+        "Family": (
+            "warm cozy lighting, soft pastel tones, gentle ambience, homely scenery, "
+            "emotional warmth, friendly joyful atmosphere"
+        ),
+        "Fantasy": (
+            "ethereal glow, magical particles floating, enchanted lighting, warm light rays, "
+            "mystical haze, glowing magical accents"
+        ),
+        "Adventure": (
+            "dramatic shadows, rugged terrain, dust particles, high contrast, "
+            "energetic composition, cinematic action mood"
+        ),
+        "Sci-Fi": (
+            "neon holograms, futuristic reflections, cool ambience, metallic textures, "
+            "glowing circuitry, high-tech atmosphere"
+        ),
+        "Mystery": (
+            "moody gradients, noir ambience, soft fog, muted tones, suspense shadows, "
+            "silhouetted lighting"
+        ),
+
+       "Birthday": (
+            "bright colorful decorations, vibrant party ambience, confetti floating, "
+            "warm celebratory lighting, joyful expressions, balloons and ribbons, "
+            "soft glowing highlights"
+        ),
+        "Corporate Promotion": (
+            "clean professional ambience, elegant soft lighting, subtle depth-of-field, "
+            "modern office environment, confidence-filled atmosphere, muted premium tones, "
+            "award-ceremony glow"
+        ),
+        "Housewarming": (
+            "warm inviting home interior, soft ambient light, cozy decor, indoor plants, "
+            "fresh welcoming atmosphere, gentle shadows, warm wooden textures"
+        ),
+        "Marriage": (
+            "romantic soft-focus lighting, elegant warm glow, floral decorations, "
+            "cinematic highlights, gentle bokeh, pastel romantic tones, "
+            "beautiful ceremonial ambience"
+        ),
+        "Baby Shower": (
+            "soft pastel colors, gentle warm light, cute decorations, baby toys, "
+            "delicate joyful atmosphere, balloons and soft textures, dreamy nursery tones"
+        ),
+    }
+
+    return genre_styles.get(genre, "")
+
 def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int):
     """
     Returns list of tuples: [(page_text, prompt), ...] length == num_pages
     """
     # --- Build character map
     character_map = {}
-    segments = []
-
-# Split by newline first
     for line in character_details.splitlines():
-        if line.strip():
-            # Also split by semicolon inside each line
-            parts = [p.strip() for p in line.split(";") if p.strip()]
-            segments.extend(parts)
-
-    # Parse "name: desc" pairs
-    for seg in segments:
-        if ":" in seg:
-            name, desc = seg.split(":", 1)
+        if ":" in line:
+            name, desc = line.split(":", 1)
             character_map[name.strip()] = desc.strip()
 
     character_names = ", ".join(character_map.keys())
+    
+    # character_map = {}
+    # segments = []
+
+    # # Split by newline first
+    # for line in character_details.splitlines():
+    #     if line.strip():
+    #         # Also split by semicolon inside each line
+    #         parts = [p.strip() for p in line.split(";") if p.strip()]
+    #         segments.extend(parts)
+
+    # # Parse "name: desc" pairs
+    # for seg in segments:
+    #     if ":" in seg:
+    #         name, desc = seg.split(":", 1)
+    #         character_map[name.strip()] = desc.strip()
+
+    # character_names = ", ".join(character_map.keys()
 
     # --- Story system prompt
     story_system_prompt = f"""
 You are a masterful storyteller who creates coherent, a bit poetic, emotional, and cinematic narratives suitable for readers of all ages.
 
 Guiding Principles:
-- Begin the story with a warm, natural opening such as \u201cOne day,\u201d \u201cLong ago,\u201d or \u201cOn a quiet morning,\u201d to gently invite the reader in.
+- Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning,” to gently invite the reader in.
 - Avoid unnecessary side plots.
-- Each page MUST explicitly include at least one of the provided character names.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
 - Each page should unfold in 3–5 meaningful, well-crafted sentences.
-- Every page must include at least one named character (explicit name, not pronouns).
-- You may describe characters physically ONLY if it is already provided in character_details.
-- NEVER include or mention the character descriptions in the story text. ONLY use character names, not their traits, not physical descriptions, not personality keywords.
+- Every page MUST explicitly include at least one of the provided character names.
 - Never invent new characters or new names.
+
+STRICT RULES ABOUT CHARACTER DETAILS:
+- NEVER include, reference, hint at, or restate the provided character_details inside the narrative.
+- Do NOT describe characters physically unless the exact physical detail exists word-for-word in character_details.
+- If a physical detail is NOT explicitly present in character_details, you MUST NOT invent it, infer it, or imply it.
+- No invented clothing, no invented colors, no invented hairstyles, no invented body features, no invented accessories, no invented expressions.
+
+GENRE & TONE:
 - Maintain a consistent emotional tone that matches the genre: {genre}.
-- Genre must match: {genre}.
-- Label each part exactly as: Page 1, Page 2, ...
+- The narrative must fully align with the genre: {genre}.
+
+FORMATTING:
+- Label each section exactly as: Page 1, Page 2, Page 3, ...
 """
+
 
     # --- Single LLM call to generate story pages
     user_content = f"Write a {genre} story in exactly {num_pages} pages.\n\nStory Gist:\n{story_gist}\n\nCharacters:\n{character_names}\n\nCharacter details:\n{character_details}\n"
@@ -724,7 +801,9 @@ CRITICAL:
 
         # inject anchors
         prompt_text = inject_character_descriptions(prompt_text, character_map)
-
+        style= genre_visual_style(genre)
+        if style:
+            prompt_text = f"{prompt_text}, {style}"
         pages_out.append((page_text, prompt_text))
 
     return pages_out
@@ -748,14 +827,12 @@ from pydantic import BaseModel, Field
 # ----------------------------
 # Config (use env vars or fallbacks)
 # ----------------------------
-RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL", "https://api.runpod.ai/v2/13qcrvhdetvkgx/run")
-RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS", "https://api.runpod.ai/v2/13qcrvhdetvkgx/status/{}")
-
+RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
+RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS")
 RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
-if not RUNPOD_AUTH_BEARER:
-    raise Exception("❌ Missing RUNPOD_AUTH_BEARER environment variable")
+
 # Safety / generation defaults
-DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "600"))  # seconds
+DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "1600"))  # seconds
 POLL_INTERVAL = float(os.getenv("IMAGE_GEN_POLL_INTERVAL_S", "3.0"))
 
 # Negative prompt text (from your snippet)
@@ -775,7 +852,7 @@ NEGATIVE_PROMPT_TEXT = (
 # ----------------------------
 # FastAPI app + models
 # ----------------------------
-app = FastAPI(title="Image Generator (HiDreamXL Serverless)")
+#app = FastAPI(title="Image Generator (HiDreamXL Serverless)")
 
 class PageIn(BaseModel):
     page: int
@@ -786,14 +863,16 @@ class ImageRequest(BaseModel):
     pages: List[PageIn]
     orientation: Optional[str] = Field("Landscape", description="Landscape | Portrait | Square")
 
-class PageOut(BaseModel):
+class HiDreamPageOut(BaseModel):
     page: int
     hidream_image_base64: Optional[str] = None
     error: Optional[str] = None
 
 class ImageResponse(BaseModel):
-    pages: List[PageOut]
-    message: str
+    pages: List[HiDreamPageOut]
+    
+
+
 
 # ----------------------------
 # Utilities (NSFW check, seed, dims)
@@ -840,6 +919,9 @@ def get_dimensions(orientation: str):
 # Returns: PIL.Image or None
 # ----------------------------
 def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int = 1, orientation: str = "Landscape"):
+    logger.info(f"Generating image for page={page_num}, orientation={orientation}")
+    logger.debug(f"Prompt: {prompt[:200]}...")
+
     try:
         # NSFW check
         if is_nsfw_prompt(prompt):
@@ -926,6 +1008,7 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
             time.sleep(POLL_INTERVAL)
 
     except Exception as e:
+        logger.error(f"RunPod image generation failed: {str(e)}")
         # Bubble up string message to caller
         raise RuntimeError(str(e))
 # images_api_sdxl.py
@@ -954,28 +1037,16 @@ from pydantic import BaseModel, Field
 # ----------------------------
 # Configuration (env-overrides)
 # ----------------------------
-OPENROUTER_API_URL = os.getenv(
-    "OPENROUTER_API_URL",
-    "https://openrouter.ai/api/v1/chat/completions"
-)
-
+OPENROUTER_API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
-    raise Exception("❌ Missing OPENROUTER_API_KEY environment variable")
+    raise Exception("Missing OPENROUTER_API_KEY environment variable")
 
-RUNPOD_SDXL_URL = os.getenv(
-    "RUNPOD_SDXL_URL",
-    "https://api.runpod.ai/v2/2epfnuazhyb2mm/run"
-)
-
-RUNPOD_SDXL_STATUS = os.getenv(
-    "RUNPOD_SDXL_STATUS",
-    "https://api.runpod.ai/v2/2epfnuazhyb2mm/status/{}"
-)
-
+RUNPOD_SDXL_URL = os.getenv("RUNPOD_SDXL_URL", "https://api.runpod.ai/v2/2epfnuazhyb2mm/run")
+RUNPOD_SDXL_STATUS = os.getenv("RUNPOD_SDXL_STATUS", "https://api.runpod.ai/v2/2epfnuazhyb2mm/status/{}")
 RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY")
 if not RUNPOD_API_KEY:
-    raise Exception("❌ Missing RUNPOD_API_KEY environment variable")
+    raise Exception("Missing RUNPOD_API_KEY environment variable")
 
 # Tunables
 LLM_MODEL = os.getenv("SDXL_LLM_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
@@ -992,7 +1063,7 @@ NEGATIVE_PROMPT = os.getenv("SDXL_NEGATIVE_PROMPT", (
 # ----------------------------
 # FastAPI app + models
 # ----------------------------
-app = FastAPI(title="SDXL Background Generator (Single LLM call)")
+#app = FastAPI(title="SDXL Background Generator (Single LLM call)")
 
 class PageIn(BaseModel):
     page: int
@@ -1002,14 +1073,14 @@ class SDXLRequest(BaseModel):
     pages: List[PageIn]
     orientation: Optional[str] = Field("Landscape", description="Landscape | Portrait | Square")
 
-class PageOut(BaseModel):
+class SDXLPageOut(BaseModel):
     page: int
     sdxl_prompt: Optional[str] = None
     sdxl_background_base64: Optional[str] = None
     error: Optional[str] = None
 
 class SDXLResponse(BaseModel):
-    pages: List[PageOut]
+    pages: List[SDXLPageOut]
     message: str
 
 # ----------------------------
@@ -1306,28 +1377,17 @@ import qrcode
 # ----------------------------
 # Configuration (env or defaults)
 # ----------------------------
-OPENROUTER_API_URL = os.getenv(
-    "OPENROUTER_API_URL",
-    "https://openrouter.ai/api/v1/chat/completions"
-)
-
+OPENROUTER_API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
-    raise Exception("❌ Missing OPENROUTER_API_KEY environment variable")
+    raise Exception("OPENROUTER_API_KEY environment variable is required")
 
-RUNPOD_HIDREAM_URL = os.getenv(
-    "RUNPOD_HIDREAM_URL",
-    "https://api.runpod.ai/v2/13qcrvhdetvkgx/run"
-)
-
-RUNPOD_HIDREAM_STATUS = os.getenv(
-    "RUNPOD_HIDREAM_STATUS",
-    "https://api.runpod.ai/v2/13qcrvhdetvkgx/status/{}"
-)
-
+RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL", "https://api.runpod.ai/v2/13qcrvhdetvkgx/run")
+RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS", "https://api.runpod.ai/v2/13qcrvhdetvkgx/status/{}")
 RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
+
 if not RUNPOD_AUTH_BEARER:
-    raise Exception("❌ Missing RUNPOD_AUTH_BEARER environment variable")
+    raise Exception("RUNPOD_AUTH_BEARER environment variable is required")
 
 # Tunables
 POLL_INTERVAL = float(os.getenv("COVER_POLL_INTERVAL_S", "3.0"))
@@ -1343,7 +1403,7 @@ NEGATIVE_PROMPT_TEXT = (
 # ----------------------------
 # FastAPI + Models
 # ----------------------------
-app = FastAPI(title="Cover & BackCover Generator (Simple, No Characters on Cover)")
+#app = FastAPI(title="Cover & BackCover Generator (Simple, No Characters on Cover)")
 
 class PageIn(BaseModel):
     page: int
@@ -1353,7 +1413,7 @@ class PageIn(BaseModel):
 class CoverBackRequest(BaseModel):
     pages: List[PageIn]
     genre: Optional[str] = Field("Family")
-    orientation: Optional[str] = Field("Portrait")  # Portrait / Landscape / Square
+    orientation: Optional[str] = Field("Portrait")
     story_title: Optional[str] = None
     qr_url: Optional[str] = Field(DEFAULT_QR_URL)
 
@@ -1371,9 +1431,14 @@ class CoverBackResponse(BaseModel):
     message: str
 
 # ----------------------------
-# Helper: call LLM (OpenRouter)
+# Helper: OpenRouter LLM
 # ----------------------------
-def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="meta-llama/llama-3.3-70b-instruct:free", temperature=0.5, timeout=60):
+
+def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="meta-llama/llama-3.3-70b-instruct:free", temperature=0.5, timeout=60) -> str:
+    if not OPENROUTER_API_KEY:
+        # Fail fast with a descriptive error
+        raise RuntimeError("OPENROUTER_API_KEY not set in environment")
+
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {OPENROUTER_API_KEY}"}
     payload = {
         "model": model,
@@ -1386,13 +1451,25 @@ def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="met
     resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=timeout)
     resp.raise_for_status()
     data = resp.json()
-    return data["choices"][0]["message"]["content"].strip()
+
+    # resilient extraction of content
+    try:
+        return data["choices"][0]["message"]["content"].strip()
+    except Exception:
+        # best-effort fallback
+        if isinstance(data, dict):
+            # try some other likely fields
+            for k in ("text", "content", "reply"):
+                v = data.get(k)
+                if isinstance(v, str):
+                    return v.strip()
+        raise RuntimeError("Unexpected OpenRouter response format: " + json.dumps(data)[:400])
 
 # ----------------------------
-# Helper: RunPod HiDream serverless (minimal wrapper)
+# Helper: RunPod HiDream — FIXED VERSION
 # ----------------------------
-def runpod_hidream_generate(prompt: str, orientation="Portrait"):
-    # orientation sizes
+
+def runpod_hidream_generate(prompt: str, orientation: str = "Portrait") -> str:
     o = (orientation or "Portrait").strip().lower()
     if o == "portrait":
         width, height = 1024, 1536
@@ -1401,7 +1478,6 @@ def runpod_hidream_generate(prompt: str, orientation="Portrait"):
     else:
         width, height = 1536, 1024
 
-    # Minimal workflow payload (based on your working payload)
     workflow_payload = {
         "input": {
             "workflow": {
@@ -1410,40 +1486,44 @@ def runpod_hidream_generate(prompt: str, orientation="Portrait"):
                                   "clip_name3": "t5xxl_fp8_e4m3fn_scaled.safetensors",
                                   "clip_name4": "llama_3.1_8b_instruct_fp8_scaled.safetensors"},
                        "class_type": "QuadrupleCLIPLoader"},
-                    "55": {"inputs": {"vae_name": "ae.safetensors"},
-                           "class_type": "VAELoader"},
-                    "69": {"inputs": {"unet_name": "hidream_i1_full_fp16.safetensors", "weight_dtype": "default"},
-                           "class_type": "UNETLoader"},
-                    "70": {"inputs": {"shift": 3.0, "model": ["69", 0]},
-                           "class_type": "ModelSamplingSD3"},
-                    "16_0": {"inputs": {"text": prompt, "clip": ["54", 0]},
-                             "class_type": "CLIPTextEncode"},
-                    "40_0": {"inputs": {"text": NEGATIVE_PROMPT_TEXT, "clip": ["54", 0]},
-                             "class_type": "CLIPTextEncode"},
-                    "53_0": {"inputs": {"width": width, "height": height, "batch_size": 1},
-                             "class_type": "EmptySD3LatentImage"},
-                    "3_0": {"inputs": {
-                        "seed": random.randint(1, 2**31-1),
-                        "steps": 30,
-                        "cfg": 5,
-                        "sampler_name": "euler",
-                        "scheduler": "simple",
-                        "denoise": 1,
-                        "model": ["70", 0],
-                        "positive": ["16_0", 0],
-                        "negative": ["40_0", 0],
-                        "latent_image": ["53_0", 0]},
-                        "class_type": "KSampler"},
-                    "8_0": {"inputs": {"samples": ["3_0", 0], "vae": ["55", 0]},
-                            "class_type": "VAEDecode"},
-                    "9_0": {"inputs": {"filename_prefix": f"runpod_cover_{uuid.uuid4().hex[:6]}", "images": ["8_0", 0]},
-                            "class_type": "SaveImage"}
+                "55": {"inputs": {"vae_name": "ae.safetensors"},
+                       "class_type": "VAELoader"},
+                "69": {"inputs": {"unet_name": "hidream_i1_full_fp16.safetensors", "weight_dtype": "default"},
+                       "class_type": "UNETLoader"},
+                "70": {"inputs": {"shift": 3.0, "model": ["69", 0]},
+                       "class_type": "ModelSamplingSD3"},
+                "16_0": {"inputs": {"text": prompt, "clip": ["54", 0]},
+                         "class_type": "CLIPTextEncode"},
+                "40_0": {"inputs": {"text": NEGATIVE_PROMPT_TEXT, "clip": ["54", 0]},
+                         "class_type": "CLIPTextEncode"},
+                "53_0": {"inputs": {"width": width, "height": height, "batch_size": 1},
+                         "class_type": "EmptySD3LatentImage"},
+                "3_0": {"inputs": {
+                    "seed": random.randint(1, 2**31-1),
+                    "steps": 30,
+                    "cfg": 5,
+                    "sampler_name": "euler",
+                    "scheduler": "simple",
+                    "denoise": 1,
+                    "model": ["70", 0],
+                    "positive": ["16_0", 0],
+                    "negative": ["40_0", 0],
+                    "latent_image": ["53_0", 0]},
+                    "class_type": "KSampler"},
+                "8_0": {"inputs": {"samples": ["3_0", 0], "vae": ["55", 0]},
+                        "class_type": "VAEDecode"},
+                "9_0": {"inputs": {"filename_prefix": f"runpod_cover_{uuid.uuid4().hex[:6]}", "images": ["8_0", 0]},
+                        "class_type": "SaveImage"}
             }
         }
     }
 
+    if not RUNPOD_AUTH_BEARER:
+        raise RuntimeError("RUNPOD_AUTH_BEARER not set in environment")
+
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"}
     resp = requests.post(RUNPOD_HIDREAM_URL, headers=headers, json=workflow_payload, timeout=30)
+
     if resp.status_code not in (200, 201):
         raise RuntimeError(f"RunPod start failed: {resp.status_code} {resp.text}")
 
@@ -1457,83 +1537,74 @@ def runpod_hidream_generate(prompt: str, orientation="Portrait"):
         status_resp = requests.get(RUNPOD_HIDREAM_STATUS.format(job_id), headers=headers, timeout=30)
         if status_resp.status_code != 200:
             raise RuntimeError(f"RunPod status failed: {status_resp.status_code} {status_resp.text}")
+
         st = status_resp.json()
         stcode = st.get("status", "").upper()
+
         if stcode == "COMPLETED":
             imgs = st.get("output", {}).get("images", [])
             if not imgs:
                 raise RuntimeError("No images in RunPod output")
-            return imgs[0]  # could be data:image... or URL or raw b64
+
+            img_obj = imgs[0]
+
+            # CASE 1 — direct string
+            if isinstance(img_obj, str):
+                return img_obj
+
+            # CASE 2 — dictionary
+            if isinstance(img_obj, dict):
+                # Common key
+                if "image" in img_obj:
+                    return img_obj["image"]
+
+                # Alternate key
+                if "data" in img_obj:
+                    return img_obj["data"]
+
+                # Search for any base64-like value
+                for v in img_obj.values():
+                    if isinstance(v, str) and v.startswith("data:image"):
+                        return v
+
+                raise RuntimeError("Unsupported image dict format from RunPod.")
+
+            raise RuntimeError("Unsupported image format from RunPod.")
+
         if stcode == "FAILED":
             raise RuntimeError("RunPod job failed")
+
         if time.time() - start_time > JOB_TIMEOUT:
             raise RuntimeError("RunPod job timeout")
+
         time.sleep(POLL_INTERVAL)
 
-# ----------------------------
-# Title auto-generation
-# ----------------------------
-def auto_generate_title(full_story_text: str):
-    sys_prompt = "You are a creative title generator specialized in short, evocative children's/YA book titles."
-    user_prompt = f"Read the story below and suggest ONE short, evocative title (3-6 words). Return only the title.\n\nStory:\n{full_story_text}"
-    try:
-        return call_openrouter_system_user(sys_prompt, user_prompt, temperature=0.6)
-    except Exception:
-        return
 
 # ----------------------------
-# Draw title overlay
+# Extract visuals
 # ----------------------------
-def draw_title_on_cover_image(img_pil: Image.Image, title: str):
-    if not title:
-        return img_pil
-    W, H = img_pil.size
-    txt_layer = Image.new("RGBA", (W, H), (0,0,0,0))
-    draw = ImageDraw.Draw(txt_layer)
-    font_size = max(28, int(W * 0.04))
-    try:
-        font = ImageFont.truetype("SundayShine.otf", font_size)
-    except Exception:
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except Exception:
-            from PIL import ImageFont as IF
-            font = IF.load_default()
-    text = title.strip()
-    bbox = draw.textbbox((0,0), text, font=font)
-    text_w = bbox[2]-bbox[0]
-    text_h = bbox[3]-bbox[1]
-    x = (W - text_w)//2
-    y = int(H * 0.10)
-    shadow_offset = int(font_size * 0.04)
-    draw.text((x+shadow_offset, y+shadow_offset), text, font=font, fill=(0,0,0,120))
-    draw.text((x, y), text, font=font, fill=(255,255,255,255))
-    final = Image.alpha_composite(img_pil.convert("RGBA"), txt_layer)
-    return final.convert("RGB")
 
-# ----------------------------
-# Extract visuals from full story (one-shot LLM)
-# ----------------------------
-def extract_visuals_from_story(full_story_text: str):
+def extract_visuals_from_story(full_story_text: str) -> str:
     sys_prompt = """Read the full story below and extract ONLY the strongest visual elements that should appear on a photorealistic cinematic book cover.
-
 RULES:
 - NO characters.
-- Extract ONLY: locations, objects, key props, atmospheric elements, lighting cues.
+- Only: locations, objects, props, atmospheric elements, lighting cues.
 - Return a short comma-separated list.
-- No sentences. No explanations."""
-    user_prompt = f"Story:\n{full_story_text}\nReturn only a comma-separated list (no sentences)."
+"""
+    user_prompt = f"Story:\n{full_story_text}\nReturn only a comma-separated list."
+
     try:
         return call_openrouter_system_user(sys_prompt, user_prompt, temperature=0.3)
     except Exception:
-        return "old farmhouse, bonfire, open fields, warm sunset"
+        return "mountains, fields, warm sunset"
 
 # ----------------------------
-# Build cover prompt (NO CHARACTERS)
+# Build cover prompt
 # ----------------------------
-def build_cover_prompt_from_visuals(extracted_visuals: str, genre: str):
+
+def build_cover_prompt_from_visuals(extracted_visuals: str, genre: str) -> str:
     system = """
-        You are a cinematic visual prompt generator for AI image models.
+You are a cinematic visual prompt generator for AI image models.
 
 STRICT RULES:
 - NO text, NO title, NO symbols, NO lettering.
@@ -1548,17 +1619,21 @@ Start with:
 "ultra HD, 8k, photorealistic, ultra-sharp focus, dramatic cinematic lighting,"
 
 End with:
-"Hyperrealism, natural lighting." """
-    user = f"Extracted elements: {extracted_visuals}\nGenre: {genre}\nCreate final cover prompt using only supplied elements."
+"Hyperrealism, natural lighting."
+"""
+    user = f"Extracted: {extracted_visuals}\nGenre: {genre}"
+
     try:
         return call_openrouter_system_user(system, user, temperature=0.5)
     except Exception:
         return f"ultra HD, 8k, photorealistic, dramatic cinematic lighting, {extracted_visuals}, Hyperrealism, natural lighting."
 
 # ----------------------------
-# Back blurb + back prompt
+# Back blurb + prompt
 # ----------------------------
-def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
+
+def generate_back_blurb_and_prompt(full_story_text: str, genre: str) -> Tuple[str, str]:
+    # Generate blurb
     back_sys = (
         "You are a senior editorial writer at Penguin Random House.\n\n"
         "Write a polished, market-ready BACK COVER BLURB.\n\n"
@@ -1571,14 +1646,16 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
         "- Mention characters lightly.\n"
         f"- Tone must match the genre: {genre}.\n"
         "- End with a one-line Theme Highlight formatted as: Theme Highlight: \"...\""
-        )
-    user = f"Story gist:\n{full_story_text}\nTone: {genre}"
-    try:
-        blurb = call_openrouter_system_user(back_sys, user, temperature=0.5)
-    except Exception:
-        blurb = "A heartfelt journey unfolds within these pages, capturing emotion, growth, and quiet wonder.\nTheme Highlight: \"Hope and connection.\""
+    )
+    user = f"Story gist:\n{full_story_text}\nGenre: {genre}"
 
-    # back visual prompt (no humans)
+    try:
+        blurb_raw = call_openrouter_system_user(back_sys, user, temperature=0.5)
+        blurb = blurb_raw.strip()
+    except Exception:
+        blurb = "A powerful emotional journey.\nTheme Highlight: \"Hope and resilience.\""
+
+    # Generate back cover visual prompt
     back_visual_sys = (
         "You are a cinematic visual prompt generator for AI book BACK COVERS.\n\n"
         "Rules:\n"
@@ -1592,86 +1669,37 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
         "Begin with: ultra HD, 8k, photorealistic, soft dramatic lighting,\n"
         "End with: Hyperrealism, natural lighting."
     )
+
     try:
         back_prompt_raw = call_openrouter_system_user(back_visual_sys, user, temperature=0.5)
     except Exception:
-        back_prompt_raw = "ultra HD, 8k, photorealistic quiet farmhouse at dusk, open fields and warm lamp glow, gentle mist, soft pastel tones, subtle depth, Hyperrealism, natural lighting."
+        back_prompt_raw = "ultra HD, 8k, photorealistic farmhouse at dusk, soft pastel sky, quiet fields, gentle mist, Hyperrealism, natural lighting."
 
-    # small genre suffix
-    def genre_suffix(genre):
-        genre = genre.lower()
+    # Genre-specific suffixes to tweak mood
+    suffix_map = {
+        "fantasy": "soft magical glow in the environment, ethereal ambient lighting, cool blue highlights, misty depth in the background, subtle floating particles, enchanted cinematic mood",
+        "family": "warm golden-hour lighting, soft natural highlights, gentle shadows, cozy inviting ambience, peaceful rural or homely setting",
+        "adventure": "bold high-contrast cinematic lighting, deep warm highlights, dramatic wide scenery, windswept landscape or rugged outdoor setting, sense of motion and exploration",
+        "sci-fi": "cool futuristic lighting, subtle technological reflections, sharp contrast, clean metallic or neon-toned ambience",
+        "mystery": "low-key lighting, deep shadow contrast, subtle fog layers, cool desaturated tones, cinematic suspenseful mood",
+        "birthday": "bright cheerful lighting, colorful festive highlights, soft bokeh glow, party ambience with balloons and confetti, warm celebratory mood",
+        "corporate promotion": "clean modern lighting, subtle premium highlights, sleek professional ambience, muted elegant tones, award-ceremony feel, confident visual composition",
+        "housewarming": "warm ambient interior lighting, soft shadows, cozy textures, inviting home-like setting, gentle natural highlights, welcoming mood",
+        "marriage": "romantic soft-focus lighting, elegant warm glow, floral accents, gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere",
+        "wedding": "romantic soft-focus lighting, elegant warm glow, floral accents, gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere",
+        "baby shower": "soft pastel-color ambience, warm gentle lighting, cute baby-themed decorations, dreamy nursery tones, delicate highlights, cozy joyful mood",
+    }
 
-    if genre == "fantasy":
-        return (
-            "soft magical glow in the environment, ethereal ambient lighting, cool blue highlights, "
-            "misty depth in the background, subtle floating particles, enchanted cinematic mood"
-        )
+    genre_key = (genre or "").strip().lower()
+    suffix = suffix_map.get(genre_key, "balanced cinematic lighting, clear photorealistic ambience")
 
-    if genre == "family":
-        return (
-            "warm golden-hour lighting, soft natural highlights, gentle shadows, "
-            "cozy inviting ambience, peaceful rural or homely setting"
-        )
+    # Combine prompt
+    final_back_prompt = back_prompt_raw.rstrip(". ") + ", " + suffix + ", Hyperrealism, natural lighting."
 
-    if genre == "adventure":
-        return (
-            "bold high-contrast cinematic lighting, deep warm highlights, dramatic wide scenery, "
-            "windswept landscape or rugged outdoor setting, sense of motion and exploration"
-        )
-
-    if genre == "sci-fi":
-        return (
-            "cool futuristic lighting, subtle technological reflections, sharp contrast, "
-            "clean metallic or neon-toned ambience"
-        )
-
-    if genre == "mystery":
-        return (
-            "low-key lighting, deep shadow contrast, subtle fog layers, "
-            "cool desaturated tones, cinematic suspenseful mood"
-        )
-
-    # ⭐ NEW GENRES ADDED BELOW ⭐
-
-    if genre == "birthday":
-        return (
-            "bright cheerful lighting, colorful festive highlights, soft bokeh glow, "
-            "party ambience with balloons and confetti, warm celebratory mood"
-        )
-
-    if genre == "corporate promotion":
-        return (
-            "clean modern lighting, subtle premium highlights, sleek professional ambience, "
-            "muted elegant tones, award-ceremony feel, confident visual composition"
-        )
-
-    if genre == "housewarming":
-        return (
-            "warm ambient interior lighting, soft shadows, cozy textures, "
-            "inviting home-like setting, gentle natural highlights, welcoming mood"
-        )
-
-    if genre == "marriage" or genre == "wedding":
-        return (
-            "romantic soft-focus lighting, elegant warm glow, floral accents, "
-            "gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere"
-        )
-
-    if genre == "baby shower":
-        return (
-            "soft pastel-color ambience, warm gentle lighting, cute baby-themed decorations, "
-            "dreamy nursery tones, delicate highlights, cozy joyful mood"
-        )
-
-    # DEFAULT fallback
-    return (
-        "balanced cinematic lighting, clear photorealistic ambience"
-    )
-
-
-    final_back_prompt = f"{back_prompt_raw}, {genre_suffix(genre)}"
-    return blurb.strip(), final_back_prompt
-
+    return blurb, final_back_prompt
+#=====================================================================================
+# image editing endpoint
+#=====================================================================================
 
 RUNPOD_BANANA_ENDPOINT = "https://api.runpod.ai/v2/nano-banana-edit/runsync"
 
@@ -1710,27 +1738,26 @@ def run_banana_edit(prompt, image_b64, output_format):
         return response.json()
     else:
         raise Exception(f"RunPod Error: {response.text}")
-    
-
+#========================================================================
+#Face Swap 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# =============================================
+# 🧑‍🤝‍🧑 FaceSwap Config (RunPod)
+# =============================================
 RUNPOD_FACESWAP_URL = "https://api.runpod.ai/v2/njyoog9u3bm8oa/runsync"
 def faceswap_to_base64(file: UploadFile):
     return base64.b64encode(file.file.read()).decode("utf-8")
 
-
-
+    
 # ============================================================
 # ⚡ FastAPI Endpoints
 # ============================================================
 
-@app.get("/")
-def root():
-    return {"message": "✅ Storybook Generator API is running!"}
-
-
 @app.post("/start", response_model=StartResponse)
 def start_questionnaire():
+    logger.info("Start questionnaire called")
     """Initialize a new questionnaire."""
-    first = QA(question="Why do you want to write the book,Answer every question indetail", answer="")
+    first = QA(question="Why write this book?", answer="")
     chat = [("System", "Let's begin your story journey!")]
 
     return {"chat": chat, "conversation": [first]}
@@ -1743,6 +1770,7 @@ QUESTION_LIMIT = int(os.getenv("QUESTION_LIMIT", 15))
 
 @app.post("/next", response_model=NextResponse)
 def next_question(data: AnswerInput):
+    logger.info(f"Next question request received. Answer: {data.answer}")
     """Record answer and generate next question with enhanced finishing logic."""
     conversation: List[QA] = data.conversation
 
@@ -1808,6 +1836,7 @@ def next_question(data: AnswerInput):
 
 @app.post("/gist", response_model=GistResponse)
 def gist(data: GistInput):
+    logger.info("Generating gist for genre: %s", data.genre)
     """Generate cinematic story gist."""
     conversation = data.conversation
     gist_text = generate_gist(conversation, genre=data.genre)
@@ -1839,7 +1868,8 @@ def images_generate(req: ImageRequest):
     if not req.pages or len(req.pages) == 0:
         raise HTTPException(status_code=400, detail="No pages provided.")
 
-    results: List[PageOut] = []
+    results: List[HiDreamPageOut] = []
+
 
     for p in req.pages:
         page_num = p.page
@@ -1848,24 +1878,63 @@ def images_generate(req: ImageRequest):
         try:
             # NSFW quick check
             if is_nsfw_prompt(prompt):
-                results.append(PageOut(page=page_num, hidream_image_base64=None, error="NSFW content detected. Skipped."))
+                results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error="NSFW content detected. Skipped."))
                 continue
 
             img = generate_image_from_prompt(prompt, NEGATIVE_PROMPT_TEXT, page_num=page_num, orientation=req.orientation)
             if img is None:
-                results.append(PageOut(page=page_num, hidream_image_base64=None, error="Generation returned no image."))
+                results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error="Generation returned no image."))
                 continue
 
             # convert to base64 PNG
             buf = BytesIO()
             img.save(buf, format="PNG")
             encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
-            results.append(PageOut(page=page_num, hidream_image_base64=encoded, error=None))
+            results.append(HiDreamPageOut(page=page_num, hidream_image_base64=encoded, error=None))
 
         except Exception as e:
-            results.append(PageOut(page=page_num, hidream_image_base64=None, error=str(e)))
+            results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error=str(e)))
 
     return ImageResponse(pages=results, message="HiDream generation completed (SDXL background pending).")
+
+class RegenPageInput(BaseModel):
+    page: int
+    text: str
+    prompt: str
+    character_details: str  # REQUIRED
+
+
+class RegenRequest(BaseModel):
+    pages: List[RegenPageInput]
+    orientation: str = "Landscape"
+
+
+@app.post("/images/regenerate")
+def regenerate_images(req: RegenRequest):
+    results = []
+
+    for page in req.pages:
+        # character_details MUST be included in the RegenRequest model
+        result = wrap_regen_page(
+            story_text=page.text,
+            old_prompt=page.prompt,
+            character_details=page.character_details,
+            page_num=page.page,
+            orientation=req.orientation
+        )
+
+        results.append({
+            "page": page.page,
+            "new_story": result[0],
+            "new_prompt": result[1],
+            "image_path": result[2],
+        })
+
+    return {
+        "pages": results,
+        "message": "Regeneration completed."
+    }
+
 
 # ----------------------------
 # Run with: uvicorn images_api_hidream:app --reload
@@ -1886,12 +1955,12 @@ def sdxl_generate(req: SDXLRequest):
         raise HTTPException(status_code=500, detail="LLM failed to produce SDXL prompts.")
 
     # Validate structure: expecting keys "Page 1", "Page 2", ...
-    results: List[PageOut] = []
+    results: List[SDXLPageOut] = []
     width, height = get_dimensions(req.orientation)
 
     for p in req.pages:
         page_key = f"Page {p.page}"
-        page_result = PageOut(page=p.page)
+        page_result = SDXLPageOut(page=p.page)
         try:
             page_info = llm_out.get(page_key) if isinstance(llm_out, dict) else None
             if not page_info or "sdxl_prompt" not in page_info:
@@ -1988,6 +2057,7 @@ def title_regenerate(req: RegenerateTitleRequest):
 # ----------------------------
 @app.post("/coverback/generate", response_model=CoverBackResponse)
 def coverback_generate(req: CoverBackRequest):
+    logger.info(f"/coverback/generate called. Genre={req.genre}, Title={req.story_title}")
 
     if not req.pages:
         raise HTTPException(status_code=400, detail="No pages provided.")
@@ -1996,11 +2066,11 @@ def coverback_generate(req: CoverBackRequest):
     full_story_text = "\n\n".join([p.text for p in pages_sorted])
 
     title_used = req.story_title.strip() if req.story_title else None
-    # if not title_used:
-    #     try:
-    #         title_used = auto_generate_title(full_story_text)
-    #     except:
-    #         title_used = "Untitled Story"
+    if not title_used:
+        try:
+            title_used = auto_generate_title(full_story_text)
+        except:
+            title_used = "Untitled Story"
 
     # COVER
     try:
@@ -2023,12 +2093,9 @@ def coverback_generate(req: CoverBackRequest):
         else:
             cover_b64 = raw_cover
 
-        if cover_b64 and title_used:
-            img = Image.open(BytesIO(base64.b64decode(cover_b64))).convert("RGBA")
-            img2 = draw_title_on_cover_image(img, title_used)
-            buf = BytesIO()
-            img2.save(buf, format="PNG")
-            cover_b64 = base64.b64encode(buf.getvalue()).decode()
+        if cover_b64:
+            cover_b64 = cover_b64  # no title overlay
+
 
     except Exception as e:
         cover_err = str(e)
@@ -2116,7 +2183,8 @@ def coverback_generate(req: CoverBackRequest):
         title_used=title_used,
         message="Cover & Back generated (base64 only)."
     )
-#==================================================
+
+# ===================================================
 # 🍌 /edit-image — Nano Banana Edit Endpoint
 # ===================================================
 @app.post("/edit-image")
@@ -2231,5 +2299,3 @@ async def faceswap_api(
         "source_index": source_index,
         "target_index": target_index
     }
-
-

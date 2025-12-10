@@ -1,17 +1,29 @@
 const express = require('express');
+const multer = require('multer');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
+});
+
 const router = express.Router();
 const {
   generateCharacterImages,
-  // generateBackgroundImages,
+  faceSwap,
+  editImage,
   testRoute,
   getPageImages
 } = require('../controllers/imageController');
 const { protect } = require('../middleware/auth');
 
 router.post('/generate-characters/:storyId', protect, generateCharacterImages);
+router.get('/page/:pageId', protect, getPageImages);
+
+router.post('/faceswap', protect, upload.single("source"), faceSwap);
+router.post('/edit', protect, editImage);
+
+router.get('/test', testRoute);
 // router.post('/generate-backgrounds/:storyId', protect, generateBackgroundImages);
 // router.post('/generate-backgrounds/:storyId', protect, generateBackground);
-router.get('/test', testRoute);
-router.get('/page/:pageId', protect, getPageImages);
 
 module.exports = router;
