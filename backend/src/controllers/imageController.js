@@ -194,16 +194,6 @@ const generateBackgroundImages = async (storyId) => {
 
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
-
-    // res.status(200).json({
-    //   success: true,
-    //   message: 'Background images generated successfully',
-    //   data: {
-    //     totalPages: pages.length,
-    //     successfulGenerations: successfulImages.length,
-    //     images: successfulImages
-    //   }
-    // });
     return successfulImages;
   } catch (error) {
     // next(error);
@@ -324,17 +314,7 @@ const generateCover = async (storyId) => {
       console.log('Story save result:', res);
 
       console.log('Cover and back cover generated successfully.', story);
-      
-      // res.status(200).json({
-      //   success: true,
-      //   message: 'Cover and back cover generated successfully',
-      //   data: {
-      //     coverImage,
-      //     backCoverImage,
-      //     backCoverBlurb: coverData.back_blurb,
-      //     titleUsed: result.title_used
-      //   }
-      // });
+    
       return story; 
     } else {
       throw new Error('Failed to generate cover images');
@@ -438,6 +418,94 @@ exports.faceSwap = async (req, res) => {
 
   } catch (err) {
     console.error("FaceSwap Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString(),
+    });
+  }
+};
+
+
+// @desc    Edit image by face swapping
+// @route   POST /api/v1/images/edit
+// @access  Private
+exports.editImage = async (req, res) => {
+  try {
+    const { characterImageId, prompt } = req.body;
+
+    if (!characterImageId || !prompt) {
+      return res.status(400).json({
+        success: false,
+        message: "characterImageId and prompt are required",
+      });
+    }
+
+    // 1️⃣ Get the Image document from DB
+    const imageDoc = await Image.findById(characterImageId);
+
+    if (!imageDoc) {
+      return res.status(404).json({ success: false, message: "Image not found" });
+    }
+
+    const targetBuffer = Buffer.from(imageDoc.base64Data, "base64");
+
+
+    console.log("Edit Image - Target Buffer Length:", targetBuffer.length); 
+    // 3️⃣ Call FastAPI for swapping
+    const editResult = await fastApiService.editImage(
+      targetBuffer,
+      prompt,
+    );
+
+    const editedBase64 = editResult.output_base64;
+
+    if (!editedBase64) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate edited image"
+      });
+    }
+
+    // 4️⃣ Save the old image into oldImages[]
+    imageDoc.oldImages.push({
+      base64Data: imageDoc.base64Data,
+      s3Url: imageDoc.s3Url,
+      version: `v${imageDoc.oldImages.length + 1}`
+    });
+
+    // 5️⃣ Upload new swapped image to S3
+    const buffer = Buffer.from(editedBase64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${imageDoc.story}/edit`,
+      `edit-${Date.now()}.png`,
+      "image/png"
+    );
+
+    // 6️⃣ Update DB with new image data
+    imageDoc.base64Data = editedBase64;
+    imageDoc.s3Key = s3Result.key;
+    imageDoc.s3Url = s3Result.url;
+    imageDoc.s3Bucket = s3Result.bucket;
+    imageDoc.size = buffer.length;
+    imageDoc.metadata = {
+      ...imageDoc.metadata,
+      model: "faceswap",
+      generationTime: Date.now(),
+    };
+
+    await imageDoc.save();
+
+    return res.json({
+      success: true,
+      message: "Image edited successfully",
+      data: imageDoc
+    });
+
+  } catch (err) {
+    console.error("Edit Image Error:", err);
     return res.status(500).json({
       success: false,
       message: "Server error",

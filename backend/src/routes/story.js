@@ -5,6 +5,7 @@ const {
   nextQuestion,
   generateGist,
   createStory,
+  regenerateStoryImages,
   getMyStories,
   getStory,
   generateTitles,
@@ -17,6 +18,7 @@ router.post('/start', protect, startQuestionnaire);
 router.post('/next', protect, nextQuestion);
 router.post('/gist', protect, generateGist);
 router.post('/create', protect, createStory);
+router.post('/regenerate', protect, regenerateStoryImages);
 router.get('/my-stories', protect, getMyStories);
 router.get('/:id', protect, getStory);
 

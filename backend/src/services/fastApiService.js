@@ -113,7 +113,7 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
     });
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/faceswap",
+      `http://localhost:8000/faceswap`,
       form,
       {
         maxBodyLength: Infinity,
@@ -129,3 +129,51 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
     throw err;
   }
 };
+
+// Edit image
+exports.editImage = async (targetBuffer, prompt) => {
+  console.log("Editing image with prompt in fast api:", prompt);
+  try {
+    const form = new FormData();
+    form.append("file", targetBuffer, {
+      filename: "target.png",
+      contentType: "image/png"
+    });
+    form.append("prompt", prompt);
+    const response = await axios.post(
+      `http://localhost:8000/edit-image`,
+      form,
+      {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: form.getHeaders(), // REQUIRED for `form-data`
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Error in editImage:", err);
+    throw err;
+  }
+};
+
+// regenerate image
+exports.regenerateImages = async (payload) => {
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/images/regenerate",
+      payload,
+      {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    return response.data;
+
+  } catch (err) {
+    console.error("FastAPI regenerate error:", err.response?.data || err);
+    throw err;
+  }
+};
+
