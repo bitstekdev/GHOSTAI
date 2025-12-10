@@ -57,7 +57,7 @@ export default function QuestionerPage() {
     }
   };
 
-  const isFinished = conversation.length >= 5;
+  const isFinished = conversation.length >= 15;
   // const isFinished = conversation.length >= 2;
 
   const handleGetPrompt = async () => {
@@ -132,14 +132,14 @@ export default function QuestionerPage() {
             <div className="w-full max-w-2xl mt-6">
             <div className="flex justify-between text-sm mb-1 text-gray-400">
                 {/* <span>Question {conversation.length} of 15</span> */}
-                <span>Question {conversation.length} of 10</span>
-                <span>{Math.round((conversation.length / 10) * 100)}%</span>
+                <span>Question {conversation.length} of 15</span>
+                <span>{Math.round((conversation.length / 15) * 100)}%</span>
             </div>
 
             <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                 <div
                 className="h-full bg-purple-600 transition-all duration-300"
-                style={{ width: `${(conversation.length / 10) * 100}%` }}
+                style={{ width: `${(conversation.length / 15) * 100}%` }}
                 ></div>
             </div>
             </div>
