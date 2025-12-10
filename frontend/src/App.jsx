@@ -10,6 +10,7 @@ import Sidebar from "./components/pages/SideBar";
 import Dashboard from "./components/pages/Dashboard";
 import GenerateStory from "./components/pages/GenerateStory";
 import FlipBook from "./components/pages/FlipBook";
+import FlipBookMockUp from "./components/pages/FlipBookMockUp.jsx";
 import CharacterDump from "./components/pages/CharacterDump";
 import DataDump from "./components/pages/DataDump";
 import Profile from "./components/pages/Profile";
@@ -69,7 +70,8 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
           <Route path="/templateselection" element={<TemplateSelection />} />
-          <Route path="/flipbook" element={<FlipBook />} />
+          <Route path="/flipbook/:storyId" element={<FlipBook />} />
+          <Route path="/flipbook/mockup" element={<FlipBookMockUp />} />
           <Route path="/characterdump" element={<CharacterDump />} />
           <Route path="/datadump" element={<DataDump />} />
           <Route path="/profile" element={<Profile />} />

@@ -1,5 +1,7 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
+const Image = require('../models/Image');
+const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
 
 // @desc    Start questionnaire
@@ -138,16 +140,6 @@ exports.createStory = async (req, res, next) => {
       status: 'generating'
     }, { new: true });
 
-    // Create story page documents
-    // const pagePromises = storyResult.pages.map(page =>
-    //   StoryPage.create({
-    //     story: story._id,
-    //     pageNumber: page.page,
-    //     text: page.text,
-    //     prompt: page.prompt,
-    //     status: 'pending'
-    //   })
-    // );
 
     const pagePromises = storyResult.pages.map(page =>
   StoryPage.findOneAndUpdate(
@@ -197,6 +189,149 @@ exports.createStory = async (req, res, next) => {
   }
 };
 
+
+// @desc    Regenerate image for a single story page
+// @route   POST /api/v1/story/regenerate
+// @access  Private
+exports.regenerateStoryImages = async (req, res) => {
+  try {
+    const { storyId, orientation, pageNumber } = req.body;
+
+    console.log("🔥 Regenerate request:", { storyId, pageNumber });
+
+    if (!storyId || pageNumber === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "storyId and pageNumber are required"
+      });
+    }
+
+    // 1️⃣ Fetch Story
+    const story = await Story.findById(storyId);
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: "Story not found"
+      });
+    }
+
+    // 2️⃣ Fetch exact story page + characterImage INCLUDING base64Data
+    const page = await StoryPage.findOne({
+      story: storyId,
+      pageNumber
+    }).populate({
+      path: "characterImage",
+      select: "base64Data s3Url s3Key s3Bucket oldImages metadata prompt"
+    });
+
+    if (!page) {
+      return res.status(404).json({
+        success: false,
+        message: "Requested page not found"
+      });
+    }
+
+    if (!page.characterImage) {
+      return res.status(404).json({
+        success: false,
+        message: "No character image exists for this page"
+      });
+    }
+
+    const imageDoc = page.characterImage;
+    console.log("🖼 Existing imageDoc found:", imageDoc._id);
+
+    // 3️⃣ Character details string
+    const characterDetails = story.characterDetails
+      .map(c => `${c.name}: ${c.details}`)
+      .join(", ");
+
+    // 4️⃣ Build FastAPI payload
+    const apiPayload = {
+      pages: [{
+        page: page.pageNumber,
+        text: page.text,
+        prompt: page.prompt,
+        character_details: characterDetails
+      }],
+      orientation: orientation || story.orientation
+    };
+
+    console.log("📨 Payload to FastAPI:", apiPayload);
+
+    // 5️⃣ Call FastAPI for regeneration
+    const regenResult = await fastApiService.regenerateImages(apiPayload);
+
+    if (!regenResult?.output_base64_list?.length) {
+      return res.status(500).json({
+        success: false,
+        message: "FastAPI did not return regenerated image"
+      });
+    }
+
+    console.log("✅ Regeneration successful from FastAPI", regenResult);
+
+    const newBase64 = regenResult.output_base64_list[0];
+
+    // 6️⃣ Save old image version
+    imageDoc.oldImages.push({
+      base64Data: imageDoc.base64Data,
+      s3Url: imageDoc.s3Url,
+      version: `v${imageDoc.oldImages.length + 1}`
+    });
+
+    // 7️⃣ Upload new image to S3
+    const buffer = Buffer.from(newBase64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${storyId}/regenerated`,
+      `regen-${Date.now()}.png`,
+      "image/png"
+    );
+
+    // 8️⃣ Update Image document
+    imageDoc.base64Data = newBase64;
+    imageDoc.s3Url = s3Result.url;
+    imageDoc.s3Key = s3Result.key;
+    imageDoc.s3Bucket = s3Result.bucket;
+    imageDoc.size = buffer.length;
+    imageDoc.metadata = {
+      ...imageDoc.metadata,
+      model: "regenerate",
+      generationTime: Date.now(),
+    };
+
+    await imageDoc.save();
+
+    console.log("✅ Image updated successfully:", imageDoc._id);
+    console.log("🔑 New S3 Key:", s3Result.url);
+
+    return res.json({
+      success: true,
+      message: "Regeneration completed.",
+      data: {
+        pageNumber,
+        imageUrl: s3Result.url
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Regenerate Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString()
+    });
+  }
+};
+
+
+
+
+
+
+
 // @desc    Get all user stories
 // @route   GET /api/story/my-stories
 // @access  Private
@@ -239,8 +374,7 @@ exports.getStory = async (req, res, next) => {
   try {
     const story = await Story.findOne({
       _id: req.params.id,
-      // user: req.user.id
-      user: "69368a106b85d39345d24042"
+      user: req.user.id
     })
       .populate('coverImage', '-base64Data')
       .populate('backCoverImage', '-base64Data');
@@ -284,13 +418,14 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    const { storyId, selectedTitle, story, genre } = req.body;
+    console.log("Generate titles request body:", req.body);
+    const { storyId, selectedTitle, genre } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
     const fullText = pages.map(page => page.text).join(' ');
-    // updatedStory.fullText = fullText;
+    
     await updatedStory.save();
 
     const result = await fastApiService.generateTitles(fullText, genre);
@@ -309,7 +444,17 @@ exports.generateTitles = async (req, res, next) => {
 // @access  Private
 exports.regenerateTitles = async (req, res, next) => {
   try {
-    const { story, genre, previousTitles } = req.body;
+    const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
+
+    const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
+
+    if(!updatedStory) {
+      return res.status(404).json({
+        success: false,
+        message: 'Story not found'
+      }); 
+    }
+    await updatedStory.save();
 
     const result = await fastApiService.regenerateTitles(story, genre, previousTitles);
 

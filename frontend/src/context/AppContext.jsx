@@ -18,7 +18,7 @@ const AppContextProvider = (props) => {
 //-------------------
 const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading
 const [userData, setUserData] = useState(null);
-const [storyId, setStoryId] = useState("6935bf795b1ae90ed9afc6a5");
+const [storyId, setStoryId] = useState("");
 
 // console.log("User Data in Context:", userData);
 const [loading, setLoading] = useState(false);
@@ -166,6 +166,7 @@ useEffect(() => {
 }, []);
 
 
+
 // useEffect(() => {
 //   const checkSession = async () => {
 //     try {
@@ -178,9 +179,6 @@ useEffect(() => {
 
 //   checkSession();
 // }, []);
-
-
-
 
 
 

@@ -1,4 +1,6 @@
-const axios = require('axios');
+const axios = require("axios");
+const FormData = require("form-data");
+
 
 const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
 
@@ -90,3 +92,88 @@ exports.generateCoverAndBack = async (pages, genre, orientation, storyTitle, qrU
   });
   return response.data;
 };
+
+// Face swap
+exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
+  try {
+    const form = new FormData();
+
+    form.append("source", sourceBuffer, {
+      filename: "source.png",
+      contentType: "image/png"
+    });
+
+    form.append("target", targetBuffer, {
+      filename: "target.png",
+      contentType: "image/png"
+    });
+
+    Object.entries(options).forEach(([key, value]) => {
+      form.append(key, String(value));
+    });
+
+    const response = await axios.post(
+      `http://localhost:8000/faceswap`,
+      form,
+      {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: form.getHeaders(), // REQUIRED for `form-data`
+      }
+    );
+
+    return response.data;
+
+  } catch (err) {
+    console.error("Error in faceSwap:", err);
+    throw err;
+  }
+};
+
+// Edit image
+exports.editImage = async (targetBuffer, prompt) => {
+  console.log("Editing image with prompt in fast api:", prompt);
+  try {
+    const form = new FormData();
+    form.append("file", targetBuffer, {
+      filename: "target.png",
+      contentType: "image/png"
+    });
+    form.append("prompt", prompt);
+    const response = await axios.post(
+      `http://localhost:8000/edit-image`,
+      form,
+      {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: form.getHeaders(), // REQUIRED for `form-data`
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Error in editImage:", err);
+    throw err;
+  }
+};
+
+// regenerate image
+exports.regenerateImages = async (payload) => {
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/images/regenerate",
+      payload,
+      {
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    return response.data;
+
+  } catch (err) {
+    console.error("FastAPI regenerate error:", err.response?.data || err);
+    throw err;
+  }
+};
+
