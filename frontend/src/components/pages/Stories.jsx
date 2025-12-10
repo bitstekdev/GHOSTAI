@@ -1,62 +1,239 @@
-import React from 'react';
+// import React from 'react';
+// import { ArrowUpRight, X } from 'lucide-react';
+// import { useNavigate } from 'react-router-dom';
+// import Image from '../../assets/images/story-image-1.jpg';
+// import Image1 from '../../assets/images/story-image-2.jpg';
+// import Image2 from '../../assets/images/story-image-3.jpg';
+
+// const storiesInProgress = [
+//   {
+//     title: "Shadows Under the Silver Moon",
+//     genre: "Fantasy"
+//   },
+//   {
+//     title: "The Secret Doorway",
+//     genre: "Fantasy"
+//   },
+//   {
+//     title: "The Last Page of Autumn",
+//     genre: "Fantasy"
+//   },
+//   {
+//     title: "Beneath the Painted Sky",
+//     genre: "Fantasy"
+//   }
+// ];
+
+// const completedStories = [
+//   {
+//     title: "Rainbow Adventure",
+//     coverImage: "/path-to-rainbow-adventure.jpg",
+//     src: Image,
+//     genre: "Family",
+//     storyLength: "3-5 Pages",
+//     characters: ["Saketh", "Lohith", "Shashi"],
+//     status: "Ordered"
+//   },
+//   {
+//     title: "Sunny Day Surprise",
+//     coverImage: "/path-to-sunny-day.jpg",
+//     src: Image1,
+//     genre: "Family",
+//     storyLength: "3-5 Pages",
+//     characters: ["Saketh", "Lohith", "Shashi"],
+//     status: "Dispatched"
+//   },
+//   {
+//     title: "Forest of Wonders",
+//     coverImage: "/path-to-forest-wonders.jpg",
+//     src: Image2,
+//     genre: "Family",
+//     storyLength: "3-5 Pages",
+//     characters: ["Saketh", "Lohith", "Shashi"],
+//     status: "Ordered"
+//   }
+// ];
+
+// const Stories = () => {
+//   const navigate = useNavigate();
+//   const navigateToGenerate = () => navigate('/generate');
+
+//   return (
+//     <div className="flex-1 bg-[#0b0b0d] min-h-screen p-8">
+//       {/* Stories in Progress */}
+//       <div className="mb-12">
+//         <h2 className="text-2xl font-bold text-white mb-6">Stories in Progress</h2>
+//         <div className="space-y-3">
+//           {storiesInProgress.map((story, index) => (
+//             <div 
+//               key={index}
+//               className="bg-[#1c1c1e] rounded-lg p-4 flex items-center justify-between group hover:bg-[#23222a] transition-colors min-h-[64px] md:min-h-[72px] lg:min-h-[80px]"
+//             >
+//               <div>
+//                 <h3 className="text-white font-medium">{story.title}</h3>
+//                 <p className="text-purple-400 text-sm">{story.genre}</p>
+//               </div>
+//               <div className="flex items-center gap-3">
+//                 <button
+//                   onClick={() => navigate('/generate/preview')}
+//                   className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-1.5 rounded-lg flex items-center gap-2 transition-colors"
+//                 >
+//                   Continue <ArrowUpRight className="h-4 w-4" />
+//                 </button>
+//                 <button className="text-gray-400 hover:text-white transition-colors p-2">
+//                   <X className="h-5 w-5" />
+//                 </button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* My Stories Section */}
+//       <div>
+//         <div className="flex items-center justify-between mb-6">
+//           <h2 className="text-2xl font-bold text-white">My Stories</h2>
+//           <button 
+//             onClick={navigateToGenerate}
+//             className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors"
+//           >
+//             Generate Story
+//           </button>
+//         </div>
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {completedStories.map((story, index) => (
+//             <div 
+//               key={index}
+//               className="bg-[#1c1c1e] rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-500/20 transition-all w-full"
+//             >
+//               {/* responsive custom height/width for the cover area */}
+//               <div className="w-full h-full md:h-[260px] lg:h-[320px] bg-purple-900/20">
+//                 <img src={story.src} alt="Story Cover" className="w-full h-full object-cover" />
+//               </div>
+
+//               <div className="p-4">
+//                 <h3 className="text-white font-semibold mb-2">{story.title}</h3>
+//                 <div className="space-y-2">
+//                   <p className="text-gray-400 text-sm">Genre : {story.genre}</p>
+//                   <p className="text-gray-400 text-sm">Story Length: {story.storyLength}</p>
+//                   <div>
+//                     <p className="text-gray-400 text-sm mb-1">Characters :</p>
+//                     <div className="flex flex-wrap gap-2">
+//                       {story.characters.map((char, idx) => (
+//                         <span 
+//                           key={idx}
+//                           className="bg-purple-500/10 text-purple-300 text-xs px-2 py-1 rounded-full"
+//                         >
+//                           {char}
+//                         </span>
+//                       ))}
+//                     </div>
+//                   </div>
+//                   {story.status && (
+//                     <p className={`text-sm ${
+//                       story.status === 'Ordered' ? 'text-green-400' : 
+//                       story.status === 'Dispatched' ? 'text-blue-400' : ''
+//                     }`}>
+//                       {story.status}
+//                     </p>
+//                   )}
+//                 </div>
+//                 <button
+//                   onClick={() => navigate('/flipbook')}
+//                   className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors text-sm md:text-base"
+//                 >
+//                   View Book
+//                 </button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Stories;
+
+import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Image from '../../assets/images/story-image-1.jpg';
-import Image1 from '../../assets/images/story-image-2.jpg';
-import Image2 from '../../assets/images/story-image-3.jpg';
-
-const storiesInProgress = [
-  {
-    title: "Shadows Under the Silver Moon",
-    genre: "Fantasy"
-  },
-  {
-    title: "The Secret Doorway",
-    genre: "Fantasy"
-  },
-  {
-    title: "The Last Page of Autumn",
-    genre: "Fantasy"
-  },
-  {
-    title: "Beneath the Painted Sky",
-    genre: "Fantasy"
-  }
-];
-
-const completedStories = [
-  {
-    title: "Rainbow Adventure",
-    coverImage: "/path-to-rainbow-adventure.jpg",
-    src: Image,
-    genre: "Family",
-    storyLength: "3-5 Pages",
-    characters: ["Saketh", "Lohith", "Shashi"],
-    status: "Ordered"
-  },
-  {
-    title: "Sunny Day Surprise",
-    coverImage: "/path-to-sunny-day.jpg",
-    src: Image1,
-    genre: "Family",
-    storyLength: "3-5 Pages",
-    characters: ["Saketh", "Lohith", "Shashi"],
-    status: "Dispatched"
-  },
-  {
-    title: "Forest of Wonders",
-    coverImage: "/path-to-forest-wonders.jpg",
-    src: Image2,
-    genre: "Family",
-    storyLength: "3-5 Pages",
-    characters: ["Saketh", "Lohith", "Shashi"],
-    status: "Ordered"
-  }
-];
+import api from '../../services/axiosInstance';
 
 const Stories = () => {
   const navigate = useNavigate();
   const navigateToGenerate = () => navigate('/generate');
+
+  const [allStories, setAllStories] = useState([]);
+  const [storiesInProgress, setStoriesInProgress] = useState([]);
+  const [completedStories, setCompletedStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // 🔹 Fetch from /my-stories
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await api.get('/api/v1/story/my-stories', {
+          params: { page: 1, limit: 12 },
+        });
+
+        const stories = res.data?.data?.stories || [];
+        setAllStories(stories);
+
+        // Use only STEP to classify generation progress
+        const { inProgress, completed } = stories.reduce(
+          (acc, story) => {
+            if (story.step < 4) {
+              // not fully generated yet
+              acc.inProgress.push(story);
+            } else {
+              // step 4 or more → story text is generated
+              acc.completed.push(story);
+            }
+            return acc;
+          },
+          { inProgress: [], completed: [] }
+        );
+
+        setStoriesInProgress(inProgress);
+        setCompletedStories(completed);
+      } catch (err) {
+        console.error('Error fetching stories:', err);
+        setError(
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to load stories'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStories();
+  }, []);
+
+  const getResumeRoute = (story) => {
+    if (story.step <= 2) {
+      // still in Q&A
+      return `/questioner?storyId=${story._id}`;
+    }
+
+    if (story.step === 3) {
+      // gist done, selecting template / generating full story
+      return `/templateselection?storyId=${story._id}`;
+    }
+
+    // step >= 4 → story text exists, open flipbook
+    return `/flipbook/${story._id}`;
+  };
+
+  const handleViewBook = (id) => {
+    navigate(`/flipbook/${id}`);
+  };
 
   return (
     <div className="flex-1 bg-[#0b0b0d] min-h-screen p-8">
@@ -64,9 +241,13 @@ const Stories = () => {
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-6">Stories in Progress</h2>
         <div className="space-y-3">
-          {storiesInProgress.map((story, index) => (
+          {storiesInProgress.length === 0 && (
+            <p className="text-gray-400">No stories in progress right now.</p>
+          )}
+
+          {storiesInProgress.map((story) => (
             <div 
-              key={index}
+              key={story._id}
               className="bg-[#1c1c1e] rounded-lg p-4 flex items-center justify-between group hover:bg-[#23222a] transition-colors min-h-[64px] md:min-h-[72px] lg:min-h-[80px]"
             >
               <div>
@@ -75,7 +256,7 @@ const Stories = () => {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => navigate('/generate/preview')}
+                  onClick={() => navigate(getResumeRoute(story))}
                   className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-1.5 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   Continue <ArrowUpRight className="h-4 w-4" />
@@ -100,54 +281,94 @@ const Stories = () => {
             Generate Story
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {completedStories.map((story, index) => (
-            <div 
-              key={index}
-              className="bg-[#1c1c1e] rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-500/20 transition-all w-full"
-            >
-              {/* responsive custom height/width for the cover area */}
-              <div className="w-full h-full md:h-[260px] lg:h-[320px] bg-purple-900/20">
-                <img src={story.src} alt="Story Cover" className="w-full h-full object-cover" />
-              </div>
 
-              <div className="p-4">
-                <h3 className="text-white font-semibold mb-2">{story.title}</h3>
-                <div className="space-y-2">
-                  <p className="text-gray-400 text-sm">Genre : {story.genre}</p>
-                  <p className="text-gray-400 text-sm">Story Length: {story.storyLength}</p>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Characters :</p>
-                    <div className="flex flex-wrap gap-2">
-                      {story.characters.map((char, idx) => (
-                        <span 
-                          key={idx}
-                          className="bg-purple-500/10 text-purple-300 text-xs px-2 py-1 rounded-full"
-                        >
-                          {char}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  {story.status && (
-                    <p className={`text-sm ${
-                      story.status === 'Ordered' ? 'text-green-400' : 
-                      story.status === 'Dispatched' ? 'text-blue-400' : ''
-                    }`}>
-                      {story.status}
-                    </p>
-                  )}
+        {loading && (
+          <p className="text-gray-400">Loading stories...</p>
+        )}
+
+        {error && (
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+        )}
+
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {completedStories.map((story) => (
+              <div 
+                key={story._id}
+                className="bg-[#1c1c1e] rounded-xl overflow-hidden hover:ring-2 hover:ring-purple-500/20 transition-all w-full"
+              >
+                {/* Cover image from DB */}
+                <div className="w-full h-full md:h-[260px] lg:h-[320px] bg-purple-900/20">
+                  <img
+                    src={
+                      story.coverImage?.s3Url ||
+                      story.coverImage?.url ||
+                      '/fallback-cover.jpg'
+                    }
+                    alt={story.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = '/fallback-cover.jpg';
+                    }}
+                  />
                 </div>
-                <button
-                  onClick={() => navigate('/flipbook')}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors text-sm md:text-base"
-                >
-                  View Book
-                </button>
+
+                <div className="p-4">
+                  <h3 className="text-white font-semibold mb-2">{story.title}</h3>
+                  <div className="space-y-2">
+                    <p className="text-gray-400 text-sm">Genre : {story.genre}</p>
+                    <p className="text-gray-400 text-sm">
+                      Story Length: {story.storyLength || `${story.numOfPages || 0} pages`}
+                    </p>
+
+                    {Array.isArray(story.characters) && story.characters.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">Characters :</p>
+                        <div className="flex flex-wrap gap-2">
+                          {story.characters.map((char, idx) => (
+                            <span 
+                              key={idx}
+                              className="bg-purple-500/10 text-purple-300 text-xs px-2 py-1 rounded-full"
+                            >
+                              {char}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {story.status && (
+                      <p
+                        className={`text-sm ${
+                          story.status === 'Ordered'
+                            ? 'text-green-400'
+                            : story.status === 'Dispatched'
+                            ? 'text-blue-400'
+                            : 'text-gray-400'
+                        }`}
+                      >
+                        {story.status}
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleViewBook(story._id)}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 mt-4 transition-colors text-sm md:text-base"
+                  >
+                    View Book
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+
+            {completedStories.length === 0 && (
+              <p className="text-gray-400 col-span-full">
+                No stories yet. Generate your first story!
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -264,7 +264,7 @@ const handleSubmit = async () => {
             onClick={handleSubmit}
             className="bg-purple-600 hover:bg-purple-700 w-1/2 text-white py-3 px-6 rounded-lg mt-4"
           >
-            {loading ? "Loading..." : "Next"}
+            {loading ? "Thinking..." : "Next"}
           </button>
         </div>
       </div>

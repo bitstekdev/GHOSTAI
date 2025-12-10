@@ -373,8 +373,8 @@ exports.faceSwap = async (req, res) => {
 
     // 2️⃣ Prepare options
     const options = {
-      source_index: parseInt(req.body.source_index || -1),
-      target_index: parseInt(req.body.target_index || -1),
+      source_index: parseInt(req.body.source_index),
+      target_index: parseInt(req.body.target_index),
       upscale: parseInt(req.body.upscale || 1),
       codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
       background_enhance: req.body.background_enhance !== "false",

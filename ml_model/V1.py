@@ -2,6 +2,14 @@
 # 🎨 Storybook Generator API (FastAPI + OpenRouter)
 # ============================================================
 from dotenv import load_dotenv
+import os
+
+# Always load .env from the SAME folder as this file
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
+print("API KEY =>", os.getenv("OPENROUTER_API_KEY"))
+
+from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException
@@ -11,6 +19,24 @@ from openai import OpenAI
 import os
 from fastapi import UploadFile, File, Form
 import base64
+import logging
+from logging.handlers import RotatingFileHandler
+
+# ----------------------------
+# GLOBAL LOGGING SETUP
+# ----------------------------
+LOG_FILE = "app.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+    handlers=[
+        RotatingFileHandler(LOG_FILE, maxBytes=5_000_000, backupCount=5),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger("storybook_api")
 
 # ============================================================
 # 🧠 Setup (Production Safe)
@@ -78,6 +104,8 @@ class GistResponse(BaseModel):
 # ============================================================
 
 def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruct:free"):
+    logger.info("LLM generating next question")
+
     """Generate next conversational question."""
 
     if len(conversation) == 0:
@@ -112,6 +140,8 @@ def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruc
 
 
 def generate_gist(conversation, genre="Family", model="meta-llama/llama-3.3-70b-instruct:free"):
+    logger.info("Calling LLM for story gist")
+
     """Generate cinematic story gist from questionnaire."""
 
     context = "\n".join(
@@ -515,6 +545,58 @@ def extract_page_from_story(story: str, page_tag: str):
 # Core generation function (keeps single-call behavior)
 # -----------------------------
 
+
+
+def genre_visual_style(genre):
+    genre_styles = {
+        "Family": (
+            "warm cozy lighting, soft pastel tones, gentle ambience, homely scenery, "
+            "emotional warmth, friendly joyful atmosphere"
+        ),
+        "Fantasy": (
+            "ethereal glow, magical particles floating, enchanted lighting, warm light rays, "
+            "mystical haze, glowing magical accents"
+        ),
+        "Adventure": (
+            "dramatic shadows, rugged terrain, dust particles, high contrast, "
+            "energetic composition, cinematic action mood"
+        ),
+        "Sci-Fi": (
+            "neon holograms, futuristic reflections, cool ambience, metallic textures, "
+            "glowing circuitry, high-tech atmosphere"
+        ),
+        "Mystery": (
+            "moody gradients, noir ambience, soft fog, muted tones, suspense shadows, "
+            "silhouetted lighting"
+        ),
+
+       "Birthday": (
+            "bright colorful decorations, vibrant party ambience, confetti floating, "
+            "warm celebratory lighting, joyful expressions, balloons and ribbons, "
+            "soft glowing highlights"
+        ),
+        "Corporate Promotion": (
+            "clean professional ambience, elegant soft lighting, subtle depth-of-field, "
+            "modern office environment, confidence-filled atmosphere, muted premium tones, "
+            "award-ceremony glow"
+        ),
+        "Housewarming": (
+            "warm inviting home interior, soft ambient light, cozy decor, indoor plants, "
+            "fresh welcoming atmosphere, gentle shadows, warm wooden textures"
+        ),
+        "Marriage": (
+            "romantic soft-focus lighting, elegant warm glow, floral decorations, "
+            "cinematic highlights, gentle bokeh, pastel romantic tones, "
+            "beautiful ceremonial ambience"
+        ),
+        "Baby Shower": (
+            "soft pastel colors, gentle warm light, cute decorations, baby toys, "
+            "delicate joyful atmosphere, balloons and soft textures, dreamy nursery tones"
+        ),
+    }
+
+    return genre_styles.get(genre, "")
+
 def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int):
     """
     Returns list of tuples: [(page_text, prompt), ...] length == num_pages
@@ -711,7 +793,9 @@ CRITICAL:
 
         # inject anchors
         prompt_text = inject_character_descriptions(prompt_text, character_map)
-
+        style= genre_visual_style(genre)
+        if style:
+            prompt_text = f"{prompt_text}, {style}"
         pages_out.append((page_text, prompt_text))
 
     return pages_out
@@ -827,6 +911,9 @@ def get_dimensions(orientation: str):
 # Returns: PIL.Image or None
 # ----------------------------
 def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int = 1, orientation: str = "Landscape"):
+    logger.info(f"Generating image for page={page_num}, orientation={orientation}")
+    logger.debug(f"Prompt: {prompt[:200]}...")
+
     try:
         # NSFW check
         if is_nsfw_prompt(prompt):
@@ -913,6 +1000,7 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
             time.sleep(POLL_INTERVAL)
 
     except Exception as e:
+        logger.error(f"RunPod image generation failed: {str(e)}")
         # Bubble up string message to caller
         raise RuntimeError(str(e))
 # images_api_sdxl.py
@@ -1333,10 +1421,16 @@ class CoverBackResponse(BaseModel):
     pages: List[CoverBackResponsePage]
     title_used: Optional[str] = None
     message: str
+
 # ----------------------------
-# Helper: call LLM (OpenRouter)
+# Helper: OpenRouter LLM
 # ----------------------------
-def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="meta-llama/llama-3.3-70b-instruct:free", temperature=0.5, timeout=60):
+
+def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="meta-llama/llama-3.3-70b-instruct:free", temperature=0.5, timeout=60) -> str:
+    if not OPENROUTER_API_KEY:
+        # Fail fast with a descriptive error
+        raise RuntimeError("OPENROUTER_API_KEY not set in environment")
+
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {OPENROUTER_API_KEY}"}
     payload = {
         "model": model,
@@ -1349,12 +1443,25 @@ def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="met
     resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=timeout)
     resp.raise_for_status()
     data = resp.json()
-    return data["choices"][0]["message"]["content"].strip()
+
+    # resilient extraction of content
+    try:
+        return data["choices"][0]["message"]["content"].strip()
+    except Exception:
+        # best-effort fallback
+        if isinstance(data, dict):
+            # try some other likely fields
+            for k in ("text", "content", "reply"):
+                v = data.get(k)
+                if isinstance(v, str):
+                    return v.strip()
+        raise RuntimeError("Unexpected OpenRouter response format: " + json.dumps(data)[:400])
 
 # ----------------------------
-# Helper: RunPod HiDream serverless (minimal wrapper)
+# Helper: RunPod HiDream — FIXED VERSION
 # ----------------------------
-def runpod_hidream_generate(prompt: str, orientation="Portrait"):
+
+def runpod_hidream_generate(prompt: str, orientation: str = "Portrait") -> str:
     o = (orientation or "Portrait").strip().lower()
     if o == "portrait":
         width, height = 1024, 1536
@@ -1402,6 +1509,9 @@ def runpod_hidream_generate(prompt: str, orientation="Portrait"):
             }
         }
     }
+
+    if not RUNPOD_AUTH_BEARER:
+        raise RuntimeError("RUNPOD_AUTH_BEARER not set in environment")
 
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"}
     resp = requests.post(RUNPOD_HIDREAM_URL, headers=headers, json=workflow_payload, timeout=30)
@@ -1461,44 +1571,12 @@ def runpod_hidream_generate(prompt: str, orientation="Portrait"):
 
         time.sleep(POLL_INTERVAL)
 
-# ----------------------------
-# Draw title overlay
-# ----------------------------
-def draw_title_on_cover_image(img_pil: Image.Image, title: str):
-    if not title:
-        return img_pil
-
-    W, H = img_pil.size
-    txt_layer = Image.new("RGBA", (W, H), (0,0,0,0))
-    draw = ImageDraw.Draw(txt_layer)
-    font_size = max(28, int(W * 0.04))
-
-    try:
-        font = ImageFont.truetype("SundayShine.otf", font_size)
-    except:
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-
-    text = title.strip()
-    bbox = draw.textbbox((0,0), text, font=font)
-    text_w = bbox[2]-bbox[0]
-    text_h = bbox[3]-bbox[1]
-    x = (W - text_w)//2
-    y = int(H * 0.10)
-
-    shadow_offset = int(font_size * 0.04)
-    draw.text((x+shadow_offset, y+shadow_offset), text, font=font, fill=(0,0,0,120))
-    draw.text((x, y), text, font=font, fill=(255,255,255,255))
-
-    final = Image.alpha_composite(img_pil.convert("RGBA"), txt_layer)
-    return final.convert("RGB")
 
 # ----------------------------
-# Extract visuals from full story (one-shot LLM)
+# Extract visuals
 # ----------------------------
-def extract_visuals_from_story(full_story_text: str):
+
+def extract_visuals_from_story(full_story_text: str) -> str:
     sys_prompt = """Read the full story below and extract ONLY the strongest visual elements that should appear on a photorealistic cinematic book cover.
 RULES:
 - NO characters.
@@ -1509,15 +1587,16 @@ RULES:
 
     try:
         return call_openrouter_system_user(sys_prompt, user_prompt, temperature=0.3)
-    except:
+    except Exception:
         return "mountains, fields, warm sunset"
 
 # ----------------------------
 # Build cover prompt
 # ----------------------------
-def build_cover_prompt_from_visuals(extracted_visuals: str, genre: str):
+
+def build_cover_prompt_from_visuals(extracted_visuals: str, genre: str) -> str:
     system = """
-        You are a cinematic visual prompt generator for AI image models.
+You are a cinematic visual prompt generator for AI image models.
 
 STRICT RULES:
 - NO text, NO title, NO symbols, NO lettering.
@@ -1532,17 +1611,21 @@ Start with:
 "ultra HD, 8k, photorealistic, ultra-sharp focus, dramatic cinematic lighting,"
 
 End with:
-"Hyperrealism, natural lighting." """
-    user = f"Extracted elements: {extracted_visuals}\nGenre: {genre}\nCreate final cover prompt using only supplied elements."
+"Hyperrealism, natural lighting."
+"""
+    user = f"Extracted: {extracted_visuals}\nGenre: {genre}"
+
     try:
         return call_openrouter_system_user(system, user, temperature=0.5)
     except Exception:
         return f"ultra HD, 8k, photorealistic, dramatic cinematic lighting, {extracted_visuals}, Hyperrealism, natural lighting."
 
 # ----------------------------
-# Back blurb + back prompt
+# Back blurb + prompt
 # ----------------------------
-def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
+
+def generate_back_blurb_and_prompt(full_story_text: str, genre: str) -> Tuple[str, str]:
+    # Generate blurb
     back_sys = (
         "You are a senior editorial writer at Penguin Random House.\n\n"
         "Write a polished, market-ready BACK COVER BLURB.\n\n"
@@ -1555,14 +1638,16 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
         "- Mention characters lightly.\n"
         f"- Tone must match the genre: {genre}.\n"
         "- End with a one-line Theme Highlight formatted as: Theme Highlight: \"...\""
-        )
-    user = f"Story gist:\n{full_story_text}\nTone: {genre}"
-    try:
-        blurb = call_openrouter_system_user(back_sys, user, temperature=0.5)
-    except Exception:
-        blurb = "A heartfelt journey unfolds within these pages, capturing emotion, growth, and quiet wonder.\nTheme Highlight: \"Hope and connection.\""
+    )
+    user = f"Story gist:\n{full_story_text}\nGenre: {genre}"
 
-    # back visual prompt (no humans)
+    try:
+        blurb_raw = call_openrouter_system_user(back_sys, user, temperature=0.5)
+        blurb = blurb_raw.strip()
+    except Exception:
+        blurb = "A powerful emotional journey.\nTheme Highlight: \"Hope and resilience.\""
+
+    # Generate back cover visual prompt
     back_visual_sys = (
         "You are a cinematic visual prompt generator for AI book BACK COVERS.\n\n"
         "Rules:\n"
@@ -1576,86 +1661,34 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str):
         "Begin with: ultra HD, 8k, photorealistic, soft dramatic lighting,\n"
         "End with: Hyperrealism, natural lighting."
     )
+
     try:
         back_prompt_raw = call_openrouter_system_user(back_visual_sys, user, temperature=0.5)
     except Exception:
-        back_prompt_raw = "ultra HD, 8k, photorealistic quiet farmhouse at dusk, open fields and warm lamp glow, gentle mist, soft pastel tones, subtle depth, Hyperrealism, natural lighting."
+        back_prompt_raw = "ultra HD, 8k, photorealistic farmhouse at dusk, soft pastel sky, quiet fields, gentle mist, Hyperrealism, natural lighting."
 
-    # small genre suffix
-    def genre_suffix(genre):
-        genre = genre.lower()
+    # Genre-specific suffixes to tweak mood
+    suffix_map = {
+        "fantasy": "soft magical glow in the environment, ethereal ambient lighting, cool blue highlights, misty depth in the background, subtle floating particles, enchanted cinematic mood",
+        "family": "warm golden-hour lighting, soft natural highlights, gentle shadows, cozy inviting ambience, peaceful rural or homely setting",
+        "adventure": "bold high-contrast cinematic lighting, deep warm highlights, dramatic wide scenery, windswept landscape or rugged outdoor setting, sense of motion and exploration",
+        "sci-fi": "cool futuristic lighting, subtle technological reflections, sharp contrast, clean metallic or neon-toned ambience",
+        "mystery": "low-key lighting, deep shadow contrast, subtle fog layers, cool desaturated tones, cinematic suspenseful mood",
+        "birthday": "bright cheerful lighting, colorful festive highlights, soft bokeh glow, party ambience with balloons and confetti, warm celebratory mood",
+        "corporate promotion": "clean modern lighting, subtle premium highlights, sleek professional ambience, muted elegant tones, award-ceremony feel, confident visual composition",
+        "housewarming": "warm ambient interior lighting, soft shadows, cozy textures, inviting home-like setting, gentle natural highlights, welcoming mood",
+        "marriage": "romantic soft-focus lighting, elegant warm glow, floral accents, gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere",
+        "wedding": "romantic soft-focus lighting, elegant warm glow, floral accents, gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere",
+        "baby shower": "soft pastel-color ambience, warm gentle lighting, cute baby-themed decorations, dreamy nursery tones, delicate highlights, cozy joyful mood",
+    }
 
-    if genre == "fantasy":
-        return (
-            "soft magical glow in the environment, ethereal ambient lighting, cool blue highlights, "
-            "misty depth in the background, subtle floating particles, enchanted cinematic mood"
-        )
+    genre_key = (genre or "").strip().lower()
+    suffix = suffix_map.get(genre_key, "balanced cinematic lighting, clear photorealistic ambience")
 
-    if genre == "family":
-        return (
-            "warm golden-hour lighting, soft natural highlights, gentle shadows, "
-            "cozy inviting ambience, peaceful rural or homely setting"
-        )
+    # Combine prompt
+    final_back_prompt = back_prompt_raw.rstrip(". ") + ", " + suffix + ", Hyperrealism, natural lighting."
 
-    if genre == "adventure":
-        return (
-            "bold high-contrast cinematic lighting, deep warm highlights, dramatic wide scenery, "
-            "windswept landscape or rugged outdoor setting, sense of motion and exploration"
-        )
-
-    if genre == "sci-fi":
-        return (
-            "cool futuristic lighting, subtle technological reflections, sharp contrast, "
-            "clean metallic or neon-toned ambience"
-        )
-
-    if genre == "mystery":
-        return (
-            "low-key lighting, deep shadow contrast, subtle fog layers, "
-            "cool desaturated tones, cinematic suspenseful mood"
-        )
-
-    # ⭐ NEW GENRES ADDED BELOW ⭐
-
-    if genre == "birthday":
-        return (
-            "bright cheerful lighting, colorful festive highlights, soft bokeh glow, "
-            "party ambience with balloons and confetti, warm celebratory mood"
-        )
-
-    if genre == "corporate promotion":
-        return (
-            "clean modern lighting, subtle premium highlights, sleek professional ambience, "
-            "muted elegant tones, award-ceremony feel, confident visual composition"
-        )
-
-    if genre == "housewarming":
-        return (
-            "warm ambient interior lighting, soft shadows, cozy textures, "
-            "inviting home-like setting, gentle natural highlights, welcoming mood"
-        )
-
-    if genre == "marriage" or genre == "wedding":
-        return (
-            "romantic soft-focus lighting, elegant warm glow, floral accents, "
-            "gentle bokeh background, pastel romantic tones, cinematic ceremonial atmosphere"
-        )
-
-    if genre == "baby shower":
-        return (
-            "soft pastel-color ambience, warm gentle lighting, cute baby-themed decorations, "
-            "dreamy nursery tones, delicate highlights, cozy joyful mood"
-        )
-
-    # DEFAULT fallback
-    return (
-        "balanced cinematic lighting, clear photorealistic ambience"
-    )
-
-
-    final_back_prompt = f"{back_prompt_raw}, {genre_suffix(genre)}"
-    return blurb.strip(), final_back_prompt
-
+    return blurb, final_back_prompt
 #=====================================================================================
 # image editing endpoint
 #=====================================================================================
@@ -1712,13 +1745,9 @@ def faceswap_to_base64(file: UploadFile):
 # ⚡ FastAPI Endpoints
 # ============================================================
 
-@app.get("/")
-def root():
-    return {"message": "✅ Storybook Generator API is running!"}
-
-
 @app.post("/start", response_model=StartResponse)
 def start_questionnaire():
+    logger.info("Start questionnaire called")
     """Initialize a new questionnaire."""
     first = QA(question="Why write this book?", answer="")
     chat = [("System", "Let's begin your story journey!")]
@@ -1733,6 +1762,7 @@ QUESTION_LIMIT = int(os.getenv("QUESTION_LIMIT", 15))
 
 @app.post("/next", response_model=NextResponse)
 def next_question(data: AnswerInput):
+    logger.info(f"Next question request received. Answer: {data.answer}")
     """Record answer and generate next question with enhanced finishing logic."""
     conversation: List[QA] = data.conversation
 
@@ -1798,6 +1828,7 @@ def next_question(data: AnswerInput):
 
 @app.post("/gist", response_model=GistResponse)
 def gist(data: GistInput):
+    logger.info("Generating gist for genre: %s", data.genre)
     """Generate cinematic story gist."""
     conversation = data.conversation
     gist_text = generate_gist(conversation, genre=data.genre)
@@ -2018,6 +2049,7 @@ def title_regenerate(req: RegenerateTitleRequest):
 # ----------------------------
 @app.post("/coverback/generate", response_model=CoverBackResponse)
 def coverback_generate(req: CoverBackRequest):
+    logger.info(f"/coverback/generate called. Genre={req.genre}, Title={req.story_title}")
 
     if not req.pages:
         raise HTTPException(status_code=400, detail="No pages provided.")
@@ -2026,11 +2058,11 @@ def coverback_generate(req: CoverBackRequest):
     full_story_text = "\n\n".join([p.text for p in pages_sorted])
 
     title_used = req.story_title.strip() if req.story_title else None
-    # if not title_used:
-    #     try:
-    #         title_used = auto_generate_title(full_story_text)
-    #     except:
-    #         title_used = "Untitled Story"
+    if not title_used:
+        try:
+            title_used = auto_generate_title(full_story_text)
+        except:
+            title_used = "Untitled Story"
 
     # COVER
     try:
@@ -2053,12 +2085,9 @@ def coverback_generate(req: CoverBackRequest):
         else:
             cover_b64 = raw_cover
 
-        if cover_b64 and title_used:
-            img = Image.open(BytesIO(base64.b64decode(cover_b64))).convert("RGBA")
-            img2 = draw_title_on_cover_image(img, title_used)
-            buf = BytesIO()
-            img2.save(buf, format="PNG")
-            cover_b64 = base64.b64encode(buf.getvalue()).decode()
+        if cover_b64:
+            cover_b64 = cover_b64  # no title overlay
+
 
     except Exception as e:
         cover_err = str(e)

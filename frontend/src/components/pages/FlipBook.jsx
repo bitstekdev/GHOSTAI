@@ -169,10 +169,23 @@ const openFaceSwap = () => {
   // ============================
   const generatePages = () => {
     if (!storyData) return [];
-
+    
     const allPages = [];
     const story = storyData.story;
     const pages = storyData.pages || [];
+
+    const genreStyles = {
+      Fantasy: { fontFamily: '"Cinzel", serif', fontSize: "12px", color: "#000000" },
+      Adventure: { fontFamily: '"Poppins", sans-serif', fontSize: "10px", color: "#000000" },
+      Family: { fontFamily: '"Comic Neue", cursive', fontSize: "10px", color: "#000000" },
+      Mystery: { fontFamily: '"Special Elite", monospace', fontSize: "12px", color: "#000000" },
+      Horror: { fontFamily: '"Creepster", cursive', fontSize: "12px", color: "#000000" },
+      Romance: { fontFamily: '"Great Vibes", cursive', fontSize: "12px", color: "#000000" },
+    };
+
+    const pageTextStyle = genreStyles[story.genre] || { fontFamily: '"Georgia", serif', fontSize: "18px", color: "#333" };
+  
+
 
     // COVER (SINGLE PAGE)
     allPages.push({
@@ -205,7 +218,8 @@ const openFaceSwap = () => {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 mt-6 px-10 py-6 overflow-y-auto">
-                <p className="text-black text-sm leading-relaxed">{page.text}</p>
+                {/* <p className="text-black text-sm leading-relaxed">{page.text}</p> */}
+                <p className="text-black text-sm leading-relaxed" style={pageTextStyle}>{page.text}</p>
               </div>
             </div>
           </div>

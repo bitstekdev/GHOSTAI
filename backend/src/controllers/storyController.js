@@ -283,13 +283,13 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    const { storyId, selectedTitle, story, genre } = req.body;
+    const { storyId, selectedTitle, genre } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
     const fullText = pages.map(page => page.text).join(' ');
-    // updatedStory.fullText = fullText;
+    
     await updatedStory.save();
 
     const result = await fastApiService.generateTitles(fullText, genre);
@@ -308,7 +308,17 @@ exports.generateTitles = async (req, res, next) => {
 // @access  Private
 exports.regenerateTitles = async (req, res, next) => {
   try {
-    const { story, genre, previousTitles } = req.body;
+    const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
+
+    const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
+
+    if(!updatedStory) {
+      return res.status(404).json({
+        success: false,
+        message: 'Story not found'
+      }); 
+    }
+    await updatedStory.save();
 
     const result = await fastApiService.regenerateTitles(story, genre, previousTitles);
 

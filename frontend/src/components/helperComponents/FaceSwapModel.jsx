@@ -31,8 +31,8 @@ const handleApply = async () => {
     const formData = new FormData();
     formData.append("source", file);
     formData.append("characterImageId", page.characterImage._id);
-    formData.append("source_index", sourceIndex || -1);
-    formData.append("target_index", targetIndex || -1);
+    formData.append("source_index", sourceIndex);
+    formData.append("target_index", targetIndex);
     formData.append("upscale", 1);
     formData.append("codeformer_fidelity", 0.5);
     formData.append("background_enhance", "true");
@@ -114,7 +114,7 @@ const handleApply = async () => {
               type="number"
               min={-1}
               value={sourceIndex}
-              onChange={(e) => setSourceIndex(Number(e.target.value) || 0)}
+              onChange={(e) => setSourceIndex(Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm"
             />
           </div>
@@ -126,7 +126,7 @@ const handleApply = async () => {
               type="number"
               min={-1}
               value={targetIndex}
-              onChange={(e) => setTargetIndex(Number(e.target.value) || 0)}
+              onChange={(e) => setTargetIndex(Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm"
             />
           </div>
