@@ -70,7 +70,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
           <Route path="/templateselection" element={<TemplateSelection />} />
-          <Route path="/flipbook" element={<FlipBook />} />
+          <Route path="/flipbook/:storyId" element={<FlipBook />} />
           <Route path="/flipbook/mockup" element={<FlipBookMockUp />} />
           <Route path="/characterdump" element={<CharacterDump />} />
           <Route path="/datadump" element={<DataDump />} />

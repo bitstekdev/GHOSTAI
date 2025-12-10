@@ -21,6 +21,7 @@ const TitleSelection = () => {
 
   const fetchStoryData = async () => {
     try {
+      // const res = await api.get(`/api/v1/story/6939cb6e18374ba322e05efa`);
       const res = await api.get(`/api/v1/story/${storyId}`);
       const story = res.data.data.story;
       setStoryData(story);
@@ -32,6 +33,7 @@ const TitleSelection = () => {
 
   // Generate AI Titles
   const handleGenerateTitles = async () => {
+    console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -39,7 +41,7 @@ const TitleSelection = () => {
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
         selectedTitle,
-        story: storyData?.gist, 
+        // story: storyData?.gist, 
         genre: storyData?.genre
       });
 
@@ -94,7 +96,7 @@ const TitleSelection = () => {
       });
 
       console.log("Book creation response:", res.data);
-      navigateTo("/flipbook");
+      navigateTo(`/flipbook/${storyData._id}`);
 
     } catch (err) {
       console.error(err);
@@ -132,7 +134,7 @@ const TitleSelection = () => {
       </div>
 
       {/* Generate AI Titles Button */}
-      {regenerate ? ( 
+      {!regenerate ? ( 
             <button
               className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
               onClick={handleGenerateTitles}

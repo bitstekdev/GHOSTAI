@@ -57,7 +57,7 @@ export default function QuestionerPage() {
     }
   };
 
-  const isFinished = conversation.length >= 3;
+  const isFinished = conversation.length >= 5;
   // const isFinished = conversation.length >= 2;
 
   const handleGetPrompt = async () => {
@@ -116,14 +116,14 @@ export default function QuestionerPage() {
             disabled={loading}
             className="mt-6 w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition"
           >
-            {loading ? "Loading..." : "Next"}
+            {loading ? "Thinking..." : "Next"}
           </button>
         ) : (
           <button
             onClick={handleGetPrompt}
             className="mt-6 w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold transition"
           >
-            {loading ? "Loading..." : "Get Prompt"}
+            {loading ? "Thinking..." : "Get Prompt"}
           </button>
         )}
       </div>

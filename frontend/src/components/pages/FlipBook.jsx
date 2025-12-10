@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw } from "lucide-react";
 import api from "../../services/axiosInstance";
+import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
+import EditModal from "../helperComponents/EditModel.jsx";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -17,7 +19,8 @@ import Image2 from "../../assets/images/landscape.png";
 // import Image3 from "../../assets/images/protrait.png";
 ////////////////////////////////////////////////////////////////////////////////////
 
-const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
+// const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
+const StoryFlipbook = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,12 +28,18 @@ const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
   const [error, setError] = useState(null);
   const [showFaceSwap, setShowFaceSwap] = useState(false);
   const [faceSwapPage, setFaceSwapPage] = useState(null);
+  const [regenerateLoading, setRegenerateLoading] = useState(false);
+
+  const [showEdit, setShowEdit] = useState(false);
+  const [editPage, setEditPage] = useState(null);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
 
   const wrapperRef = useRef(null);
   const [scale, setScale] = useState(1);
 
-
-////////////////////////////////////////////////////////////////////////////////////
+  const { storyId } = useParams();
+/////////////////////////////////////////////////////////////////////////////////////
   const dummyStoryData = {
   story: {
     title: "The Lost Kingdom",
@@ -101,6 +110,71 @@ const openFaceSwap = () => {
   setFaceSwapPage(pageDoc);
   setShowFaceSwap(true);
 };
+
+  // ============================
+  // Edit HANDLER
+  // ============================
+const openEdit = () => {
+  const story = storyData?.story || storyData;
+  const rawPages = storyData?.pages || [];
+
+  const current = pages[currentPage];
+  // console.log("Current page data for Face Swap:", current);
+  // Only allow spreads
+  if (current?.type !== "spread") {
+    console.log("Face Swap is only available on the LEFT page of a spread.");
+    return;
+  }
+
+  // Map UI page index → MongoDB page index
+  const mongoPageIndex = currentPage - 1;
+  const pageDoc = rawPages[mongoPageIndex];
+
+  if (!pageDoc) {
+    console.log("Could not find page data");
+    return;
+  }
+
+  // Only allow swapping if left-page character image exists
+  if (!pageDoc.characterImage?.s3Url) {
+    console.log("This page has no character image for face swapping.");
+    return;
+  }
+
+  setEditPage(pageDoc);
+  setShowEdit(true);
+};
+
+
+// ============================
+  // REGENERATE HANDLER
+  // ===========================
+  const handleRegenerateConfirm = async () => {
+  try {
+    setRegenerateLoading(true);
+
+    const orientation = storyData?.story?.orientation || "Landscape";
+
+    const res = await api.post("/api/v1/story/regenerate", {
+      storyId,
+      orientation,
+      pageNumber: currentPage,
+    });
+
+    if (res.data?.success) {
+      const refreshed = await api.get(`/api/v1/story/${storyId}`);
+      setStoryData(refreshed.data.data);
+    } else {
+      console.error("Regenerate failed:", res.data?.message);
+    }
+  } catch (err) {
+    console.error("Regenerate Error:", err);
+  } finally {
+    setRegenerateLoading(false);
+    setShowRegenerateConfirm(false);
+  }
+};
+
 
 
   // ============================
@@ -231,9 +305,12 @@ const openFaceSwap = () => {
     allPages.push({
       type: "single",
       jsx: (
-        <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 flex flex-col items-center justify-center text-white">
-          <h2 className="text-5xl font-bold">The End</h2>
-        </div>
+       <div className="w-full h-full relative rounded-lg overflow-hidden">
+        <img src={story.backCoverImage?.s3Url} className="w-full h-full object-cover " />
+         <div className="absolute inset-0 mt-20 px-10 py-6 overflow-y-auto">
+          <p className="text-white text-sm leading-relaxed">{story.backCoverBlurb}</p>
+          </div>
+      </div>
       ),
     });
 
@@ -258,6 +335,16 @@ const openFaceSwap = () => {
           <Loader className="w-16 h-16 text-purple-500 animate-spin mx-auto mb-4" />
           <p className="text-white text-xl">Loading your story...</p>
         </div>
+      </div>
+    );
+  }
+
+   {/*  Loading Overlay */}
+    if (regenerateLoading) {
+      return (
+      <div className="fixed inset-0 bg-black/70 flex flex-col items-center justify-center z-[9999]">
+        <Loader className="w-16 h-16 text-purple-500 animate-spin mb-4" />
+        <p className="text-white text-xl">Regenerating Image...</p>
       </div>
     );
   }
@@ -332,13 +419,20 @@ const openFaceSwap = () => {
               </div>
 
               <div className="h-6 w-px bg-gray-700 ml-8 mr-8" />
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors">
+                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors"
+                 onClick={() => setShowRegenerateConfirm(true)}
+                >
+                  <RefreshCcw  size={16} /> regenerate
+                </button>
+
+                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors"
+                 onClick={openEdit}
+                >
                   <Edit size={16} /> Edit
                 </button>
 
                 <button className="flex items-center gap-1 hover:text-purple-400 transition-colors" 
                  onClick={openFaceSwap}
-                //  disabled={pages[currentPage]?.type !== "spread"}
                 >
                   <Users size={16} /> Face Swap
                 </button>
@@ -402,6 +496,7 @@ const openFaceSwap = () => {
         </div>
       </div>
 
+       {/* face swap modal */}
        {showFaceSwap && faceSwapPage && (
           <FaceSwapModal
             storyId={storyId}
@@ -417,6 +512,52 @@ const openFaceSwap = () => {
             }}
           />
         )}
+
+      {/* edit modal */}
+       {showEdit && editPage && (
+          <EditModal
+            storyId={storyId}
+            page={editPage}
+            onClose={() => setShowEdit(false)}
+            onUpdated={async () => {
+              try {
+                const res = await api.get(`/api/v1/story/${storyId}`);
+                setStoryData(res.data.data);
+              } catch (err) {
+                console.error("Error refreshing story after face swap:", err);
+              }
+            }}
+          />
+        )}
+
+        {/* Regenerate Confirmation Modal */}
+        {showRegenerateConfirm && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div className="bg-gray-900 text-white p-6 rounded-xl w-full max-w-sm shadow-xl">
+      <h2 className="text-xl font-bold mb-4">Regenerate Image?</h2>
+      <p className="text-gray-300 mb-6">
+        Doing this will regenerate this Page Image. This action cannot be undone.
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setShowRegenerateConfirm(false)}
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+        >
+          No
+        </button>
+
+        <button
+          onClick={handleRegenerateConfirm}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+        >
+          Yes, Regenerate
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 

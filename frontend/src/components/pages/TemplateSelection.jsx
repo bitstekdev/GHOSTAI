@@ -186,6 +186,7 @@ const TemplateSelection = () => {
             {templates.map((_, idx) => (
               <button
                 key={idx}
+                disabled={loading}
                 onClick={() => setSelectedTemplate(idx)}
                 className={`w-3 h-3 rounded-full ${
                   selectedTemplate === idx ? "bg-purple-500" : "bg-gray-600"
