@@ -17,7 +17,7 @@ import Image2 from "../../assets/images/landscape.png";
 // import Image3 from "../../assets/images/protrait.png";
 ////////////////////////////////////////////////////////////////////////////////////
 
-const StoryFlipbook = ({ storyId = "69369845df64de927c9c8658" }) => {
+const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(true);
