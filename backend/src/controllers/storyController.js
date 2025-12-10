@@ -239,8 +239,7 @@ exports.getStory = async (req, res, next) => {
   try {
     const story = await Story.findOne({
       _id: req.params.id,
-      // user: req.user.id
-      user: "69368a106b85d39345d24042"
+      user: req.user.id
     })
       .populate('coverImage', '-base64Data')
       .populate('backCoverImage', '-base64Data');
@@ -252,7 +251,7 @@ exports.getStory = async (req, res, next) => {
       });
     }
 
-    const pages = await StoryPage.find({ story: story._id })
+    const pages = await StoryPage.findOne({ story: story._id })
       .sort({ pageNumber: 1 })
       .populate({
       path: 'characterImage',

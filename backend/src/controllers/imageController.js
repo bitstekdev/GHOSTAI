@@ -347,6 +347,107 @@ const generateCover = async (storyId) => {
 };
 
 
+// @desc    Face swap source image onto character image
+// @route   POST /api/images/faceswap
+// @access  Private
+exports.faceSwap = async (req, res) => {
+  try {
+    const sourceFile = req.file;
+    const { characterImageId } = req.body;
+
+    if (!sourceFile || !characterImageId) {
+      return res.status(400).json({
+        success: false,
+        message: "source image and characterImageId are required",
+      });
+    }
+
+    // 1️⃣ Get the Image document from DB
+    const imageDoc = await Image.findById(characterImageId);
+
+    if (!imageDoc) {
+      return res.status(404).json({ success: false, message: "Image not found" });
+    }
+
+    const targetBuffer = Buffer.from(imageDoc.base64Data, "base64");
+
+    // 2️⃣ Prepare options
+    const options = {
+      source_index: parseInt(req.body.source_index || -1),
+      target_index: parseInt(req.body.target_index || -1),
+      upscale: parseInt(req.body.upscale || 1),
+      codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
+      background_enhance: req.body.background_enhance !== "false",
+      face_restore: req.body.face_restore !== "false",
+      face_upsample: req.body.face_upsample === "true",
+      output_format: req.body.output_format || "PNG",
+    };
+
+    // 3️⃣ Call FastAPI for swapping
+    const swapResult = await fastApiService.faceSwap(
+      sourceFile.buffer,
+      targetBuffer,
+      options
+    );
+
+    const swappedBase64 = swapResult.swapped_image;
+
+    if (!swappedBase64) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate swapped image"
+      });
+    }
+
+    // 4️⃣ Save the old image into oldImages[]
+    imageDoc.oldImages.push({
+      base64Data: imageDoc.base64Data,
+      s3Url: imageDoc.s3Url,
+      version: `v${imageDoc.oldImages.length + 1}`
+    });
+
+    // 5️⃣ Upload new swapped image to S3
+    const buffer = Buffer.from(swappedBase64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${imageDoc.story}/faceswap`,
+      `faceswap-${Date.now()}.png`,
+      "image/png"
+    );
+
+    // 6️⃣ Update DB with new image data
+    imageDoc.base64Data = swappedBase64;
+    imageDoc.s3Key = s3Result.key;
+    imageDoc.s3Url = s3Result.url;
+    imageDoc.s3Bucket = s3Result.bucket;
+    imageDoc.size = buffer.length;
+    imageDoc.metadata = {
+      ...imageDoc.metadata,
+      model: "faceswap",
+      generationTime: Date.now(),
+    };
+
+    await imageDoc.save();
+
+    return res.json({
+      success: true,
+      message: "Face swap updated successfully",
+      data: imageDoc
+    });
+
+  } catch (err) {
+    console.error("FaceSwap Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString(),
+    });
+  }
+};
+
+
+
 // @desc    Get images for a story page
 // @route   GET /api/images/page/:pageId
 // @access  Private
