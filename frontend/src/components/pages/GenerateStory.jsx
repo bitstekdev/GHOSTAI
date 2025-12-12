@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import api from "../../services/axiosInstance";
 import { PenTool } from "lucide-react";
 import { AppContext } from '../../context/AppContext'
+import {ProgressStep1} from '../helperComponents/Steps.jsx'
 
 const GenerateStory = () => {
   const {navigateTo} = useContext(AppContext)
@@ -83,7 +84,7 @@ const handleSubmit = async () => {
     );
 
     // Navigate to Questioner UI
-    navigateTo("/questioner");
+    navigateTo(`/questioner/${storyId}`);
 
   } catch (error) {
     setMsg(error.response?.data?.message || "An error occurred");
@@ -95,8 +96,9 @@ const handleSubmit = async () => {
 
 
   return (
-    <div className="relative p-4 md:p-8 max-w-2xl mx-auto">
-
+    <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
+      <ProgressStep1 />
+    <div className="relative p-6 py-10 max-w-3xl w-full">
       {/* Title */}
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
         <PenTool size={32} className="text-purple-500" />
@@ -134,8 +136,13 @@ const handleSubmit = async () => {
             <option value="Adventure">Adventure</option>
             <option value="Family">Family</option>
             <option value="Mystery">Mystery</option>
-            <option value="Horror">Horror</option>
-            <option value="Romance">Romance</option>
+            <option value="Housewarming">Housewarming</option>
+            <option value="Corporate Promotion">Corporate Promotion</option>
+            <option value="Marriage">Marriage</option>
+            <option value="Baby Shower">Baby Shower</option>
+            <option value="Birthday">Birthday</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Friends">Friends</option>
           </select>
         </div>
 
@@ -258,16 +265,17 @@ const handleSubmit = async () => {
          {msg && <p className="text-red-500">{msg}</p>}
 
         {/* Submit - aligned to the right */}
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end mt-[-20px]">
           <p className="text-gray-400 text-sm text-right">Let's begin your story</p> 
           <button
             onClick={handleSubmit}
             className="bg-purple-600 hover:bg-purple-700 w-1/2 text-white py-3 px-6 rounded-lg mt-4"
           >
-            {loading ? "Thinking..." : "Next"}
+            {loading ? "Creating..." : "Next"}
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

@@ -39,6 +39,8 @@ const StoryFlipbook = () => {
   const [scale, setScale] = useState(1);
 
   const { storyId } = useParams();
+
+  console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
   const dummyStoryData = {
   story: {
@@ -153,19 +155,25 @@ const openEdit = () => {
   try {
     setRegenerateLoading(true);
 
-    const orientation = storyData?.story?.orientation || "Landscape";
+    const mongoIndex = currentPage - 1;
 
-    const res = await api.post("/api/v1/story/regenerate", {
-      storyId,
-      orientation,
-      pageNumber: currentPage,
+    if (mongoIndex < 0 || mongoIndex >= storyData.pages.length) {
+      console.log("Regenerate only allowed on story spreads.");
+      setShowRegenerateConfirm(false);
+      return;
+    }
+
+    const realPage = storyData.pages[mongoIndex];
+
+    const res = await api.post("/api/v1/images/regenerate", {
+      pageId: realPage._id,
+      characterDetails: storyData.story.characterDetails,
+      orientation: storyData.story.orientation,
     });
 
     if (res.data?.success) {
       const refreshed = await api.get(`/api/v1/story/${storyId}`);
       setStoryData(refreshed.data.data);
-    } else {
-      console.error("Regenerate failed:", res.data?.message);
     }
   } catch (err) {
     console.error("Regenerate Error:", err);
@@ -267,8 +275,8 @@ const openEdit = () => {
       jsx: (
         <div className="w-full h-full relative rounded-lg overflow-hidden">
           <img src={story.coverImage?.s3Url} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
-            <h1 className="text-4xl md:text-6xl font-bold drop-shadow-lg">{story.title}</h1>
+          <div className="absolute inset-0 flex flex-col items-center justify-start p-12 text-white">
+            <h1 className="text-3xl md:text-5xl text-center font-bold drop-shadow-lg">{story.title}</h1>
           </div>
         </div>
       ),

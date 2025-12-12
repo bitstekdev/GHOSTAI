@@ -23,6 +23,7 @@ const handleApply = async () => {
     return;
   }
 
+  
   try {
     setLoading(true);
     setError("");

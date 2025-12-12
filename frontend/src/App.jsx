@@ -20,6 +20,8 @@ import VerifyEmail from "./components/pages/VerifyEmail";
 import QuestionerPage from "./components/pages/QuestionerPage";
 import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
+import BackgroundGenerator from "./components/pages/BackgroundGenerator";
+import GenerateCovers from "./components/pages/GenerateCovers";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -60,16 +62,15 @@ const App = () => {
         <Route path="/" element={<Homee />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/verify-email/" element={<VerifyEmail />} />
         </Route>
 
         {/* Protected / private routes */}
         <Route element={<ProtectedRoute />}>
         <Route element={<ProtectedLayout />}>
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
-          <Route path="/templateselection" element={<TemplateSelection />} />
+          <Route path="/templateselection/:storyId" element={<TemplateSelection />} />
           <Route path="/flipbook/:storyId" element={<FlipBook />} />
           <Route path="/flipbook/mockup" element={<FlipBookMockUp />} />
           <Route path="/characterdump" element={<CharacterDump />} />
@@ -77,8 +78,12 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/orderhistory" element={<OrderHistory />} />
-          <Route path="/questioner" element={<QuestionerPage />} />
-          <Route path="/titlegenerator" element={<TitleGeneratorPage />} />
+          <Route path="/questioner/:storyId" element={<QuestionerPage />} />
+          <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
+          <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} />
+          <Route path="/generatecovers/:storyId" element={<GenerateCovers />} />
+
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
         </Route>
       </Routes>

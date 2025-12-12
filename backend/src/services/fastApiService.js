@@ -12,12 +12,13 @@ const fastApiClient = axios.create({
   }
 });
 
-// Questionnaire endpoints
+// Questionnaire endpoints--------------------------------------------------
 exports.startQuestionnaire = async () => {
   const response = await fastApiClient.post('/start');
   return response.data;
 };
 
+// Get next question based on previous answer----------------------------------
 exports.nextQuestion = async (conversation, answer) => {
   const response = await fastApiClient.post('/next', {
     conversation,
@@ -26,6 +27,7 @@ exports.nextQuestion = async (conversation, answer) => {
   return response.data;
 };
 
+// Gist generation--------------------------------------------------
 exports.generateGist = async (conversation, genre) => {
   const response = await fastApiClient.post('/gist', {
     conversation,
@@ -34,7 +36,7 @@ exports.generateGist = async (conversation, genre) => {
   return response.data;
 };
 
-// Story generation
+// Story generation--------------------------------------------------
 exports.generateStory = async (gist, numCharacters, fixedCharacterDetails, genre, numPages) => {
   const response = await fastApiClient.post('/story/generate', {
     gist,
@@ -46,7 +48,7 @@ exports.generateStory = async (gist, numCharacters, fixedCharacterDetails, genre
   return response.data;
 };
 
-// Image generation
+// Image generation--------------------------------------------------
 exports.generateImages = async (pages, orientation) => {
   const response = await fastApiClient.post('/images/generate', {
     pages,
@@ -55,6 +57,7 @@ exports.generateImages = async (pages, orientation) => {
   return response.data;
 };
 
+// SDXL Background generation------------------------------------------
 exports.generateSDXLBackgrounds = async (pages, orientation) => {
   const response = await fastApiClient.post('/images/sdxl_generate', {
     pages,
@@ -63,25 +66,7 @@ exports.generateSDXLBackgrounds = async (pages, orientation) => {
   return response.data;
 };
 
-// Title generation
-exports.generateTitles = async (fullText, genre) => {
-  const response = await fastApiClient.post('/title/generate', {
-    story: fullText,
-    genre
-  });
-  return response.data;
-};
-
-exports.regenerateTitles = async (story, genre, previousTitles) => {
-  const response = await fastApiClient.post('/title/regenerate', {
-    story,
-    genre,
-    previous_titles: previousTitles
-  });
-  return response.data;
-};
-
-// Cover generation
+// Cover generation--------------------------------------------------------
 exports.generateCoverAndBack = async (pages, genre, orientation, storyTitle, qrUrl) => {
   const response = await fastApiClient.post('/coverback/generate', {
     pages,
@@ -93,7 +78,29 @@ exports.generateCoverAndBack = async (pages, genre, orientation, storyTitle, qrU
   return response.data;
 };
 
-// Face swap
+// Title generation-----------------------------------------------------
+exports.generateTitles = async (fullText, genre) => {
+  const response = await fastApiClient.post('/title/generate', {
+    story: fullText,
+    genre
+  });
+  return response.data;
+};
+
+
+// Title regeneration-----------------------------------------------------
+exports.regenerateTitles = async (story, genre, previousTitles) => {
+  const response = await fastApiClient.post('/title/regenerate', {
+    story,
+    genre,
+    previous_titles: previousTitles
+  });
+  return response.data;
+};
+
+
+
+// Face swap--------------------------------------------------------------
 exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
   try {
     const form = new FormData();
@@ -130,7 +137,7 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
   }
 };
 
-// Edit image
+// Edit image --------------------------------------------------------
 exports.editImage = async (targetBuffer, prompt) => {
   console.log("Editing image with prompt in fast api:", prompt);
   try {
@@ -156,7 +163,7 @@ exports.editImage = async (targetBuffer, prompt) => {
   }
 };
 
-// regenerate image
+// regenerate image--------------------------------------------------
 exports.regenerateImages = async (payload) => {
   try {
     const response = await axios.post(
