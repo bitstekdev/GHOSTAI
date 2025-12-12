@@ -9,21 +9,27 @@ const upload = multer({
 const router = express.Router();
 const {
   generateCharacterImages,
+  generateBackgroundImages,
+  generateCover,
   faceSwap,
   editImage,
+  regenerateCharacterImage,
+  getPageImages, 
   testRoute,
-  getPageImages
 } = require('../controllers/imageController');
 const { protect } = require('../middleware/auth');
 
 router.post('/generate-characters/:storyId', protect, generateCharacterImages);
 router.get('/page/:pageId', protect, getPageImages);
+router.post('/generate-backgrounds', protect, generateBackgroundImages);
+router.post('/generate-covers', protect, generateCover);
 
 router.post('/faceswap', protect, upload.single("source"), faceSwap);
 router.post('/edit', protect, editImage);
+router.post('/regenerate', protect, regenerateCharacterImage);
+
+
 
 router.get('/test', testRoute);
-// router.post('/generate-backgrounds/:storyId', protect, generateBackgroundImages);
-// router.post('/generate-backgrounds/:storyId', protect, generateBackground);
 
 module.exports = router;

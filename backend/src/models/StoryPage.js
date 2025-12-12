@@ -1,4 +1,12 @@
+const { text } = require('express');
 const mongoose = require('mongoose');
+
+const oldStorySchema = new mongoose.Schema({
+  pageNumber:Number,
+  text:String,
+  prompt:String,
+  version: String,
+}, { _id: false });
 
 const storyPageSchema = new mongoose.Schema({
   story: {
@@ -19,6 +27,7 @@ const storyPageSchema = new mongoose.Schema({
     required: true
   },
   sdxlPrompt: String,
+  oldStory: [oldStorySchema],
   characterImage: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Image'
@@ -33,7 +42,7 @@ const storyPageSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'generating', 'completed', 'failed'],
+    enum: ['pending', 'generating', 'completed', 'failed', 'regenerated'],
     default: 'pending'
   }
 }, {

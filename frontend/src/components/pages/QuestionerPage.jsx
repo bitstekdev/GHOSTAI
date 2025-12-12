@@ -3,10 +3,13 @@ import { AppContext } from '../../context/AppContext'
 import logoImg from "../../assets/images/logo.gif";
 import api from "../../services/axiosInstance";
 import { PenTool } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { ProgressStep2 } from '../helperComponents/Steps.jsx'
 
 export default function QuestionerPage() {
+  const params = useParams();
   const {navigateTo, storyId, setStoryId} = useContext(AppContext)
-//   const [storyId, setStoryId] = useState(null);
+  const [storyIdParam, setStoryIdParam] = useState(params.storyId || null);
   const [conversation, setConversation] = useState([]);
   const [answer, setAnswer] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -26,7 +29,7 @@ export default function QuestionerPage() {
   const updateLocalStorage = (updatedConv) => {
     localStorage.setItem(
       "conversationData",
-      JSON.stringify({ storyId, conversation: updatedConv })
+      JSON.stringify({ storyIdParam, conversation: updatedConv })
     );
   };
 
@@ -37,7 +40,7 @@ export default function QuestionerPage() {
 
     try {
       const response = await api.post("/api/v1/story/next", {
-        storyId,
+        storyId: storyIdParam,
         conversation,
         answer,
       });
@@ -57,19 +60,19 @@ export default function QuestionerPage() {
     }
   };
 
-  const isFinished = conversation.length >= 5;
+  const isFinished = conversation.length >= 15;
   // const isFinished = conversation.length >= 2;
 
   const handleGetPrompt = async () => {
     try {
       setLoading(true);
       const response = await api.post("/api/v1/story/gist", {
-        storyId,
+        storyId: storyIdParam,
         conversation,
       });
       setStoryId(response.data.storyId);
     //   console.log("Prompt Response", response.data);
-      navigateTo("/templateselection");
+      navigateTo(`/templateselection/${response.data.storyId}`);
     } catch (err) {
       console.error("Gist API Error", err);
     } finally {
@@ -81,6 +84,7 @@ export default function QuestionerPage() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
+      <ProgressStep2 />
       {/* Logo */}
       <div className="flex items-center justify-center mb-10">
         <img src={logoImg} alt="GHOST.ai" className="h-15" />
@@ -132,14 +136,14 @@ export default function QuestionerPage() {
             <div className="w-full max-w-2xl mt-6">
             <div className="flex justify-between text-sm mb-1 text-gray-400">
                 {/* <span>Question {conversation.length} of 15</span> */}
-                <span>Question {conversation.length} of 10</span>
-                <span>{Math.round((conversation.length / 10) * 100)}%</span>
+                <span>Question {conversation.length} of 15</span>
+                <span>{Math.round((conversation.length / 15) * 100)}%</span>
             </div>
 
             <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                 <div
                 className="h-full bg-purple-600 transition-all duration-300"
-                style={{ width: `${(conversation.length / 10) * 100}%` }}
+                style={{ width: `${(conversation.length / 15) * 100}%` }}
                 ></div>
             </div>
             </div>

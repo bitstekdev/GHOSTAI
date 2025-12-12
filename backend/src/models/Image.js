@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const oldImagesSchema = new mongoose.Schema({
   base64Data:String,
   s3Url:String,
+  s3Key:String,
   version: String,
 }, { _id: false });
 
