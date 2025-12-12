@@ -1,10 +1,14 @@
 import { useEffect, useState, useContext } from "react";
 import api from "../../services/axiosInstance";
 import { AppContext } from "../../context/AppContext";
+import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
+import { ProgressStep3 } from '../helperComponents/Steps.jsx'
 
 const TemplateSelection = () => {
-  const { storyId, navigateTo } = useContext(AppContext);
+  const params = useParams();
+  const { navigateTo } = useContext(AppContext);
+  const [ storyIdParam, setStoryIdParam] = useState(params.storyId || null);
   const [selectedTemplate, setSelectedTemplate] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +25,7 @@ const TemplateSelection = () => {
     // Fetch story data 
     const fetchStoryData = async () => {
       try {
-        const response = await api.get(`/api/v1/story/${storyId}`);
+        const response = await api.get(`/api/v1/story/${storyIdParam}`);
         console.log("Story Data:", response.data.data.story);
         setStoryData(response.data.data.story);
       } catch (error) {
@@ -32,21 +36,12 @@ const TemplateSelection = () => {
     fetchStoryData();
   }, []);
 
-  const fetchdata = async () => {
-    try {
-      const response = await api.get(`/api/v1/story/${storyId}`);
-      console.log("Story Data:", response.data.data.story);
-      setStoryData(response.data.data.story);
-    } catch (error) {
-      console.error("Error fetching story data:", error);
-    }
-  };
   
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const response = await api.post("/api/v1/story/create", {
-      storyId,
+      storyId: storyIdParam,
       gist: storyData?.gist,
       genre: storyData?.genre,
       numCharacters: storyData?.numCharacters,
@@ -54,7 +49,7 @@ const TemplateSelection = () => {
       numPages: storyData?.numOfPages,
       orientation: templates[selectedTemplate].name,
     });
-      navigateTo("/titlegenerator");
+      navigateTo(`/titlegenerator/${storyIdParam}`);
       console.log("Generate Story Response:", response.data);
     } catch (error) {
       console.error("Error generating story:", error);
@@ -65,7 +60,7 @@ const TemplateSelection = () => {
 
   return (
     <div className="p-4 md:p-8">
-      
+      <ProgressStep3 />
       {/* <button className="bg-red-700" onClick={fetchdata}>test btn</button> */}
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         <div className="p-6">
@@ -186,6 +181,7 @@ const TemplateSelection = () => {
             {templates.map((_, idx) => (
               <button
                 key={idx}
+                disabled={loading}
                 onClick={() => setSelectedTemplate(idx)}
                 className={`w-3 h-3 rounded-full ${
                   selectedTemplate === idx ? "bg-purple-500" : "bg-gray-600"

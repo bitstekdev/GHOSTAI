@@ -51,9 +51,8 @@ exports.generateCharacterImages = async (req, res, next) => {
         return null;
       }
 
-      try {
-        // Convert base64 to buffer
-        const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
+      // Convert base64 to buffer
+      const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
 
         // Upload to S3
         const s3Result = await s3Service.uploadToS3(
@@ -68,7 +67,7 @@ exports.generateCharacterImages = async (req, res, next) => {
           story: storyId,
           storyPage: pages[pageResult.page - 1]._id,
           imageType: 'character',
-          base64Data: pageResult.hidream_image_base64,
+          // base64Data: pageResult.hidream_image_base64,
           s3Key: s3Result.key,
           s3Url: s3Result.url,
           s3Bucket: s3Result.bucket,
@@ -80,7 +79,8 @@ exports.generateCharacterImages = async (req, res, next) => {
             model: 'hidream'
           }
         });
-
+        
+      try {
         // Update StoryPage with image reference
         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
           characterImage: image._id,
@@ -91,6 +91,10 @@ exports.generateCharacterImages = async (req, res, next) => {
 
         return image;
       } catch (error) {
+         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
+          characterImage: image._id,
+          status: 'failed'
+        });
         console.error(`Error processing page ${pageResult.page}:`, error);
         return null;
       }
@@ -99,14 +103,20 @@ exports.generateCharacterImages = async (req, res, next) => {
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
 
-    const backgroundImages = await generateBackgroundImages(storyId);
-    console.log("Background Images Generated:", backgroundImages);
-    const coverImages = await generateCover(storyId);
-    console.log("Cover Images Generated:", coverImages);
+      // Generate background images and cover images
+    // try {
+    // const backgroundImages = await generateBackgroundImages(storyId);
+    // console.log("Background Images Generated:", backgroundImages);
+    // const coverImages = await generateCover(storyId);
+    // console.log("Cover Images Generated:", coverImages);
+    // } catch (coverBgError) {
+    //   console.error("Error generating cover/background images:", coverBgError);
+    // }
 
     res.status(200).json({
       success: true,
       message: 'Character images generated successfully',
+      storyId: storyId,
       data: {
         totalPages: pages.length,
         successfulGenerations: successfulImages.length,
@@ -119,16 +129,15 @@ exports.generateCharacterImages = async (req, res, next) => {
 };
 
 // @desc    Generate background images for story pages
-// @route   POST /api/images/generate-backgrounds/:storyId
+// @route   POST /api/images/generate-backgrounds/
 // @access  Private
-// exports.generateBackgroundImages = async (req, res, next) => {
-const generateBackgroundImages = async (storyId) => {
+exports.generateBackgroundImages = async (req, res, next) => {
+// const generateBackgroundImages = async (storyId) => {
   try {
-    // const { storyId } = req.params;
+    const { storyId } = req.body;
 
     const story = await Story.findOne({
       _id: storyId,
-      // user: req.user.id
     });
 
     if (!story) {
@@ -184,8 +193,8 @@ const generateBackgroundImages = async (storyId) => {
           backgroundImage: image._id,
           sdxlPrompt: pageResult.sdxl_prompt
         });
+        console.log(`Page ${pageResult.page} image generated and stored successfully.`);
 
-        return image;
       } catch (error) {
         console.error(`Error processing background ${pageResult.page}:`, error);
         return null;
@@ -194,29 +203,29 @@ const generateBackgroundImages = async (storyId) => {
 
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
-
-    // res.status(200).json({
-    //   success: true,
-    //   message: 'Background images generated successfully',
-    //   data: {
-    //     totalPages: pages.length,
-    //     successfulGenerations: successfulImages.length,
-    //     images: successfulImages
-    //   }
-    // });
-    return successfulImages;
+    
+     res.status(200).json({
+      success: true,
+      message: 'Background images generated successfully',
+      data: {
+        totalPages: pages.length,
+        successfulGenerations: successfulImages.length,
+        images: successfulImages
+      }
+    });
   } catch (error) {
-    // next(error);
     console.error('Error generating background images:', error);
+    next(error);
   }
 };
 
 
 // @desc    Generate cover and back cover for a story
-// @route   POST /api/cover/generate/:storyId
+// @route   POST /api/cover/generate/
 // @access  Private
-// exports.generateCover = async (req, res, next) => {
-const generateCover = async (storyId) => {
+exports.generateCover = async (req, res, next) => {
+// const generateCover = async (storyId) => {
+  const { storyId } = req.body;
   try {
     
     const story = await Story.findOne({
@@ -320,31 +329,358 @@ const generateCover = async (storyId) => {
       if (qr_url) {
         story.qrUrl = qr_url;
       }
-      const result = await story.save();
-      console.log('Story save result:', result);
+      const response = await story.save();
+      console.log('Story save result:', response);
 
       console.log('Cover and back cover generated successfully.', story);
-      
-      // res.status(200).json({
-      //   success: true,
-      //   message: 'Cover and back cover generated successfully',
-      //   data: {
-      //     coverImage,
-      //     backCoverImage,
-      //     backCoverBlurb: coverData.back_blurb,
-      //     titleUsed: result.title_used
-      //   }
-      // });
-      return story; 
+    
+      res.status(200).json({
+      success: true,
+      message: 'Cover and back cover images generated successfully',
+      data: {
+        totalPages: pages.length,
+      }
+    });
     } else {
       throw new Error('Failed to generate cover images');
     }
   } catch (error) {
-    // next(error);
     console.error('Error generating cover images:', error);
-    return null;
+    next(error);
   }
 };
+
+
+// @desc    Face swap source image onto character image
+// @route   POST /api/images/faceswap
+// @access  Private
+exports.faceSwap = async (req, res) => {
+  try {
+    const sourceFile = req.file;
+    const { characterImageId } = req.body;
+
+    if (!sourceFile || !characterImageId) {
+      return res.status(400).json({
+        success: false,
+        message: "source image and characterImageId are required",
+      });
+    }
+
+    // Get the Image document from DB
+    const imageDoc = await Image.findById(characterImageId);
+
+    if (!imageDoc) {
+      return res.status(404).json({ success: false, message: "Image not found" });
+    }
+
+    // const targetBuffer = Buffer.from(imageDoc.base64Data, "base64");
+    const targetBuffer = await s3Service.getObjectFromS3(imageDoc.s3Key);
+    console.log("FaceSwap - Target Buffer Length:", targetBuffer.length);
+
+
+    // Prepare options
+    const options = {
+      source_index: parseInt(req.body.source_index),
+      target_index: parseInt(req.body.target_index),
+      upscale: parseInt(req.body.upscale || 0),
+      codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
+      background_enhance: req.body.background_enhance !== "false",
+      face_restore: req.body.face_restore !== "false",
+      face_upsample: req.body.face_upsample === "true",
+      output_format: req.body.output_format || "PNG",
+    };
+
+    //  Call FastAPI for swapping
+    const swapResult = await fastApiService.faceSwap(
+      sourceFile.buffer,
+      targetBuffer,
+      options
+    );
+
+    const swappedBase64 = swapResult.swapped_image;
+
+    if (!swappedBase64) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate swapped image"
+      });
+    }
+
+    // Save the old image into oldImages[]
+    imageDoc.oldImages.push({
+      // base64Data: imageDoc.base64Data,
+      s3Url: imageDoc.s3Url,
+      s3Key: imageDoc.s3Key,
+      version: `v${imageDoc.oldImages.length + 1}`
+    });
+
+    // Upload new swapped image to S3
+    const buffer = Buffer.from(swappedBase64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${imageDoc.story}/faceswap`,
+      `faceswap-${Date.now()}.png`,
+      "image/png"
+    );
+
+    // Update DB with new image data
+    // imageDoc.base64Data = swappedBase64;
+    imageDoc.s3Key = s3Result.key;
+    imageDoc.s3Url = s3Result.url;
+    imageDoc.s3Bucket = s3Result.bucket;
+    imageDoc.size = buffer.length;
+    imageDoc.metadata = {
+      ...imageDoc.metadata,
+      model: "faceswap",
+      generationTime: Date.now(),
+    };
+
+    await imageDoc.save();
+
+    return res.json({
+      success: true,
+      message: "Face swap updated successfully",
+      data: imageDoc
+    });
+
+  } catch (err) {
+    console.error("FaceSwap Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString(),
+    });
+  }
+};
+
+
+// @desc    Edit image by face swapping
+// @route   POST /api/v1/images/edit
+// @access  Private
+exports.editImage = async (req, res) => {
+  try {
+    const { characterImageId, prompt } = req.body;
+
+    if (!characterImageId || !prompt) {
+      return res.status(400).json({
+        success: false,
+        message: "characterImageId and prompt are required",
+      });
+    }
+
+    // 1️⃣ Get the Image document from DB
+    const imageDoc = await Image.findById(characterImageId);
+
+    if (!imageDoc) {
+      return res.status(404).json({ success: false, message: "Image not found" });
+    }
+
+    // const targetBuffer = Buffer.from(imageDoc.base64Data, "base64");
+    const targetBuffer = await s3Service.getObjectFromS3(imageDoc.s3Key);
+
+
+
+    console.log("Edit Image - Target Buffer Length:", targetBuffer.length); 
+    // 3️⃣ Call FastAPI for swapping
+    const editResult = await fastApiService.editImage(
+      targetBuffer,
+      prompt,
+    );
+
+    const editedBase64 = editResult.output_base64;
+
+    if (!editedBase64) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate edited image"
+      });
+    }
+
+    // 4️⃣ Save the old image into oldImages[]
+    imageDoc.oldImages.push({
+      // base64Data: imageDoc.base64Data,
+      s3Url: imageDoc.s3Url,
+      s3Key: imageDoc.s3Key,
+      version: `v${imageDoc.oldImages.length + 1}`
+    });
+
+    // 5️⃣ Upload new swapped image to S3
+    const buffer = Buffer.from(editedBase64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${imageDoc.story}/edit`,
+      `edit-${Date.now()}.png`,
+      "image/png"
+    );
+
+    // 6️⃣ Update DB with new image data
+    // imageDoc.base64Data = editedBase64;
+    imageDoc.s3Key = s3Result.key;
+    imageDoc.s3Url = s3Result.url;
+    imageDoc.s3Bucket = s3Result.bucket;
+    imageDoc.size = buffer.length;
+    imageDoc.metadata = {
+      ...imageDoc.metadata,
+      model: "faceswap",
+      generationTime: Date.now(),
+    };
+
+    await imageDoc.save();
+
+    return res.json({
+      success: true,
+      message: "Image edited successfully",
+      data: imageDoc
+    });
+
+  } catch (err) {
+    console.error("Edit Image Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString(),
+    });
+  }
+};
+
+// @desc    Re-generate a character image for a page
+// @route   POST /api/images/regenerate
+// @access  Private
+exports.regenerateCharacterImage = async (req, res) => {
+  try {
+    const { pageId, characterDetails, orientation } = req.body;
+    // console.log("Regenerate Character Image Request:", req.body);
+
+    if (!pageId || !characterDetails) {
+      return res.status(400).json({
+        success: false,
+        message: "pageId and characterDetails are required"
+      });
+    }
+
+    // 1️⃣ Get page + story + image
+    const page = await StoryPage.findById(pageId).populate("story").populate("characterImage");
+    if (!page) {
+      return res.status(404).json({ success: false, message: "Page not found" });
+    }
+
+     const story = page.story;
+     const existingImage = page.characterImage;
+
+    // fromat character details
+    const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
+
+    // 2️⃣ Build FastAPI payload
+    const apiPayload = {
+      pages: [
+        {
+          page: page.pageNumber,
+          text: page.text,
+          prompt: page.prompt,
+          character_details: fixedCharacterDetails
+        }
+      ],
+      orientation: orientation || story.orientation
+    };
+
+    // console.log("Payload to FastAPI:", apiPayload);
+
+    //-------------------------------------------------------------
+    // Call FastAPI
+    //-------------------------------------------------------------
+    const regenResult = await fastApiService.regenerateImages(apiPayload);
+
+    // console.log("Regenerate Result from FastAPI:", regenResult);
+
+    const newStory = regenResult?.pages?.[0]?.new_story;
+    const newPrompt = regenResult?.pages?.[0]?.new_prompt;
+    const base64 = regenResult?.pages?.[0]?.image_path;
+
+    if (!base64) {
+      return res.status(500).json({ success: false, message: "No image returned from FastAPI" });
+    }
+
+    // ------------------------------------------------------------------------------------
+    //  SAVE OLD STORY DATA IN storyPage.oldStory[]
+    // ------------------------------------------------------------------------------------
+    page.oldStory.push({
+      pageNumber: page.pageNumber,
+      text: page.text,
+      prompt: page.prompt,
+      version: `regen-${page.oldStory.length + 1}`
+    });
+
+    // Update page story + prompt
+    page.text = newStory;
+    page.prompt = newPrompt;
+    await page.save();
+
+    // ------------------------------------------------------------------------------------
+    //  SAVE OLD IMAGE DATA IN image.oldImages[]
+    // ------------------------------------------------------------------------------------
+    if (existingImage) {
+      existingImage.oldImages.push({
+        s3Key: existingImage.s3Key,
+        s3Url: existingImage.s3Url,
+        version: `regen-${existingImage.oldImages.length + 1}`
+      });
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Upload new regenerated image
+    // ------------------------------------------------------------------------------------
+    const buffer = Buffer.from(base64, "base64");
+
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${story._id}/regenerated`,
+      `regen-page-${page.pageNumber}-${Date.now()}.png`,
+      "image/png"
+    );
+
+    if (!existingImage)
+      return res.status(500).json({ success: false, message: "Image document missing" });
+
+    existingImage.s3Key = s3Result.key;
+    existingImage.s3Url = s3Result.url;
+    existingImage.s3Bucket = s3Result.bucket;
+    existingImage.size = buffer.length;
+    existingImage.prompt = newPrompt;
+    existingImage.metadata = {
+      ...existingImage.metadata,
+      model: "regenerate",
+      regeneratedAt: Date.now()
+    };
+
+    await existingImage.save();
+
+    // ------------------------------------------------------------------------------------
+    // Update StoryPage reference
+    // ------------------------------------------------------------------------------------
+    await StoryPage.findByIdAndUpdate(pageId, {
+      status: "regenerated",
+      characterImage: existingImage._id
+    });
+
+    return res.json({
+      success: true,
+      message: "Character image regenerated successfully",
+      image: existingImage
+    });
+
+  } catch (err) {
+    console.error("Regenerate Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.toString()
+    });
+  }
+};
+
+
 
 
 // @desc    Get images for a story page

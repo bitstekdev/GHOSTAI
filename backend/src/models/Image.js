@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const oldImagesSchema = new mongoose.Schema({
+  base64Data:String,
+  s3Url:String,
+  s3Key:String,
+  version: String,
+}, { _id: false });
+
 const imageSchema = new mongoose.Schema({
   story: {
     type: mongoose.Schema.Types.ObjectId,
@@ -14,6 +21,7 @@ const imageSchema = new mongoose.Schema({
     enum: ['character', 'background', 'composite', 'cover', 'backCover'],
     required: true
   },
+  oldImages: [oldImagesSchema],
   base64Data: String,
   s3Key: {
     type: String,

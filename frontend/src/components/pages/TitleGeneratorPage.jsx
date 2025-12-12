@@ -1,10 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from '../../context/AppContext'
 import api from "../../services/axiosInstance";
+import { useParams } from "react-router-dom";
 import { Loader2, Sparkles, SquarePen } from "lucide-react";
+import { ProgressStep4 } from '../helperComponents/Steps.jsx'
 
 const TitleSelection = () => {
-  const { storyId, navigateTo } = useContext(AppContext);
+  const { navigateTo } = useContext(AppContext);
+  const { storyId } = useParams();
   const [storyData, setStoryData] = useState(null);
 
   const [aiTitles, setAiTitles] = useState([]); // MUST be array
@@ -12,6 +15,7 @@ const TitleSelection = () => {
 
   const [loadingTitles, setLoadingTitles] = useState(false);
   const [creatingBook, setCreatingBook] = useState(false);
+  const [regenerate, setRegenerate] = useState(false);
 
   useEffect(() => {
     fetchStoryData();
@@ -20,6 +24,7 @@ const TitleSelection = () => {
 
   const fetchStoryData = async () => {
     try {
+      // const res = await api.get(`/api/v1/story/6939cb6e18374ba322e05efa`);
       const res = await api.get(`/api/v1/story/${storyId}`);
       const story = res.data.data.story;
       setStoryData(story);
@@ -29,7 +34,9 @@ const TitleSelection = () => {
     }
   };
 
+  // Generate AI Titles
   const handleGenerateTitles = async () => {
+    console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -37,16 +44,16 @@ const TitleSelection = () => {
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
         selectedTitle,
-        story: storyData?.gist, 
+        // story: storyData?.gist, 
         genre: storyData?.genre
       });
 
       // Titles must be an array! 
       // setAiTitles(res.data.titles || []);
       setAiTitles(res.data.data.titles || []);
-
-
-      console.log("AI Titles Response:", res.data);
+      setRegenerate(true);
+      
+      // console.log("AI Titles Response:", res.data);
     } catch (err) {
       console.error("AI Title fetch failed:", err);
     } finally {
@@ -54,6 +61,32 @@ const TitleSelection = () => {
     }
   };
 
+  // For Regenerate Button
+  const handleReGenerateTitles = async () => {
+    try {
+      setLoadingTitles(true);
+      setAiTitles([]);
+
+      const res = await api.post("/api/v1/story/titles/regenerate", {
+        storyId,
+        story: storyData?.gist, 
+        genre: storyData?.genre,
+        previousTitles: aiTitles,
+        selectedTitle,
+      });
+
+      setAiTitles(res.data.data.titles || []);
+      setRegenerate(true);
+      
+      // console.log("AI Titles Response:", res.data);
+    } catch (err) {
+      console.error("AI Title fetch failed:", err);
+    } finally {
+      setLoadingTitles(false);
+    }
+  };
+
+  // Final Create Book Handler
   const handleCreateBook = async () => {
     try {
       setCreatingBook(true);
@@ -66,7 +99,7 @@ const TitleSelection = () => {
       });
 
       console.log("Book creation response:", res.data);
-      navigateTo("/flipbook");
+      navigateTo(`/backgroundgenerator/${res.data.storyId}`);
 
     } catch (err) {
       console.error(err);
@@ -75,17 +108,11 @@ const TitleSelection = () => {
     }
   };
 
-  const test = () => {
-    fetchStoryData();
-    console.log("Story Data:", storyData);
-    console.log("Test function called");
-  };
 
   return (
-    <div className="p-6 py-10 max-w-3xl mx-auto text-white">
-
-
-     {/* <button onClick={test} className="bg-red-700">Test Fetch Story Data</button> */}
+     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
+      <ProgressStep4 />
+    <div className="p-6 py-10 relative max-w-3xl w-full text-white">
       {/* MAIN HEADING */}
       <h1 className="text-3xl font-bold text-purple-400 mb-4">
         Choose Your Book Title
@@ -104,23 +131,43 @@ const TitleSelection = () => {
       </div>
 
       {/* Generate AI Titles Button */}
-      <button
-        className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-        onClick={handleGenerateTitles}
-        disabled={loadingTitles}
-      >
-        {loadingTitles ? (
-          <>
-            <Loader2 className="animate-spin" />
-            Generating AI Titles...
-          </>
-        ) : (
-          <>
-            <Sparkles size={20} />
-            Generate Better Titles
-          </>
-        )}
-      </button>
+      {!regenerate ? ( 
+            <button
+              className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+              onClick={handleGenerateTitles}
+              disabled={loadingTitles}
+            >
+              {loadingTitles ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Generating AI Titles...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={20} />
+                  Generate Better Titles
+                </>
+              )}
+            </button>
+      ) : (
+            <button
+            className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+            onClick={handleReGenerateTitles}
+            disabled={loadingTitles}
+          >
+            {loadingTitles ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Regenerating AI Titles...
+              </>
+            ) : (
+              <>
+                <Sparkles size={20} />
+                Regenerate Better Titles
+              </>
+            )}
+          </button>
+      )}
 
       {/* Loader Animation (not overlay) */}
       {loadingTitles && (
@@ -190,6 +237,7 @@ const TitleSelection = () => {
               </div>
         ) : null}
 
+    </div>
     </div>
   );
 };

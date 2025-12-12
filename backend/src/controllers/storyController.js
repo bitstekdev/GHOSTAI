@@ -1,5 +1,7 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
+const Image = require('../models/Image');
+const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
 
 // @desc    Start questionnaire
@@ -114,7 +116,7 @@ exports.createStory = async (req, res, next) => {
     // console.log("request body:", req.body);
     
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
-    console.log("Fixed Character Details:", fixedCharacterDetails);
+    // console.log("Fixed Character Details:", fixedCharacterDetails);
     // await new Promise(resolve => setTimeout(resolve, 20000));
     
     
@@ -138,16 +140,6 @@ exports.createStory = async (req, res, next) => {
       status: 'generating'
     }, { new: true });
 
-    // Create story page documents
-    // const pagePromises = storyResult.pages.map(page =>
-    //   StoryPage.create({
-    //     story: story._id,
-    //     pageNumber: page.page,
-    //     text: page.text,
-    //     prompt: page.prompt,
-    //     status: 'pending'
-    //   })
-    // );
 
     const pagePromises = storyResult.pages.map(page =>
   StoryPage.findOneAndUpdate(
@@ -197,6 +189,8 @@ exports.createStory = async (req, res, next) => {
   }
 };
 
+
+
 // @desc    Get all user stories
 // @route   GET /api/story/my-stories
 // @access  Private
@@ -239,8 +233,7 @@ exports.getStory = async (req, res, next) => {
   try {
     const story = await Story.findOne({
       _id: req.params.id,
-      // user: req.user.id
-      user: "69368a106b85d39345d24042"
+      user: req.user.id
     })
       .populate('coverImage', '-base64Data')
       .populate('backCoverImage', '-base64Data');
@@ -284,13 +277,14 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    const { storyId, selectedTitle, story, genre } = req.body;
+    console.log("Generate titles request body:", req.body);
+    const { storyId, selectedTitle, genre } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
     const fullText = pages.map(page => page.text).join(' ');
-    // updatedStory.fullText = fullText;
+    
     await updatedStory.save();
 
     const result = await fastApiService.generateTitles(fullText, genre);
@@ -309,7 +303,18 @@ exports.generateTitles = async (req, res, next) => {
 // @access  Private
 exports.regenerateTitles = async (req, res, next) => {
   try {
-    const { story, genre, previousTitles } = req.body;
+    const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
+    console.log("Regenerate titles request body:", req.body);
+
+    const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
+
+    if(!updatedStory) {
+      return res.status(404).json({
+        success: false,
+        message: 'Story not found'
+      }); 
+    }
+    await updatedStory.save();
 
     const result = await fastApiService.regenerateTitles(story, genre, previousTitles);
 

@@ -1,7 +1,5 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-// axios.defaults.withCredentials = true;  
 
 import api from "../services/axiosInstance";
 
@@ -16,14 +14,38 @@ const AppContextProvider = (props) => {
 //-------------------
 //   Global States
 //-------------------
-const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading
-const [userData, setUserData] = useState(null);
-const [storyId, setStoryId] = useState("6935bf795b1ae90ed9afc6a5");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [storyId, setStoryId] = useState("");
+  const [loading, setLoading] = useState(true);
+  
+  // console.log("User Data in Context:", userData);
 
-// console.log("User Data in Context:", userData);
-const [loading, setLoading] = useState(false);
+    // Check if user is logged in on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
-
+  const checkAuthStatus = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/api/auth/is-logged-in`);
+      
+      if (response.data.loggedIn) {
+        setIsAuthenticated(true);
+        setUserData(response.data.user);
+      } else {
+        setIsAuthenticated(false);
+        setUserData(null);
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+      setUserData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 const navigateTo = (path) => {
   nav(path);
@@ -129,55 +151,21 @@ const changePassword = async (security) => {
 
 
 //--------------logout---------------------
-const logout = async () => {
-  await api.post(`${backendUrl}/api/auth/logout`, {});
-
-  setIsAuthenticated(false);
-  setUserData(null);
-
-  navigateTo("/signin");
-};
-
-
-
-// ------------------- Check Login -------------------
-const checkLogin = async () => {
-  try {
-    const res = await api.get(`${backendUrl}/api/auth/is-logged-in`);
-
-    if (res.data.loggedIn) {
-      setIsAuthenticated(true);
-      setUserData(res.data.user);
-      return true;
-    } else {
+  const logout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/api/auth/logout`, {});
       setIsAuthenticated(false);
       setUserData(null);
-      return false;
+      return { success: true };
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Still clear local state even if API call fails
+      setIsAuthenticated(false);
+      setUserData(null);
+      return { success: false };
     }
-  } catch (err) {
-    setIsAuthenticated(false);
-    setUserData(null);
-    return false;
-  }
-};
+  };
 
-useEffect(() => {
-  checkLogin();
-}, []);
-
-
-// useEffect(() => {
-//   const checkSession = async () => {
-//     try {
-//       const res = await api.get("/api/auth/me");
-//       setUserData(res.data.data);
-//     } catch (err) {
-//       setUserData(null);
-//     }
-//   };
-
-//   checkSession();
-// }, []);
 
 
 
