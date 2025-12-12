@@ -4,6 +4,7 @@ import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
+import confetti from "canvas-confetti";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -81,6 +82,32 @@ const StoryFlipbook = () => {
 };
 //////////////////////////////////////////////////////////////////////////////////////
 
+useEffect(() => {
+  
+    // 🎉 Fire confetti animation when page loads
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 60,
+        origin: { x: 0 },
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 60,
+        origin: { x: 1 },
+      });
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  }, []);
+
   // ============================
   // FACE SWAP HANDLER
   // ============================
@@ -92,7 +119,7 @@ const openFaceSwap = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    setErrorMessage("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Face Swap is only available on the LEFT page of a book.");
     return;
   }
 
@@ -126,7 +153,7 @@ const openEdit = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    setErrorMessage("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Edit is only available on the pages.");
     return;
   }
 
@@ -141,7 +168,7 @@ const openEdit = () => {
 
   // Only allow swapping if left-page character image exists
   if (!pageDoc.characterImage?.s3Url) {
-    setErrorMessage("This page has no character image for face swapping.");
+    setErrorMessage("This page has no character image for editing.");
     return;
   }
 
@@ -319,17 +346,6 @@ const openEdit = () => {
 
 
     // COVER (SINGLE PAGE)
-    // allPages.push({
-    //   type: "single",
-    //   jsx: (
-    //     <div className="w-full h-full relative rounded-lg overflow-hidden">
-    //       <img src={story.coverImage?.s3Url} className="w-full h-full object-cover" />
-    //       <div className="absolute inset-0 flex flex-col items-center justify-start p-12 text-white">
-    //         <h1 className="text-3xl md:text-5xl text-center font-bold drop-shadow-lg">{story.title}</h1>
-    //       </div>
-    //     </div>
-    //   ),
-    // });
       allPages.push({
         type: "single",
         jsx: (
@@ -378,17 +394,6 @@ const openEdit = () => {
     });
 
     // BACK COVER
-    // allPages.push({
-    //   type: "single",
-    //   jsx: (
-    //    <div className="w-full h-full relative rounded-lg overflow-hidden">
-    //     <img src={story.backCoverImage?.s3Url} className="w-full h-full object-cover " />
-    //      <div className="absolute inset-0 mt-20 px-10 py-6 overflow-y-auto">
-    //       <p className="text-white text-sm leading-relaxed">{story.backCoverBlurb}</p>
-    //       </div>
-    //   </div>
-    //   ),
-    // });
     allPages.push({
       type: "single",
       jsx: (
@@ -467,12 +472,14 @@ const openEdit = () => {
     if (currentPage < pages.length - 1 && !isFlipping) {
       setIsFlipping(true);
       setCurrentPage(currentPage + 1);
+      setErrorMessage("");
       setTimeout(() => setIsFlipping(false), 500);
     }
   };
   const prevPage = () => {
     if (currentPage > 0 && !isFlipping) {
       setIsFlipping(true);
+      setErrorMessage("");
       setCurrentPage(currentPage - 1);
       setTimeout(() => setIsFlipping(false), 500);
     }
@@ -519,7 +526,17 @@ const openEdit = () => {
             <div className="h-6 w-px bg-gray-700 ml-8 mr-8" />
             <button
               className="flex items-center gap-1 hover:text-purple-400 transition-colors"
-              onClick={() => setShowRegenerateConfirm(true)}>
+              onClick={() => {
+                      if (currentPage === 0) {
+                        setErrorMessage("Cannot regenerate the Cover page.");
+                        return;
+                      }
+                      if (currentPage === pages.length - 1) {
+                        setErrorMessage("Cannot regenerate the Back Cover page.");
+                        return;
+                      }
+                      setShowRegenerateConfirm(true);
+                    }}>
               <RefreshCcw size={16} /> regenerate
             </button>
 
@@ -549,6 +566,7 @@ const openEdit = () => {
                 </button> */}
           </div>
         </div>
+        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
 
         {/* RESPONSIVE FRAME */}
         <div ref={wrapperRef} className="flex justify-center w-full">
@@ -579,6 +597,7 @@ const openEdit = () => {
                 if (!isFlipping) {
                   setIsFlipping(true);
                   setCurrentPage(idx);
+                  setErrorMessage("");
                   setTimeout(() => setIsFlipping(false), 500);
                 }
               }}
@@ -640,10 +659,10 @@ const openEdit = () => {
       {showRegenerateConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-gray-900 text-white p-6 rounded-xl w-full max-w-sm shadow-xl">
-            <h2 className="text-xl font-bold mb-4">Regenerate Image?</h2>
+            <h2 className="text-xl font-bold mb-4">Regenerate Image and text?</h2>
             <p className="text-gray-300 mb-6">
-              Doing this will regenerate this Page Image. This action cannot be
-              undone.
+              Doing this will regenerate the left Page Image and text on right page. This action cannot be
+              undo.
             </p>
 
             <div className="flex justify-end gap-3">
