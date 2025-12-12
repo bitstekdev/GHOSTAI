@@ -39,3 +39,15 @@ exports.getSignedUrl = async (key, expiresIn = 3600) => {
 
   return s3.getSignedUrl('getObject', params);
 };
+
+// ✅ NEW: download/get function
+exports.getObjectFromS3 = async (key) => {
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: key,
+  };
+
+  const data = await s3.getObject(params).promise();
+
+  return data.Body; // <-- This is already a Buffer
+};

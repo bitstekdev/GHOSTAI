@@ -116,7 +116,7 @@ exports.createStory = async (req, res, next) => {
     // console.log("request body:", req.body);
     
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
-    console.log("Fixed Character Details:", fixedCharacterDetails);
+    // console.log("Fixed Character Details:", fixedCharacterDetails);
     // await new Promise(resolve => setTimeout(resolve, 20000));
     
     
@@ -188,147 +188,6 @@ exports.createStory = async (req, res, next) => {
     next(error);
   }
 };
-
-
-// @desc    Regenerate image for a single story page
-// @route   POST /api/v1/story/regenerate
-// @access  Private
-exports.regenerateStoryImages = async (req, res) => {
-  try {
-    const { storyId, orientation, pageNumber } = req.body;
-
-    console.log("🔥 Regenerate request:", { storyId, pageNumber });
-
-    if (!storyId || pageNumber === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "storyId and pageNumber are required"
-      });
-    }
-
-    // 1️⃣ Fetch Story
-    const story = await Story.findById(storyId);
-    if (!story) {
-      return res.status(404).json({
-        success: false,
-        message: "Story not found"
-      });
-    }
-
-    // 2️⃣ Fetch exact story page + characterImage INCLUDING base64Data
-    const page = await StoryPage.findOne({
-      story: storyId,
-      pageNumber
-    }).populate({
-      path: "characterImage",
-      select: "base64Data s3Url s3Key s3Bucket oldImages metadata prompt"
-    });
-
-    if (!page) {
-      return res.status(404).json({
-        success: false,
-        message: "Requested page not found"
-      });
-    }
-
-    if (!page.characterImage) {
-      return res.status(404).json({
-        success: false,
-        message: "No character image exists for this page"
-      });
-    }
-
-    const imageDoc = page.characterImage;
-    console.log("🖼 Existing imageDoc found:", imageDoc._id);
-
-    // 3️⃣ Character details string
-    const characterDetails = story.characterDetails
-      .map(c => `${c.name}: ${c.details}`)
-      .join(", ");
-
-    // 4️⃣ Build FastAPI payload
-    const apiPayload = {
-      pages: [{
-        page: page.pageNumber,
-        text: page.text,
-        prompt: page.prompt,
-        character_details: characterDetails
-      }],
-      orientation: orientation || story.orientation
-    };
-
-    console.log("📨 Payload to FastAPI:", apiPayload);
-
-    // 5️⃣ Call FastAPI for regeneration
-    const regenResult = await fastApiService.regenerateImages(apiPayload);
-
-    if (!regenResult?.output_base64_list?.length) {
-      return res.status(500).json({
-        success: false,
-        message: "FastAPI did not return regenerated image"
-      });
-    }
-
-    console.log("✅ Regeneration successful from FastAPI", regenResult);
-
-    const newBase64 = regenResult.output_base64_list[0];
-
-    // 6️⃣ Save old image version
-    imageDoc.oldImages.push({
-      base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
-
-    // 7️⃣ Upload new image to S3
-    const buffer = Buffer.from(newBase64, "base64");
-
-    const s3Result = await s3Service.uploadToS3(
-      buffer,
-      `stories/${storyId}/regenerated`,
-      `regen-${Date.now()}.png`,
-      "image/png"
-    );
-
-    // 8️⃣ Update Image document
-    imageDoc.base64Data = newBase64;
-    imageDoc.s3Url = s3Result.url;
-    imageDoc.s3Key = s3Result.key;
-    imageDoc.s3Bucket = s3Result.bucket;
-    imageDoc.size = buffer.length;
-    imageDoc.metadata = {
-      ...imageDoc.metadata,
-      model: "regenerate",
-      generationTime: Date.now(),
-    };
-
-    await imageDoc.save();
-
-    console.log("✅ Image updated successfully:", imageDoc._id);
-    console.log("🔑 New S3 Key:", s3Result.url);
-
-    return res.json({
-      success: true,
-      message: "Regeneration completed.",
-      data: {
-        pageNumber,
-        imageUrl: s3Result.url
-      }
-    });
-
-  } catch (err) {
-    console.error("❌ Regenerate Error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.toString()
-    });
-  }
-};
-
-
-
-
 
 
 
@@ -445,6 +304,7 @@ exports.generateTitles = async (req, res, next) => {
 exports.regenerateTitles = async (req, res, next) => {
   try {
     const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
+    console.log("Regenerate titles request body:", req.body);
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 

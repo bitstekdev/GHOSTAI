@@ -1,10 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from '../../context/AppContext'
 import api from "../../services/axiosInstance";
+import { useParams } from "react-router-dom";
 import { Loader2, Sparkles, SquarePen } from "lucide-react";
+import { ProgressStep4 } from '../helperComponents/Steps.jsx'
 
 const TitleSelection = () => {
-  const { storyId, navigateTo } = useContext(AppContext);
+  const { navigateTo } = useContext(AppContext);
+  const { storyId } = useParams();
   const [storyData, setStoryData] = useState(null);
 
   const [aiTitles, setAiTitles] = useState([]); // MUST be array
@@ -96,7 +99,7 @@ const TitleSelection = () => {
       });
 
       console.log("Book creation response:", res.data);
-      navigateTo(`/flipbook/${storyData._id}`);
+      navigateTo(`/backgroundgenerator/${res.data.storyId}`);
 
     } catch (err) {
       console.error(err);
@@ -105,17 +108,11 @@ const TitleSelection = () => {
     }
   };
 
-  const test = () => {
-    fetchStoryData();
-    console.log("Story Data:", storyData);
-    console.log("Test function called");
-  };
 
   return (
-    <div className="p-6 py-10 max-w-3xl mx-auto text-white">
-
-
-     {/* <button onClick={test} className="bg-red-700">Test Fetch Story Data</button> */}
+     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
+      <ProgressStep4 />
+    <div className="p-6 py-10 relative max-w-3xl w-full text-white">
       {/* MAIN HEADING */}
       <h1 className="text-3xl font-bold text-purple-400 mb-4">
         Choose Your Book Title
@@ -240,6 +237,7 @@ const TitleSelection = () => {
               </div>
         ) : null}
 
+    </div>
     </div>
   );
 };

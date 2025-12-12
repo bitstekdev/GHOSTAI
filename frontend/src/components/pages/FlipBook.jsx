@@ -4,6 +4,7 @@ import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
+import confetti from "canvas-confetti";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -29,6 +30,8 @@ const StoryFlipbook = () => {
   const [showFaceSwap, setShowFaceSwap] = useState(false);
   const [faceSwapPage, setFaceSwapPage] = useState(null);
   const [regenerateLoading, setRegenerateLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
 
   const [showEdit, setShowEdit] = useState(false);
   const [editPage, setEditPage] = useState(null);
@@ -39,6 +42,8 @@ const StoryFlipbook = () => {
   const [scale, setScale] = useState(1);
 
   const { storyId } = useParams();
+
+  // console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
   const dummyStoryData = {
   story: {
@@ -77,6 +82,32 @@ const StoryFlipbook = () => {
 };
 //////////////////////////////////////////////////////////////////////////////////////
 
+useEffect(() => {
+  
+    // 🎉 Fire confetti animation when page loads
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 60,
+        origin: { x: 0 },
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 60,
+        origin: { x: 1 },
+      });
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  }, []);
+
   // ============================
   // FACE SWAP HANDLER
   // ============================
@@ -88,7 +119,7 @@ const openFaceSwap = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    console.log("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Face Swap is only available on the LEFT page of a book.");
     return;
   }
 
@@ -97,13 +128,13 @@ const openFaceSwap = () => {
   const pageDoc = rawPages[mongoPageIndex];
 
   if (!pageDoc) {
-    console.log("Could not find page data");
+    setErrorMessage("Could not find page data");
     return;
   }
 
   // Only allow swapping if left-page character image exists
   if (!pageDoc.characterImage?.s3Url) {
-    console.log("This page has no character image for face swapping.");
+    setErrorMessage("This page has no character image for face swapping.");
     return;
   }
 
@@ -122,7 +153,7 @@ const openEdit = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    console.log("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Edit is only available on the pages.");
     return;
   }
 
@@ -131,13 +162,13 @@ const openEdit = () => {
   const pageDoc = rawPages[mongoPageIndex];
 
   if (!pageDoc) {
-    console.log("Could not find page data");
+    setErrorMessage("Could not find page data");
     return;
   }
 
   // Only allow swapping if left-page character image exists
   if (!pageDoc.characterImage?.s3Url) {
-    console.log("This page has no character image for face swapping.");
+    setErrorMessage("This page has no character image for editing.");
     return;
   }
 
@@ -153,22 +184,29 @@ const openEdit = () => {
   try {
     setRegenerateLoading(true);
 
-    const orientation = storyData?.story?.orientation || "Landscape";
+    const mongoIndex = currentPage - 1;
 
-    const res = await api.post("/api/v1/story/regenerate", {
-      storyId,
-      orientation,
-      pageNumber: currentPage,
+    if (mongoIndex < 0 || mongoIndex >= storyData.pages.length) {
+      setErrorMessage("Regenerate only allowed on story spreads.");
+      setShowRegenerateConfirm(false);
+      return;
+    }
+
+    const realPage = storyData.pages[mongoIndex];
+
+    const res = await api.post("/api/v1/images/regenerate", {
+      pageId: realPage._id,
+      characterDetails: storyData.story.characterDetails,
+      orientation: storyData.story.orientation,
     });
 
     if (res.data?.success) {
       const refreshed = await api.get(`/api/v1/story/${storyId}`);
       setStoryData(refreshed.data.data);
-    } else {
-      console.error("Regenerate failed:", res.data?.message);
     }
   } catch (err) {
     console.error("Regenerate Error:", err);
+    setErrorMessage("Regeneration failed. Please try again later.");
   } finally {
     setRegenerateLoading(false);
     setShowRegenerateConfirm(false);
@@ -239,6 +277,61 @@ const openEdit = () => {
   });
 
   // ============================
+  // FONT SIZE SCALING UTILITY
+  // ============================
+  const getFontSizeByOrientation = (baseSize, orientation) => {
+    const size = parseInt(baseSize); // remove "px"
+
+    const getCoverTitleSize = (orientation) => {
+      switch (orientation) {
+        case "Portrait":
+          return "text-5xl md:text-5xl";
+        case "Landscape":
+          return "text-7xl md:text-7xl";
+        case "Square":
+          return "text-4xl md:text-4xl";
+        default:
+          return "text-4xl md:text-4xl";
+      }
+    };
+
+    // For body text scaling
+    switch (orientation) {
+      case "Portrait":
+        return `${size * 0.7}px`;
+      case "Landscape":
+        return `${size * 1.2}px`;
+      case "Square":
+        return `${size * 1.2}px`;
+      default:
+        return `${size}px`;
+    }
+  };
+
+  const getGenreStyle = (genre, orientation) => {
+    const genreStyles = {
+      Fantasy: { fontFamily: '"Cinzel", serif', fontSize: "13px", color: "#000000" },
+      Adventure: { fontFamily: '"Poppins", sans-serif', fontSize: "12px", color: "#000000" },
+      Family: { fontFamily: '"Comic Neue", cursive', fontSize: "12px", color: "#000000" },
+      Mystery: { fontFamily: '"Special Elite", monospace', fontSize: "12px", color: "#000000" },
+      Housewarming: { fontFamily: '"Poppins", sans-serif', fontSize: "12px", color: "#000000" },
+      "Corporate Promotion": { fontFamily: '"Poppins", sans-serif', fontSize: "12px", color: "#000000" },
+      Marriage: { fontFamily: '"Great Vibes", cursive', fontSize: "13px", color: "#000000" },
+      "Baby Shower": { fontFamily: '"Comic Neue", cursive', fontSize: "12px", color: "#000000" },
+      Birthday: { fontFamily: '"Poppins", sans-serif', fontSize: "12px", color: "#000000" },
+      "Sci-Fi": { fontFamily: '"Orbitron", sans-serif', fontSize: "12px", color: "#000000" },
+    };
+
+    const base = genreStyles[genre] || { fontFamily: '"Georgia", serif', fontSize: "18px", color: "#333" };
+
+    return {
+      fontFamily: base.fontFamily,
+      fontSize: getFontSizeByOrientation(base.fontSize, orientation),
+      color: base.color,
+    };
+  };
+
+  // ============================
   // PAGE GENERATION
   // ============================
   const generatePages = () => {
@@ -248,31 +341,29 @@ const openEdit = () => {
     const story = storyData.story;
     const pages = storyData.pages || [];
 
-    const genreStyles = {
-      Fantasy: { fontFamily: '"Cinzel", serif', fontSize: "12px", color: "#000000" },
-      Adventure: { fontFamily: '"Poppins", sans-serif', fontSize: "10px", color: "#000000" },
-      Family: { fontFamily: '"Comic Neue", cursive', fontSize: "10px", color: "#000000" },
-      Mystery: { fontFamily: '"Special Elite", monospace', fontSize: "12px", color: "#000000" },
-      Horror: { fontFamily: '"Creepster", cursive', fontSize: "12px", color: "#000000" },
-      Romance: { fontFamily: '"Great Vibes", cursive', fontSize: "12px", color: "#000000" },
-    };
-
-    const pageTextStyle = genreStyles[story.genre] || { fontFamily: '"Georgia", serif', fontSize: "18px", color: "#333" };
-  
+   
+  const pageTextStyle = getGenreStyle(story.genre, story.orientation);
 
 
     // COVER (SINGLE PAGE)
-    allPages.push({
-      type: "single",
-      jsx: (
-        <div className="w-full h-full relative rounded-lg overflow-hidden">
-          <img src={story.coverImage?.s3Url} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
-            <h1 className="text-4xl md:text-6xl font-bold drop-shadow-lg">{story.title}</h1>
+      allPages.push({
+        type: "single",
+        jsx: (
+          <div className="w-full h-full relative rounded-lg overflow-hidden">
+            <img
+              src={story.coverImage?.s3Url}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-start pt-[20%] p-12 text-white">
+              <div className="bg-black/50 px-6 py-4 rounded-lg">
+                <h1 className="text-4xl md:text-4xl font-bold drop-shadow-lg">
+                  {story.title}
+                </h1>
+              </div>
+            </div>
           </div>
-        </div>
-      ),
-    });
+        ),
+      });
 
     // STORY SPREAD PAGES
     pages.forEach((page) => {
@@ -292,8 +383,9 @@ const openEdit = () => {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 mt-6 px-10 py-6 overflow-y-auto">
-                {/* <p className="text-black text-sm leading-relaxed">{page.text}</p> */}
+                <div className="bg-white/25 p-1 rounded-lg">
                 <p className="text-black text-sm leading-relaxed" style={pageTextStyle}>{page.text}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -306,10 +398,12 @@ const openEdit = () => {
       type: "single",
       jsx: (
        <div className="w-full h-full relative rounded-lg overflow-hidden">
-        <img src={story.backCoverImage?.s3Url} className="w-full h-full object-cover " />
-         <div className="absolute inset-0 mt-20 px-10 py-6 overflow-y-auto">
-          <p className="text-white text-sm leading-relaxed">{story.backCoverBlurb}</p>
-          </div>
+      <img src={story.backCoverImage?.s3Url} className="w-full h-full object-cover " />
+       <div className="absolute inset-0 mt-20 px-10 py-6 overflow-y-auto">
+      <div className="bg-white/45 p-2 rounded-lg">
+        <p className="text-gray-800 text-sm leading-relaxed font-bold">{story.backCoverBlurb}</p>
+      </div>
+      </div>
       </div>
       ),
     });
@@ -378,12 +472,14 @@ const openEdit = () => {
     if (currentPage < pages.length - 1 && !isFlipping) {
       setIsFlipping(true);
       setCurrentPage(currentPage + 1);
+      setErrorMessage("");
       setTimeout(() => setIsFlipping(false), 500);
     }
   };
   const prevPage = () => {
     if (currentPage > 0 && !isFlipping) {
       setIsFlipping(true);
+      setErrorMessage("");
       setCurrentPage(currentPage - 1);
       setTimeout(() => setIsFlipping(false), 500);
     }
@@ -398,51 +494,79 @@ const openEdit = () => {
         </div>
 
         {/* BUTTON BAR */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-900 px-6 py-4 rounded-xl border border-gray-700 flex flex-wrap justify-between items-center gap-4 text-white shadow-xl">
-              <div className="flex items-center">
-                <button
-                  onClick={prevPage}
-                  disabled={currentPage === 0 || isFlipping}
-                  className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                  <ChevronLeft size={20} />
-                </button>
-                <span className="min-w-32 text-center font-medium">
-                  {pageLabel()}
-                </span>
-                <button
-                  onClick={nextPage}
-                  disabled={currentPage === pages.length - 1 || isFlipping}
-                  className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                  <ChevronRight size={20} />
-                </button>
-              </div>
+        {/* <div className="flex justify-center mb-8">
+            <div className="bg-gray-900 px-6 py-4 rounded-xl border border-gray-700 flex flex-wrap justify-between items-center gap-4 text-white shadow-xl"> */}
+        <div className="flex justify-center mb-8 px-4">
+          <div
+            className="w-full max-w-3xl bg-gray-900 px-8 py-4 rounded-xl border border-gray-700 flex flex-wrap md:flex-nowrap 
+                  justify-between 
+                  items-center 
+                  gap-6 
+                  text-white 
+                  shadow-xl
+          ">
+            <div className="flex items-center">
+              <button
+                onClick={prevPage}
+                disabled={currentPage === 0 || isFlipping}
+                className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                <ChevronLeft size={20} />
+              </button>
+              <span className="min-w-32 text-center font-medium">
+                {pageLabel()}
+              </span>
+              <button
+                onClick={nextPage}
+                disabled={currentPage === pages.length - 1 || isFlipping}
+                className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                <ChevronRight size={20} />
+              </button>
+            </div>
 
-              <div className="h-6 w-px bg-gray-700 ml-8 mr-8" />
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors"
-                 onClick={() => setShowRegenerateConfirm(true)}
-                >
-                  <RefreshCcw  size={16} /> regenerate
-                </button>
+            <div className="h-6 w-px bg-gray-700 ml-8 mr-8" />
+            <button
+              className="flex items-center gap-1 hover:text-purple-400 transition-colors"
+              onClick={() => {
+                      if (currentPage === 0) {
+                        setErrorMessage("Cannot regenerate the Cover page.");
+                        return;
+                      }
+                      if (currentPage === pages.length - 1) {
+                        setErrorMessage("Cannot regenerate the Back Cover page.");
+                        return;
+                      }
+                      setShowRegenerateConfirm(true);
+                    }}>
+              <RefreshCcw size={16} /> regenerate
+            </button>
 
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors"
-                 onClick={openEdit}
-                >
-                  <Edit size={16} /> Edit
-                </button>
+            <button
+              className="flex items-center gap-1 hover:text-purple-400 transition-colors"
+              onClick={openEdit}>
+              <Edit size={16} /> Edit
+            </button>
 
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors" 
-                 onClick={openFaceSwap}
-                >
-                  <Users size={16} /> Face Swap
-                </button>
+            <button className="relative flex items-center gap-1 hover:text-purple-400 transition-colors"
+              onClick={openFaceSwap}>
+              <Users size={16} /> Face Swap
+              <span className="absolute -top-3 -right-5 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+                Beta
+              </span>
+            </button>
 
-                <button className="flex items-center gap-1 hover:text-purple-400 transition-colors">
+         <button className="relative flex items-center gap-1 hover:text-purple-400 transition-colors">
+            <Scissors size={16} /> Eraser
+           <span className="absolute -top-3 -right-5 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+              V2
+            </span>
+          </button>
+
+            {/* <button className="flex items-center gap-1 hover:text-purple-400 transition-colors">
                   <Scissors size={16} /> Eraser
-                </button>
-              </div>
-
+                </button> */}
           </div>
+        </div>
+        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
 
         {/* RESPONSIVE FRAME */}
         <div ref={wrapperRef} className="flex justify-center w-full">
@@ -466,24 +590,25 @@ const openEdit = () => {
 
         {/* PAGE INDICATORS */}
         <div className="flex justify-center gap-2 mt-6">
-              {pages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    if (!isFlipping) {
-                      setIsFlipping(true);
-                      setCurrentPage(idx);
-                      setTimeout(() => setIsFlipping(false), 500);
-                    }
-                  }}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === currentPage 
-                      ? 'w-8 bg-purple-500' 
-                      : 'w-2 bg-gray-600 hover:bg-gray-500'
-                  }`}
-                />
-              ))}
-            </div>
+          {pages.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (!isFlipping) {
+                  setIsFlipping(true);
+                  setCurrentPage(idx);
+                  setErrorMessage("");
+                  setTimeout(() => setIsFlipping(false), 500);
+                }
+              }}
+              className={`h-2 rounded-full transition-all ${
+                idx === currentPage
+                  ? "w-8 bg-purple-500"
+                  : "w-2 bg-gray-600 hover:bg-gray-500"
+              }`}
+            />
+          ))}
+        </div>
 
         {/* ACTION BUTTONS */}
         <div className="flex justify-center gap-4 mt-8">
@@ -496,68 +621,66 @@ const openEdit = () => {
         </div>
       </div>
 
-       {/* face swap modal */}
-       {showFaceSwap && faceSwapPage && (
-          <FaceSwapModal
-            storyId={storyId}
-            page={faceSwapPage}
-            onClose={() => setShowFaceSwap(false)}
-            onUpdated={async () => {
-              try {
-                const res = await api.get(`/api/v1/story/${storyId}`);
-                setStoryData(res.data.data);
-              } catch (err) {
-                console.error("Error refreshing story after face swap:", err);
-              }
-            }}
-          />
-        )}
+      {/* face swap modal */}
+      {showFaceSwap && faceSwapPage && (
+        <FaceSwapModal
+          storyId={storyId}
+          page={faceSwapPage}
+          onClose={() => setShowFaceSwap(false)}
+          onUpdated={async () => {
+            try {
+              const res = await api.get(`/api/v1/story/${storyId}`);
+              setStoryData(res.data.data);
+            } catch (err) {
+              console.error("Error refreshing story after face swap:", err);
+            }
+          }}
+        />
+      )}
 
       {/* edit modal */}
-       {showEdit && editPage && (
-          <EditModal
-            storyId={storyId}
-            page={editPage}
-            onClose={() => setShowEdit(false)}
-            onUpdated={async () => {
-              try {
-                const res = await api.get(`/api/v1/story/${storyId}`);
-                setStoryData(res.data.data);
-              } catch (err) {
-                console.error("Error refreshing story after face swap:", err);
-              }
-            }}
-          />
-        )}
+      {showEdit && editPage && (
+        <EditModal
+          storyId={storyId}
+          page={editPage}
+          onClose={() => setShowEdit(false)}
+          onUpdated={async () => {
+            try {
+              const res = await api.get(`/api/v1/story/${storyId}`);
+              setStoryData(res.data.data);
+            } catch (err) {
+              console.error("Error refreshing story after face swap:", err);
+            }
+          }}
+        />
+      )}
 
-        {/* Regenerate Confirmation Modal */}
-        {showRegenerateConfirm && (
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-gray-900 text-white p-6 rounded-xl w-full max-w-sm shadow-xl">
-      <h2 className="text-xl font-bold mb-4">Regenerate Image?</h2>
-      <p className="text-gray-300 mb-6">
-        Doing this will regenerate this Page Image. This action cannot be undone.
-      </p>
+      {/* Regenerate Confirmation Modal */}
+      {showRegenerateConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gray-900 text-white p-6 rounded-xl w-full max-w-sm shadow-xl">
+            <h2 className="text-xl font-bold mb-4">Regenerate Image and text?</h2>
+            <p className="text-gray-300 mb-6">
+              Doing this will regenerate the left Page Image and text on right page. This action cannot be
+              undo.
+            </p>
 
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setShowRegenerateConfirm(false)}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
-        >
-          No
-        </button>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRegenerateConfirm(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+                No
+              </button>
 
-        <button
-          onClick={handleRegenerateConfirm}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
-        >
-          Yes, Regenerate
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+              <button
+                onClick={handleRegenerateConfirm}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg">
+                Yes, Regenerate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

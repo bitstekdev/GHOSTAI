@@ -1,42 +1,73 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+// Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
-  withCredentials: true, // IMPORTANT FOR COOKIES
+  baseURL: API_BASE_URL,
+  withCredentials: true,
 });
 
-// ---- TOKEN REFRESH HANDLER ----
-api.interceptors.response.use(
-  (response) => response, 
-  async (error) => {
-    const originalRequest = error.config;
+let isRefreshing = false;
+let failedQueue = [];
 
-    // If API returned 401 (access token expired)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // prevent infinite loop
-
-      try {
-        // Call refresh-token
-        const refreshRes = await api.post("/api/auth/refresh-token", {}, { withCredentials: true });
-
-
-        console.log("Access token refreshed successfully" + refreshRes.data);
-
-        // Retry original failed request
-        return api(originalRequest);
-
-      } catch (refreshError) {
-        console.log("Refresh token failed → logging out");
-
-        // Destroy any client-side cached auth data
-        localStorage.removeItem("auth");
-
-        // Redirect user to login
-        window.location.href = "/signin";
-      }
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
     }
-    return Promise.reject(error);
-  }
-);
+  });
+
+  failedQueue = [];
+};
+
+export const setupAxiosInterceptors = (onLogout) => {
+  const interceptor = api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      // If 401 and not already retried, try to refresh token
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          // If already refreshing, queue this request
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(() => api(originalRequest))
+            .catch((err) => Promise.reject(err));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          await api.post('/api/auth/refresh-token');
+          processQueue(null);
+          isRefreshing = false;
+          // Retry original request
+          return api(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          isRefreshing = false;
+          // Refresh failed, trigger logout
+          if (onLogout) {
+            onLogout();
+          }
+          return Promise.reject(refreshError);
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
+
+  // Return cleanup function
+  return () => {
+    api.interceptors.response.eject(interceptor);
+  };
+};
 
 export default api;
