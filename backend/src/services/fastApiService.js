@@ -120,7 +120,7 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
     });
 
     const response = await axios.post(
-      `http://localhost:8000/faceswap`,
+      `${FASTAPI_BASE_URL}/faceswap`,
       form,
       {
         maxBodyLength: Infinity,
@@ -148,7 +148,7 @@ exports.editImage = async (targetBuffer, prompt) => {
     });
     form.append("prompt", prompt);
     const response = await axios.post(
-      `http://localhost:8000/edit-image`,
+      `${FASTAPI_BASE_URL}/edit-image`,
       form,
       {
         maxBodyLength: Infinity,
@@ -166,15 +166,7 @@ exports.editImage = async (targetBuffer, prompt) => {
 // regenerate image--------------------------------------------------
 exports.regenerateImages = async (payload) => {
   try {
-    const response = await axios.post(
-      "http://localhost:8000/images/regenerate",
-      payload,
-      {
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = await fastApiClient.post( "/images/regenerate", payload );
 
     return response.data;
 
@@ -183,4 +175,3 @@ exports.regenerateImages = async (payload) => {
     throw err;
   }
 };
-

@@ -382,7 +382,7 @@ exports.faceSwap = async (req, res) => {
     const options = {
       source_index: parseInt(req.body.source_index),
       target_index: parseInt(req.body.target_index),
-      upscale: parseInt(req.body.upscale || 1),
+      upscale: parseInt(req.body.upscale || 0),
       codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
       background_enhance: req.body.background_enhance !== "false",
       face_restore: req.body.face_restore !== "false",
@@ -592,7 +592,7 @@ exports.regenerateCharacterImage = async (req, res) => {
     //-------------------------------------------------------------
     const regenResult = await fastApiService.regenerateImages(apiPayload);
 
-    console.log("Regenerate Result from FastAPI:", regenResult);
+    // console.log("Regenerate Result from FastAPI:", regenResult);
 
     const newStory = regenResult?.pages?.[0]?.new_story;
     const newPrompt = regenResult?.pages?.[0]?.new_prompt;

@@ -35,7 +35,7 @@ const GenerateCovers = () => {
       
       <ProgressStep6 />
 
-      <div className="p-6 py-10 relative max-w-3xl w-full text-white">
+      <div className="p-6 py-10 relative max-w-3xl w-full text-white text-center">
 
         <h1 className="text-3xl font-bold text-purple-400 mb-4">
           Generate Cover Images

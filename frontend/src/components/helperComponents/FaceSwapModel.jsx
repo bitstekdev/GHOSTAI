@@ -34,7 +34,7 @@ const handleApply = async () => {
     formData.append("characterImageId", page.characterImage._id);
     formData.append("source_index", sourceIndex);
     formData.append("target_index", targetIndex);
-    formData.append("upscale", 1);
+    formData.append("upscale", 0);
     formData.append("codeformer_fidelity", 0.5);
     formData.append("background_enhance", "true");
     formData.append("face_restore", "true");

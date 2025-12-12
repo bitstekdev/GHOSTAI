@@ -11,20 +11,6 @@ const BackgroundGenerator = () => {
   const { storyId } = useParams();
   const [loading, setLoading] = useState(false);
 
-  //   const [storyData, setStoryData] = useState(null);
-  
-//   useEffect(() => {
-//     fetchStory();
-//   }, []);
-
-//   const fetchStory = async () => {
-//     try {
-//       const res = await api.get(`/api/v1/story/${storyId}`);
-//       setStoryData(res.data.data.story);
-//     } catch (err) {
-//       console.error("Failed to fetch story:", err);
-//     }
-//   };
 
   const handleGenerateBackgrounds = async () => {
     try {
@@ -49,7 +35,7 @@ const BackgroundGenerator = () => {
     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
       <ProgressStep5 />
 
-      <div className="p-6 py-10 relative max-w-3xl w-full text-white">
+      <div className="p-6 py-10 relative max-w-3xl w-full text-white text-center">
         {/* PAGE TITLE */}
         <h1 className="text-3xl font-bold text-purple-400 mb-4">
           Generate Background Images
