@@ -4,6 +4,7 @@ import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
+import confetti from "canvas-confetti";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -80,6 +81,32 @@ const StoryFlipbook = () => {
   },
 };
 //////////////////////////////////////////////////////////////////////////////////////
+
+  useEffect(() => {
+  
+    // 🎉 Fire confetti animation when page loads
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 60,
+        origin: { x: 0 },
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 60,
+        origin: { x: 1 },
+      });
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  }, []);
 
   // ============================
   // FACE SWAP HANDLER
