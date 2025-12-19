@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import api from "../services/axiosInstance";
+import api, { setupAxiosInterceptors } from "../services/axiosInstance";
 
 
 
@@ -24,6 +24,15 @@ const AppContextProvider = (props) => {
     // Check if user is logged in on mount
   useEffect(() => {
     checkAuthStatus();
+    
+    // Setup axios interceptors for token refresh
+    const cleanup = setupAxiosInterceptors(() => {
+      setIsAuthenticated(false);
+      setUserData(null);
+      nav('/signin');
+    });
+    
+    return cleanup;
   }, []);
 
   const checkAuthStatus = async () => {
@@ -59,25 +68,54 @@ const navigateTo = (path) => {
 
 //------FUNCTIONS--------
 //   -------------------Signup-------------------
+<<<<<<< HEAD
+=======
+const signup = async (data) => {
+  try {
+    setLoading(true);
+    const response = await api.post(`/api/auth/signup`, data);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    const errors = error.response?.data?.errors;
+    const message =
+      (Array.isArray(errors) && errors[0]?.msg) ||
+      error.response?.data?.message ||
+      "Something went wrong!";
+    return { success: false, message };
+  } finally {
+    setLoading(false);
+  }
+};
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
 //   -------------------Signin-------------------
 
 const signin = async (data) => {
   try {
     setLoading(true);
-    const response = await api.post(`${backendUrl}/api/auth/login`, data);
+    const response = await api.post(`/api/auth/login`, data);
 
     setIsAuthenticated(true);
     setUserData(response.data.data.user);
 
     return { success: true, message: response.data.message };
   } catch (error) {
-    console.log("Signin error:", error);
     setIsAuthenticated(false);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Something went wrong!",
-    };
+    const status = error.response?.status;
+    const payload = error.response?.data;
+    if (status === 403 && payload?.requiresEmailVerification) {
+      return {
+        success: false,
+        requiresEmailVerification: true,
+        message: payload.message || "Please verify your email before logging in.",
+      };
+    }
+    const errors = payload?.errors;
+    const message =
+      (Array.isArray(errors) && errors[0]?.msg) ||
+      payload?.message ||
+      "Something went wrong!";
+    return { success: false, message };
   } finally {
     setLoading(false);
   }
@@ -133,21 +171,62 @@ const changePassword = async (security) => {
   }
 };
 
+//----------------ADDRESS MANAGEMENT---------------------
+const [addresses, setAddresses] = useState([]);
+const [loadingAddresses, setLoadingAddresses] = useState(false);
+const [addressError, setAddressError] = useState("");
 
+const fetchAddresses = async () => {
+  try {
+    setLoadingAddresses(true);
+    setAddressError("");
+    const { data } = await api.get(`${backendUrl}/api/address`);
+    if (data.success) {
+      setAddresses(data.data);
+      return { success: true, data: data.data };
+    }
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    const errorMsg = error.response?.data?.message || "Failed to load addresses";
+    setAddressError(errorMsg);
+    return { success: false, message: errorMsg };
+  } finally {
+    setLoadingAddresses(false);
+  }
+};
 
+const createAddress = async (addressData) => {
+  try {
+    const { data } = await api.post(`${backendUrl}/api/address`, {
+      recipientName: addressData.name,
+      phone: addressData.phone,
+      address: addressData.address,
+    });
+    if (data.success) {
+      setAddresses([...addresses, data.data]);
+      return { success: true, data: data.data };
+    }
+  } catch (error) {
+    console.error("Error creating address:", error);
+    const errorMsg = error.response?.data?.message || "Failed to save address";
+    return { success: false, message: errorMsg };
+  }
+};
 
 //--------------logout---------------------
   const logout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/logout`, {});
+      await api.post(`${backendUrl}/api/auth/logout`, {});
       setIsAuthenticated(false);
       setUserData(null);
+      nav('/signin');
       return { success: true };
     } catch (error) {
       console.error("Logout failed:", error);
       // Still clear local state even if API call fails
       setIsAuthenticated(false);
       setUserData(null);
+      nav('/signin');
       return { success: false };
     }
   };
@@ -175,7 +254,15 @@ const changePassword = async (security) => {
     isAuthenticated,
     setIsAuthenticated,
     storyId,
-    setStoryId,
+    setStoryId,    fetchAddresses,
+    createAddress,
+    addresses,
+    loadingAddresses,
+    addressError,    fetchAddresses,
+    createAddress,
+    addresses,
+    loadingAddresses,
+    addressError,
   };
 
   return (

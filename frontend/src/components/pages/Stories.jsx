@@ -158,17 +158,43 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Joyride from 'react-joyride';
 import api from '../../services/axiosInstance';
+import { useTourContext } from '../../context/TourContext';
+import { storiesTourSteps, tourStyles } from '../../config/tourSteps';
 
 const Stories = () => {
   const navigate = useNavigate();
-  const navigateToGenerate = () => navigate('/generate');
+  const navigateToGenerate = () => navigate('/generatestory');
 
   const [allStories, setAllStories] = useState([]);
   const [storiesInProgress, setStoriesInProgress] = useState([]);
   const [completedStories, setCompletedStories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Use tour context
+  const {
+    run,
+    stepIndex,
+    handleTourCallback: contextHandleCallback,
+    activeTour
+  } = useTourContext();
+
+  // Only run tour on this page if it's the onboarding tour
+  const shouldRunTourOnThisPage = activeTour === 'onboarding' && 
+    window.location.pathname === '/stories';
+
+  const handleTourCallback = (data) => {
+    const { status, type } = data;
+    
+    // Tour ends here - mark as complete
+    if (type === 'tour:end' || status === 'finished' || status === 'skipped') {
+      localStorage.setItem('tour_onboarding_completed', 'true');
+    }
+    
+    contextHandleCallback(data);
+  };
 
   // 🔹 Fetch from /my-stories
   useEffect(() => {
@@ -219,16 +245,32 @@ const Stories = () => {
   const getResumeRoute = (story) => {
     if (story.step <= 2) {
       // still in Q&A
-      return `/questioner?storyId=${story._id}`;
+      return `/questioner/${story._id}`;
     }
 
     if (story.step === 3) {
       // gist done, selecting template / generating full story
-      return `/templateselection?storyId=${story._id}`;
+      return `/templateselection/${story._id}`;
     }
 
     // step >= 4 → story text exists, open flipbook
     return `/flipbook/${story._id}`;
+  };
+
+  const handleContinue = (story) => {
+    // If in questioner phase (step 2), load conversation into localStorage
+    if (story.step === 2 && story.conversation && story.conversation.length > 0) {
+      localStorage.setItem(
+        'conversationData',
+        JSON.stringify({
+          storyId: story._id,
+          conversation: story.conversation,
+        })
+      );
+    }
+    
+    // Navigate to the correct step
+    navigate(getResumeRoute(story));
   };
 
   const handleViewBook = (id) => {
@@ -237,8 +279,27 @@ const Stories = () => {
 
   return (
     <div className="flex-1 bg-[#0b0b0d] min-h-screen p-8">
+      {/* Joyride Tour Component */}
+      <Joyride
+        steps={storiesTourSteps}
+        run={run && shouldRunTourOnThisPage}
+        stepIndex={stepIndex}
+        continuous
+        showProgress
+        showSkipButton
+        callback={handleTourCallback}
+        styles={tourStyles}
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Finish Tour',
+          next: 'Next',
+          skip: 'Skip Tour',
+        }}
+      />
+      
       {/* Stories in Progress */}
-      <div className="mb-12">
+      <div className="stories-in-progress-section mb-12">
         <h2 className="text-2xl font-bold text-white mb-6">Stories in Progress</h2>
         <div className="space-y-3">
           {storiesInProgress.length === 0 && (
@@ -253,10 +314,13 @@ const Stories = () => {
               <div>
                 <h3 className="text-white font-medium">{story.title}</h3>
                 <p className="text-purple-400 text-sm">{story.genre}</p>
+                <p className="text-gray-500 text-xs mt-1">
+                  Step {story.step} of 4
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => navigate(getResumeRoute(story))}
+                  onClick={() => handleContinue(story)}
                   className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-1.5 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   Continue <ArrowUpRight className="h-4 w-4" />
@@ -271,12 +335,12 @@ const Stories = () => {
       </div>
 
       {/* My Stories Section */}
-      <div>
+      <div className="completed-stories-section">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">My Stories</h2>
           <button 
             onClick={navigateToGenerate}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors"
+            className="create-new-story-button bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
             Generate Story
           </button>

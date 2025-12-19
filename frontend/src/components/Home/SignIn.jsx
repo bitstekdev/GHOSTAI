@@ -39,7 +39,7 @@ const SignIn = () => {
 
       {/* Background Ghost AI Text */}
       <h1 className="absolute text-5xl font-bold text-white/20 select-none top-34 md:top-20">
-        GHOST AI
+        GHOSTVERSE AI
       </h1>
 
       {/* Random Ghost Icons */}

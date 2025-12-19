@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const storyRoutes = require('./routes/story');
 const imageRoutes = require('./routes/image');
 const coverRoutes = require('./routes/cover');
+const addressRoutes = require('./routes/address');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/v1/story', storyRoutes);
 app.use('/api/v1/images', imageRoutes);
 app.use('/api/v1/cover', coverRoutes);
+app.use('/api/address', addressRoutes);
   
 // 404 handler
 app.use('*', (req, res) => {

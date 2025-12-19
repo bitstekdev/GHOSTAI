@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  onboardingTourCompleted: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

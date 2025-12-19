@@ -36,12 +36,14 @@ const [profileMsg, setProfileMsg] = useState("");
     address: "",
   });
 
-const { getProfile, updateProfile, changePassword } = useContext(AppContext);
+const { getProfile, updateProfile, changePassword, fetchAddresses, createAddress, addresses, loadingAddresses, addressError } = useContext(AppContext);
 
-// ----------- Fetch Profile Data ------------
+// ----------- Fetch Profile Data & Addresses------------
 useEffect(() => {
   const load = async () => {
-    const user = await getProfile();
+    // Fetch profile and addresses in parallel
+    const [user] = await Promise.all([getProfile(), fetchAddresses()]);
+    
     if (user) {
       const [firstName, ...rest] = user.name.split(" ");
       setProfile({
@@ -59,41 +61,31 @@ useEffect(() => {
 
 // ------------Address Management------------
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: "Shaad Ali Khan",
-      phone: "+98765 54321",
-      address: "Green Land Colony, Secherale, Hyderabad Telangana, 500018",
-    },
-    {
-      id: 2,
-      name: "Lohith Kumar",
-      phone: "+98765 54321",
-      address: "Green Land Colony, Secherale, Hyderabad Telangana, 500018",
-    },
-  ]);
+  const [savingAddress, setSavingAddress] = useState(false);
 
 
     const handleAddAddress = () => {
     setShowAddForm(true);
   };
 
-  const handleSaveAddress = () => {
+  const handleSaveAddress = async () => {
     if (!newAddress.name || !newAddress.phone || !newAddress.address) {
       alert("Please fill all fields");
       return;
     }
-    const addressToAdd = {
-      ...newAddress,
-      id: addresses.length + 1,
-    };
-    setAddresses([...addresses, addressToAdd]);
-    setNewAddress({ name: "", phone: "", address: "" });
-    setShowAddForm(false);
-    console.log("New address added:", addressToAdd);
-    // TODO: Add API call here
-    // await addAddress(addressToAdd);
+    try {
+      setSavingAddress(true);
+      const result = await createAddress(newAddress);
+      if (result.success) {
+        setNewAddress({ name: "", phone: "", address: "" });
+        setShowAddForm(false);
+        console.log("New address added:", result.data);
+      } else {
+        alert(result.message);
+      }
+    } finally {
+      setSavingAddress(false);
+    }
   };
 
   const handleCancelAdd = () => {
@@ -250,14 +242,19 @@ const handlePasswordChange = async () => {
           </div>
 
           <div className="space-y-4">
+            {loadingAddresses && <p className="text-gray-400 text-sm">Loading addresses...</p>}
+            {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
+            {addresses.length === 0 && !loadingAddresses && (
+              <p className="text-gray-400 text-sm">No addresses saved yet.</p>
+            )}
             {addresses.map((addr, index) => (
               <div
-                key={addr.id}
+                key={addr._id}
                 className="border-t border-gray-800 pt-4 first:border-t-0 first:pt-0">
                 <p className="text-sm text-purple-400 font-medium mb-1">
                   Address {index + 1}
                 </p>
-                <p className="text-sm text-white mb-0.5">{addr.name}</p>
+                <p className="text-sm text-white mb-0.5">{addr.recipientName}</p>
                 <p className="text-sm text-gray-400">{addr.phone}</p>
                 <p className="text-sm text-gray-400 mt-1">{addr.address}</p>
               </div>
@@ -318,12 +315,14 @@ const handlePasswordChange = async () => {
                   <div className="flex gap-2">
                     <button
                       onClick={handleSaveAddress}
-                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
-                      Save Address
+                      disabled={savingAddress}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      {savingAddress ? "Saving..." : "Save Address"}
                     </button>
                     <button
                       onClick={handleCancelAdd}
-                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
+                      disabled={savingAddress}
+                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       Cancel
                     </button>
                   </div>

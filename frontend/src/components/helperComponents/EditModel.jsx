@@ -48,17 +48,28 @@ const handleApply = async () => {
         </button>
 
         <h2 className="text-2xl font-bold mb-4">
-          Face Swap (Page {page.pageNumber})
+          Edit Image (Page {page.pageNumber})
         </h2>
 
         <div className="mb-4">
           <p className="mb-2 text-sm text-gray-300">Current image:</p>
           {currentImageUrl ? (
-            <img
-              src={currentImageUrl}
-              alt={`Page ${page.pageNumber}`}
-              className="w-full max-h-64 object-contain rounded-lg bg-black/40"
-            />
+            <div className="relative">
+              <img
+                src={currentImageUrl}
+                alt={`Page ${page.pageNumber}`}
+                className="w-full max-h-64 object-contain rounded-lg bg-black/40"
+              />
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-lg">
+                  <img
+                    src="/src/assets/images/logo.gif"
+                    alt="Loading..."
+                    className="w-25 h-25"
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="w-full h-48 rounded-lg bg-gray-800 flex items-center justify-center text-gray-500">
               No character image on this page.
