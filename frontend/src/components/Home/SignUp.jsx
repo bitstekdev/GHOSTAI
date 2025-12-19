@@ -7,7 +7,7 @@ import { AppContext } from '../../context/AppContext'
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { signup, loading, backendUrl  } = useContext(AppContext);
+  const { backendUrl  } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -15,6 +15,7 @@ const SignUp = () => {
   const [confirmPassError, setConfirmPassError] = useState("");
   const [resendEmailBtn, setResendEmailBtn] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
   const [formData, setFormData] = useState({
@@ -23,6 +24,21 @@ const SignUp = () => {
     password: "",
     confirmPassword: "",
   });
+
+  const signup = async (data) => {
+  try {
+    setLoading(true);
+    const response = await api.post(`${backendUrl}/api/auth/signup`, data);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Something went wrong!",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const passwordValidation = (password) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -65,7 +81,7 @@ const handleSubmit = async (e) => {
   if (result.success) {
     setResendEmailBtn(true);
   }
-
+  console.log(result.message);
   setMsg(result.message);
 
 };

@@ -59,20 +59,6 @@ const navigateTo = (path) => {
 
 //------FUNCTIONS--------
 //   -------------------Signup-------------------
-const signup = async (data) => {
-  try {
-    setLoading(true);
-    const response = await api.post(`${backendUrl}/api/auth/signup`, data);
-    return { success: true, message: response.data.message };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Something went wrong!",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
 
 //   -------------------Signin-------------------
 
@@ -178,7 +164,6 @@ const changePassword = async (security) => {
   const value = {
     backendUrl,
     navigateTo,
-    signup,
     signin,
     getProfile,
     updateProfile,
