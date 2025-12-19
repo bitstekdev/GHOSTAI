@@ -13,6 +13,14 @@ const server = app.listen(PORT, () => {
   console.log(`📚 Environment: ${process.env.NODE_ENV}`);
 });
 
+
+/* -------------------------------
+      30 MIN SERVER TIMEOUT
+--------------------------------*/
+server.timeout = 1800000;            // 30 min
+server.keepAliveTimeout = 1800000;   // 30 min
+server.headersTimeout = 1800000;     // 30 min
+
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Rejection:', err);
