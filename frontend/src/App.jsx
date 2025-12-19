@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./index.css";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { TourProvider } from "./context/TourContext";
 
 // Components
 import Homee from "./components/Home/Homee";
@@ -36,21 +37,30 @@ const ProtectedLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
-      <Sidebar
-        isOpen={sidebarOpen}
-        setIsOpen={setSidebarOpen}
-        sidebarShown={sidebarShown}
-        setSidebarShown={setSidebarShown}
-      />
+    <TourProvider>
+      <div className="min-h-screen bg-black">
+        <Sidebar
+          isOpen={sidebarOpen}
+          setIsOpen={setSidebarOpen}
+          sidebarShown={sidebarShown}
+          setSidebarShown={setSidebarShown}
+        />
+
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       <main
-        className={`min-h-screen transition-all duration-300 
-    ${sidebarShown ? "pl-64" : "pl-16"}
-  `}>
+        className={`min-h-screen transition-all duration-300 ${
+          sidebarShown ? "pl-64" : "pl-16"
+        } ${sidebarOpen ? "blur-sm md:blur-0" : ""}`}>
         <Outlet />
       </main>
-    </div>
+      </div>
+    </TourProvider>
   );
 };
 

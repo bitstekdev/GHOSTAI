@@ -7,7 +7,11 @@ import { AppContext } from '../../context/AppContext'
 
 const SignUp = () => {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { backendUrl  } = useContext(AppContext);
+=======
+  const { signup, backendUrl  } = useContext(AppContext);
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -17,6 +21,8 @@ const SignUp = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [msgType, setMsgType] = useState("success"); // success | error
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -55,35 +61,60 @@ const SignUp = () => {
   const handleResend = async () => {
     if (!formData.email) {
       setMsg("Please enter your email!");
+      setMsgType("error");
       return;
     }
     try {
       setResendLoading(true);
       const res = await api.post(`${backendUrl}/api/auth/resend-verification`, { email: formData.email });
       setMsg(res.data.message);
+      setMsgType("success");
     } catch (err) {
       setMsg(err.response?.data?.message || "Failed to resend email");
+      setMsgType("error");
     } finally {
       setResendLoading(false);
     }
   };
 
-  // Form submission handler (to be implemented)
+  // Form submission handler
 const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (formData.password !== formData.confirmPassword) {
     setMsg("Confirm Password does not match!");
+    setMsgType("error");
     return;
   }
 
+<<<<<<< HEAD
   const result = await signup(formData);
   if (result.success) {
     setResendEmailBtn(true);
   }
   console.log(result.message);
   setMsg(result.message);
+=======
+  // Show message FIRST
+  setMsg("✅ Verification email has been sent to your email. Please check your inbox.");
+  setMsgType("success");
+  setResendEmailBtn(true);
 
+  // Small delay so message renders before loader
+  setTimeout(async () => {
+    setSubmitting(true);
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
+
+    const result = await signup(formData);
+
+    if (!result.success) {
+      setMsg(result.message);
+      setMsgType("error");
+      setResendEmailBtn(false);
+    }
+
+    setSubmitting(false);
+  }, 300);
 };
 
 
@@ -91,7 +122,7 @@ const handleSubmit = async (e) => {
     <section className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-[#1E1E1E] to-black text-white px-6">
       {/* Background Ghost AI text */}
       <h1 className="absolute text-2xl font-bold text-white/20 select-none top-24 md:top-10">
-        GHOST AI
+        GHOSTVERSE AI
       </h1>
 
       {/* Random Ghost Icons */}
@@ -112,7 +143,7 @@ const handleSubmit = async (e) => {
           Create Your Account
         </h2>
         <p className="text-gray-400 text-center mb-6 text-sm">
-          Join the <span className="text-white">GHOST AI</span> community and
+          Join the <span className="text-white">GHOSTVERSE AI</span> community and
           start your journey today.
         </p>
 
@@ -173,13 +204,17 @@ const handleSubmit = async (e) => {
               placeholder="Enter your password"
               value={formData.confirmPassword}
               onChange={(e) => {
-                setFormData({ ...formData, confirmPassword: e.target.value });
-                if (e.target.value !== formData.password) {
-                  setConfirmPassError("Passwords do not match!");
-                } else {
-                  setConfirmPassError("");
-                }
-              }}
+  const value = e.target.value;
+  setFormData(prev => ({
+    ...prev,
+    confirmPassword: value
+  }));
+
+  setConfirmPassError(
+    value === formData.password ? "" : "Passwords do not match!"
+  );
+}}
+
               className="w-full mt-1 px-4 py-3 rounded-lg bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 pr-10"
             />
             <span
@@ -192,7 +227,14 @@ const handleSubmit = async (e) => {
           {confirmPassError && (
             <p className="text-red-500 text-sm">{confirmPassError}</p>
           )}
-          {msg && <p className="text-red-500 text-sm">{msg}</p>}
+          
+          {msg && (
+            <p className={`text-sm text-center font-medium ${
+              msgType === "success" ? "text-green-400" : "text-red-500"
+            }`}>
+              {msg}
+            </p>
+          )}
 
           {resendEmailBtn && (
             <div className="flex items-center gap-2">
@@ -205,8 +247,9 @@ const handleSubmit = async (e) => {
 
           <button
             type="submit"
-            className="w-full bg-purple-400 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition cursor-pointer">
-            {loading ? (
+            disabled={submitting}
+            className="w-full bg-purple-400 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition cursor-pointer disabled:opacity-50">
+            {submitting ? (
               <>
                 <ClipLoader size={20} color={"#ffffff"} /> Signing up...
               </>

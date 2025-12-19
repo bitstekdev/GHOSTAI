@@ -14,6 +14,7 @@ const {
   getMe,
   updateProfile
 } = require('../controllers/authController');
+const { completeOnboardingTour } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const {
   validateSignup,
@@ -34,6 +35,7 @@ router.post('/refresh-token', refreshToken);
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.put('/update-profile', protect, updateProfile);
+router.patch('/onboarding-tour', protect, completeOnboardingTour);
 
 
 module.exports = router;

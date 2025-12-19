@@ -637,7 +637,7 @@ Guiding Principles:
 - Avoid unnecessary side plots.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
-- Each page should unfold in 3–5 meaningful, well-crafted sentences.
+- Each page should unfold in 3–4 meaningful, well-crafted sentences.
 - Every page MUST explicitly include at least one of the provided character names.
 - Never invent new characters or new names.
 

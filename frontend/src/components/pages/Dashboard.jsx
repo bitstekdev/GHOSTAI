@@ -70,10 +70,13 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { RefreshCcw, CreditCard, Truck } from 'lucide-react';
+import { RefreshCcw, CreditCard, Truck, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Joyride from 'react-joyride';
 import { AppContext } from '../../context/AppContext';
 import api from '../../services/axiosInstance';
+import { useTourContext } from '../../context/TourContext';
+import { dashboardTourSteps, tourStyles } from '../../config/tourSteps';
 
 const Dashboard = () => {
     const { userData } = React.useContext(AppContext);
@@ -84,6 +87,20 @@ const Dashboard = () => {
     const [completedStories, setCompletedStories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Use tour context
+    const {
+        run,
+        stepIndex,
+        startOnboardingTour,
+        handleTourCallback: contextHandleCallback,
+        shouldShowOnboardingTour,
+        activeTour
+    } = useTourContext();
+
+    // Only run tour on dashboard if it's the onboarding tour
+    const shouldRunTourOnThisPage = activeTour === 'onboarding' && 
+        window.location.pathname === '/dashboard';
 
     // Fetch stories from API
     useEffect(() => {
@@ -131,14 +148,40 @@ const Dashboard = () => {
         fetchStories();
     }, []);
 
+    // Auto-start tour for first-time users on Dashboard
+    useEffect(() => {
+        if (shouldShowOnboardingTour() && !loading) {
+            const timer = setTimeout(() => {
+                startOnboardingTour();
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [shouldShowOnboardingTour, startOnboardingTour, loading]);
+
+    const handleTourCallback = (data) => {
+        const { status, type } = data;
+        
+        // Navigate to Generate Story when dashboard tour finishes
+        if (type === 'tour:end' || status === 'finished') {
+            setTimeout(() => {
+                navigate('/generatestory');
+            }, 500);
+        }
+        
+        contextHandleCallback(data);
+    }
+
+    // Legacy auto-start tour (useTour) removed; using TourContext hook above
+
     const getResumeRoute = (story) => {
-        if (story.step <= 2) {
-            return `/questioner?storyId=${story._id}`;
-        }
-        if (story.step === 3) {
-            return `/templateselection?storyId=${story._id}`;
-        }
-        return `/flipbook/${story._id}`;
+        const sid = story?._id;
+        if (!sid) return '/generatestory';
+
+        if (story.step <= 2) return `/questioner/${sid}`;
+        if (story.step === 3) return `/templateselection/${sid}`;
+
+        // step >= 4 → open flipbook
+        return `/flipbook/${sid}`;
     };
 
     const handleOpenStory = (story) => {
@@ -149,22 +192,54 @@ const Dashboard = () => {
         const date = new Date(dateString);
         const now = new Date();
         const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays === 1) return 'Today';
-        if (diffDays === 2) return '1d ago';
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return '1d ago';
         if (diffDays < 7) return `${diffDays}d ago`;
         if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
         return `${Math.floor(diffDays / 30)}mo ago`;
     };
-        return (
+
+                return (
             <div className="p-4 md:p-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">
-                    Welcome {userData?.name || 'Guest'}
-                </h1>
+                {/* Joyride Tour Component */}
+                <Joyride
+                    steps={dashboardTourSteps}
+                    run={run && shouldRunTourOnThisPage}
+                    stepIndex={stepIndex}
+                    continuous
+                    showProgress
+                    showSkipButton
+                    callback={handleTourCallback}
+                    styles={tourStyles}
+                    locale={{
+                        back: 'Back',
+                        close: 'Close',
+                        last: 'Next Page',
+                        next: 'Next',
+                        skip: 'Skip Tour',
+                    }}
+                />
+
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl md:text-4xl font-bold text-white">
+                        Welcome {userData?.name || 'Guest'}
+                    </h1>
+                    
+                    {/* Tour Trigger Button */}
+                    <button
+                        onClick={startOnboardingTour}
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors"
+                        title="Show dashboard tour"
+                    >
+                        <Info size={18} />
+                        <span className="hidden md:inline">Start Tour</span>
+                    </button>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6">
+                    <div className="total-stories bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6">
                         <h3 className="text-white text-sm mb-2">Total Stories Generated</h3>
                         <div className="flex items-end justify-between">
                             <p className="text-5xl font-bold text-white">{allStories.length}</p>
@@ -176,7 +251,7 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <div className="stories-in-progress bg-gray-800 rounded-xl p-6 border border-gray-700">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-white text-sm">Stories in Progress</h3>
                             <RefreshCcw size={20} className="text-gray-400" />
@@ -184,7 +259,7 @@ const Dashboard = () => {
                         <p className="text-5xl font-bold text-white">{storiesInProgress.length}</p>
                     </div>
 
-                    <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <div className="credits-card bg-gray-800 rounded-xl p-6 border border-gray-700">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-white text-sm">Credits</h3>
                             <CreditCard size={20} className="text-gray-400" />
@@ -212,11 +287,19 @@ const Dashboard = () => {
                     )}
                     
                     {!loading && !error && allStories.length === 0 && (
-                        <p className="text-gray-400">No stories yet. Start creating your first story!</p>
+                        <div className="text-center py-8">
+                            <p className="text-gray-400 mb-4">No stories yet. Start creating your first story!</p>
+                            <button 
+                                onClick={() => navigate('/generatestory')}
+                                className="generate-story-button bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2"
+                            >
+                                Create Your First Story
+                            </button>
+                        </div>
                     )}
                     
                     {!loading && !error && allStories.slice(0, 4).map((story) => (
-                        <div key={story._id} className="bg-gray-900 rounded-lg p-4 mb-3 flex items-center justify-between">
+                        <div key={story._id} className="story-item bg-gray-900 rounded-lg p-4 mb-3 flex items-center justify-between">
                             <div>
                                 <h3 className="text-white font-semibold">
                                     {story.title || 'Untitled Story'}
