@@ -377,3 +377,5 @@ Despite the destruction caused by his transformations, he becomes remembered for
 2025-12-19 12:11:55,861 [INFO] storybook_api - Generating gist for genre: Mystery
 2025-12-19 12:11:55,862 [INFO] storybook_api - Calling LLM for story gist
 2025-12-19 12:11:57,151 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-19 14:29:52,998 [INFO] storybook_api - Start questionnaire called
+2025-12-19 14:30:12,726 [INFO] storybook_api - Next question request received. Answer: to greet him 
