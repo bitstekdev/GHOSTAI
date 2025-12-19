@@ -56,7 +56,8 @@ exports.signup = async (req, res, next) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        isEmailVerified: user.isEmailVerified
+        isEmailVerified: user.isEmailVerified,
+        onboardingTourCompleted: user.onboardingTourCompleted
       }
     });
   } catch (error) {
@@ -137,6 +138,7 @@ exports.login = async (req, res, next) => {
           phone: user.phone,
           role: user.role,
           isEmailVerified: user.isEmailVerified,
+          onboardingTourCompleted: user.onboardingTourCompleted,
           createdAt: user.createdAt
         },
         accessToken,
@@ -356,7 +358,8 @@ exports.isLoggedIn = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        onboardingTourCompleted: user.onboardingTourCompleted
       },
     });
 
@@ -468,7 +471,7 @@ exports.logout = async (req, res, next) => {
 // @access  Private
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('_id name email phone role isEmailVerified createdAt');
+    const user = await User.findById(req.user.id).select('_id name email phone role isEmailVerified onboardingTourCompleted createdAt');
 
     res.status(200).json({
       success: true,
@@ -479,11 +482,33 @@ exports.getMe = async (req, res, next) => {
         phone: user.phone,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        onboardingTourCompleted: user.onboardingTourCompleted,
         createdAt: user.createdAt
       }
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// @desc    Mark onboarding tour completion
+// @route   PATCH /api/auth/onboarding-tour
+// @access  Private
+exports.completeOnboardingTour = async (req, res, next) => {
+  try {
+    const { completed = true } = req.body;
+    const user = await User.findById(req.user.id).select('onboardingTourCompleted');
+
+    user.onboardingTourCompleted = Boolean(completed);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Onboarding tour status updated',
+      data: { onboardingTourCompleted: user.onboardingTourCompleted }
+    });
+  } catch (err) {
+    next(err);
   }
 };
 

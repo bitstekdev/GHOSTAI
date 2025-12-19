@@ -1,8 +1,11 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import api from "../../services/axiosInstance";
 import { PenTool } from "lucide-react";
+import Joyride from 'react-joyride';
 import { AppContext } from '../../context/AppContext'
 import {ProgressStep1} from '../helperComponents/Steps.jsx'
+import { useTourContext } from '../../context/TourContext';
+import { generateStoryTourSteps, tourStyles } from '../../config/tourSteps';
 
 const GenerateStory = () => {
   const {navigateTo} = useContext(AppContext)
@@ -21,6 +24,31 @@ const GenerateStory = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+
+  // Use tour context
+  const {
+    run,
+    stepIndex,
+    handleTourCallback: contextHandleCallback,
+    activeTour
+  } = useTourContext();
+
+  // Only run tour on this page if it's the onboarding tour
+  const shouldRunTourOnThisPage = activeTour === 'onboarding' && 
+    window.location.pathname === '/generatestory';
+
+  const handleTourCallback = (data) => {
+    const { status, type } = data;
+    
+    // Navigate to Stories when generate story tour finishes
+    if (type === 'tour:end' || status === 'finished') {
+      setTimeout(() => {
+        navigateTo('/stories');
+      }, 500);
+    }
+    
+    contextHandleCallback(data);
+  };
 
   // Add or Edit Character
   const handleAddCharacter = () => {
@@ -96,7 +124,26 @@ const handleSubmit = async () => {
 
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
+    <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-4 sm:px-6 py-10">
+      {/* Joyride Tour Component */}
+      <Joyride
+        steps={generateStoryTourSteps}
+        run={run && shouldRunTourOnThisPage}
+        stepIndex={stepIndex}
+        continuous
+        showProgress
+        showSkipButton
+        callback={handleTourCallback}
+        styles={tourStyles}
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Next Page',
+          next: 'Next',
+          skip: 'Skip Tour',
+        }}
+      />
+      
       <ProgressStep1 />
     <div className="relative p-6 py-10 max-w-3xl w-full">
       {/* Title */}
@@ -113,7 +160,7 @@ const handleSubmit = async () => {
           <input
             type="text"
             placeholder="Enter story title"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            className="story-title-input w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
             value={formData.title}
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
@@ -125,7 +172,7 @@ const handleSubmit = async () => {
         <div>
           <label className="text-white block mb-2">Genre</label>
           <select
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            className="story-genre-select w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
             value={formData.genre}
             onChange={(e) =>
               setFormData({ ...formData, genre: e.target.value })
@@ -146,13 +193,13 @@ const handleSubmit = async () => {
           </select>
         </div>
 
-{/* 3 row */}
-        <div className="flex justify-center gap-4">
+{/* 3 row (responsive) */}
+        <div className="flex flex-col md:flex-row justify-center gap-4">
         {/* Story Length */}
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
           <label className="text-white block mb-2">Story Length</label>
           <select
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
+            className="story-length-select w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
             value={formData.length}
             onChange={(e) =>
               setFormData({ ...formData, length: e.target.value })
@@ -166,7 +213,7 @@ const handleSubmit = async () => {
           </select>
           </div>
           {/* number of characters */}
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
           <label className="text-white block mb-2">Number of Characters</label>
           <select
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
@@ -189,7 +236,7 @@ const handleSubmit = async () => {
           <label className="text-white block mb-2">Character Details</label>
 
           {/* Pills */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-2">
             {formData.characterDetails.map((char, i) => (
               <div
                 key={i}
@@ -214,7 +261,7 @@ const handleSubmit = async () => {
           {!showCharacterForm && (
             <button
               onClick={() => setShowCharacterForm(true)}
-              className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
+              className="add-character-button bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
             >
               + Add Character Details
             </button>
@@ -265,11 +312,11 @@ const handleSubmit = async () => {
          {msg && <p className="text-red-500">{msg}</p>}
 
         {/* Submit - aligned to the right */}
-        <div className="flex flex-col items-end mt-[-20px]">
-          <p className="text-gray-400 text-sm text-right">Let's begin your story</p> 
+        <div className="flex flex-col items-center md:items-end mt-2 w-full">
+          <p className="text-gray-400 text-sm text-center md:text-right">Let's begin your story</p> 
           <button
             onClick={handleSubmit}
-            className="bg-purple-600 hover:bg-purple-700 w-1/2 text-white py-3 px-6 rounded-lg mt-4"
+            className="generate-button bg-purple-600 hover:bg-purple-700 w-full md:w-1/2 text-white py-3 px-6 rounded-lg mt-4"
           >
             {loading ? "Creating..." : "Next"}
           </button>
