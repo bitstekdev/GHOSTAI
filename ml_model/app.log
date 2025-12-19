@@ -222,3 +222,158 @@ one day, four of us riding on bikes two on one bike, and two on one bike, and du
 2025-12-12 11:56:17,187 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2025-12-12 11:56:25,147 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2025-12-12 11:56:28,529 [INFO] storybook_api - Generating image for page=5, orientation=Portrait
+2025-12-12 15:27:20,277 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 15:27:27,938 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 15:27:34,036 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-12 15:57:32,401 [INFO] storybook_api - Start questionnaire called
+2025-12-12 15:58:38,786 [INFO] storybook_api - Next question request received. Answer: This book was written to explore the deeper layers of one of the most powerful and misunderstood characters in modern mythology—the Hulk. For decades, the Hulk has symbolized the struggle between reason and rage, between the self we show the world and the one we try to suppress. By diving into Bruce Banner’s fractured psyche, this book aims to reveal how trauma, resilience, and transformation shape a hero unlike any other.
+2025-12-12 15:59:55,975 [INFO] storybook_api - Next question request received. Answer: Bruce Banner, Betty Ross, and General Ross conduct a dangerous gamma-radiation test.
+2025-12-12 15:59:55,981 [INFO] storybook_api - LLM generating next question
+2025-12-12 15:59:57,672 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:00:26,987 [INFO] storybook_api - Next question request received. Answer: Gamma radiation changes Bruce Banner’s life forever by transforming him into the Hulk—an uncontrollable, superpowered being driven by emotion. It forces him to live between two identities, constantly battling fear, isolation, and the consequences of a power he never wanted.
+2025-12-12 16:00:26,990 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:00:28,591 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:00:57,489 [INFO] storybook_api - Next question request received. Answer: Betty Ross impacts Bruce’s struggle with the Hulk by being his emotional anchor.
+She’s one of the few people who sees the humanity in both Bruce and the Hulk, helping calm him, guiding him toward control, and reminding him he’s not a monster. Her support gives Bruce hope, while her absence often worsens his turmoil and triggers greater instability.
+2025-12-12 16:00:57,491 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:00:58,289 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:01:19,660 [INFO] storybook_api - Next question request received. Answer: General Ross intensifies Bruce’s turmoil by relentlessly pursuing the Hulk and treating him as a threat rather than a victim.
+His military pressure forces Bruce into constant fear and isolation, escalating the conflict instead of allowing healing. Ross’s aggression, combined with his personal connection through Betty, turns Bruce’s struggle into both a physical and emotional battlefield.
+2025-12-12 16:01:19,662 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:01:20,408 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:01:39,868 [INFO] storybook_api - Next question request received. Answer: Bruce’s inner conflict escalates as he realizes the Hulk isn’t just a reaction—it’s a growing, unpredictable part of him.
+Each transformation becomes harder to control, the stakes rise as people get hurt, and his fear of losing himself completely deepens. Over time, Bruce battles not only the monster but the guilt, loneliness, and belief that he may never be truly free.
+2025-12-12 16:01:39,871 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:01:41,293 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:02:05,199 [INFO] storybook_api - Next question request received. Answer: Bruce is ultimately set on a path toward redemption when he chooses to use the Hulk’s power to protect others instead of running from it.
+Realizing he can save lives—especially when people like Betty believe in his humanity—gives him purpose, helping him turn his curse into a responsibility and a chance to make amends for past destruction.
+2025-12-12 16:02:05,203 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:02:08,537 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:02:30,488 [INFO] storybook_api - Next question request received. Answer: Bruce balances heroism with his Hulk alter ego by learning when to embrace the Hulk’s power and when to rely on his own intellect and restraint.
+He sets rules, seeks emotional control, and works with allies who help him stay grounded. Over time, he accepts that both sides—Banner’s mind and Hulk’s strength—must coexist for him to be the hero the world needs.
+2025-12-12 16:02:30,491 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:02:31,845 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:02:53,061 [INFO] storybook_api - Next question request received. Answer: Bruce occasionally finds moments of peace, but it’s rarely permanent.
+At times, he reaches a fragile harmony—whether by merging his intellect with the Hulk or accepting both sides of himself. But new threats, emotional wounds, and the Hulk’s unpredictable nature often disrupt that balance. His peace is real, but it tends to be temporary, making his journey an ongoing search for acceptance rather than a final destination.
+2025-12-12 16:02:53,063 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:02:54,406 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:03:21,971 [INFO] storybook_api - Next question request received. Answer: The Hulk’s most destructive outbursts are typically triggered by extreme emotional stress—especially intense anger, fear, or feeling threatened.
+Moments involving betrayal, loss, or seeing others in danger can also push Bruce past his limits, unleashing the Hulk in his most uncontrollable and destructive form.
+2025-12-12 16:03:21,973 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:03:23,082 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:03:43,861 [INFO] storybook_api - Next question request received. Answer: Love can calm the Hulk, but it can’t fully tame him.
+Connections—especially with Betty—can soothe his rage, help Bruce regain control, and remind the Hulk of his humanity. But the Hulk is driven by primal emotion, not reason, so love can guide and soften him, yet it cannot erase the monster within.
+2025-12-12 16:03:43,862 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:03:44,562 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:04:14,764 [INFO] storybook_api - Next question request received. Answer: Bruce’s relationship with Betty Ross ultimately becomes a mix of deep love, painful distance, and enduring connection.
+They care for each other profoundly, but Bruce’s transformations, the danger surrounding the Hulk, and General Ross’s interference often force them apart. Still, Betty remains one of the few people who truly understands him, and even when separated, their bond continues to shape Bruce’s journey.
+2025-12-12 16:04:14,766 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:04:15,712 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:05:53,668 [INFO] storybook_api - Next question request received. Answer: Bruce finds temporary cures at times, but never a permanent one.
+Throughout different stories, he manages to suppress or even remove the Hulk for short periods, but the transformation always returns—either through emotional stress, external forces, or the Hulk’s own instinct to survive.
+2025-12-12 16:05:53,670 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:05:55,519 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:06:18,976 [INFO] storybook_api - Next question request received. Answer: Bruce’s legacy as the Hulk is one of reluctant heroism, immense power, and profound humanity.
+Despite the destruction caused by his transformations, he becomes remembered for using that power to save lives, stand against overwhelming threats, and prove that even the most broken individuals can make a difference.
+2025-12-12 16:06:18,978 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:06:20,406 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:06:56,917 [INFO] storybook_api - Generating gist for genre: Adventure
+2025-12-12 16:06:56,919 [INFO] storybook_api - Calling LLM for story gist
+2025-12-12 16:06:57,754 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:07:07,269 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:07:12,772 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:07:54,980 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:07:59,560 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:08:07,257 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-12 16:10:37,448 [INFO] storybook_api - /coverback/generate called. Genre=Adventure, Title=Shadow Of Fear
+2025-12-12 16:15:20,188 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:15:26,749 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 16:15:31,463 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-12 16:26:48,697 [INFO] storybook_api - Start questionnaire called
+2025-12-12 16:27:17,644 [INFO] storybook_api - Next question request received. Answer: About Shaad who is smart and who is worrying about exams
+2025-12-12 16:28:01,653 [INFO] storybook_api - Next question request received. Answer: He is worried about exams and not being able to study
+2025-12-12 16:28:01,656 [INFO] storybook_api - LLM generating next question
+2025-12-12 16:28:02,405 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 17:10:01,405 [INFO] storybook_api - Start questionnaire called
+2025-12-12 17:10:24,067 [INFO] storybook_api - Start questionnaire called
+2025-12-12 17:11:10,317 [INFO] storybook_api - Next question request received. Answer: A story about shaad who is dumb
+2025-12-12 17:11:48,089 [INFO] storybook_api - Next question request received. Answer: One day shaad was worried that he didnt prepared for exams
+2025-12-12 17:11:48,090 [INFO] storybook_api - LLM generating next question
+2025-12-12 17:11:50,114 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 17:13:04,983 [INFO] storybook_api - Next question request received. Answer: None
+2025-12-12 17:13:04,983 [INFO] storybook_api - LLM generating next question
+2025-12-12 17:13:06,481 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-12 17:27:52,823 [INFO] storybook_api - Next question request received. Answer: happy
+2025-12-12 17:27:52,825 [INFO] storybook_api - LLM generating next question
+2025-12-12 17:27:54,415 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 12:48:42,365 [INFO] storybook_api - Start questionnaire called
+2025-12-15 12:48:58,339 [INFO] storybook_api - Next question request received. Answer: to give him a gift 
+2025-12-15 12:52:05,814 [INFO] storybook_api - Next question request received. Answer: there was an adventures night where he meet with an accident  in which the car get destroied 
+2025-12-15 12:52:05,815 [INFO] storybook_api - LLM generating next question
+2025-12-15 12:52:12,897 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 12:53:08,648 [INFO] storybook_api - Generating gist for genre: Family
+2025-12-15 12:53:08,650 [INFO] storybook_api - Calling LLM for story gist
+2025-12-15 12:53:10,638 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 12:57:40,934 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 12:57:56,419 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 12:58:36,303 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 13:02:00,571 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 13:02:13,053 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-15 13:04:45,144 [INFO] storybook_api - /coverback/generate called. Genre=Family, Title=Frozen In Time
+2025-12-15 16:27:55,761 [INFO] storybook_api - Start questionnaire called
+2025-12-15 16:28:50,948 [INFO] storybook_api - Next question request received. Answer: to descript his office efforts and hard work smart work 
+2025-12-15 16:33:28,374 [INFO] storybook_api - Next question request received. Answer: he was join in the office as a intern with his hard work got the placement 
+2025-12-15 16:33:28,377 [INFO] storybook_api - LLM generating next question
+2025-12-15 16:33:32,392 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 16:34:12,580 [INFO] storybook_api - Generating gist for genre: Mystery
+2025-12-15 16:34:12,582 [INFO] storybook_api - Calling LLM for story gist
+2025-12-15 16:34:14,338 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 16:34:25,418 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 16:34:46,453 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 16:35:18,744 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 16:35:30,932 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-15 16:36:30,026 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-15 16:37:24,446 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2025-12-15 16:47:19,648 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-15 16:48:24,636 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-15 16:49:21,438 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2025-12-15 16:58:34,481 [INFO] storybook_api - /coverback/generate called. Genre=Mystery, Title=Secrets Are Revealed
+2025-12-15 17:20:34,437 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 17:20:38,041 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 17:20:41,766 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-15 17:22:12,102 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 17:22:17,347 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 17:22:31,716 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-15 18:29:56,350 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 18:30:04,354 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-15 18:30:13,249 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-16 10:50:24,920 [INFO] storybook_api - Start questionnaire called
+2025-12-16 10:51:17,288 [INFO] storybook_api - Next question request received. Answer: want to write this book to describe there love life and the love story during the internship in a office 
+2025-12-16 10:52:09,224 [INFO] storybook_api - Next question request received. Answer: shashi use to help her  in technical aspect and encouraged her to learn python 
+2025-12-16 10:52:09,228 [INFO] storybook_api - LLM generating next question
+2025-12-16 10:52:12,319 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 10:52:38,562 [INFO] storybook_api - Generating gist for genre: Marriage
+2025-12-16 10:52:38,564 [INFO] storybook_api - Calling LLM for story gist
+2025-12-16 10:52:39,913 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:06:41,137 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:06:56,757 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:07:16,153 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:07:27,325 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:07:56,725 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-16 11:09:32,403 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-16 11:10:35,885 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2025-12-16 11:15:23,514 [INFO] storybook_api - /coverback/generate called. Genre=Marriage, Title=Softly Falls Deeper
+2025-12-16 11:19:54,429 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:19:59,855 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 11:20:05,998 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-16 11:27:37,541 [INFO] storybook_api - Start questionnaire called
+2025-12-16 13:06:58,418 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 13:07:05,575 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-16 13:07:16,129 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-19 12:11:25,666 [INFO] storybook_api - Next question request received. Answer: sample book 
+2025-12-19 12:11:33,743 [INFO] storybook_api - Next question request received. Answer: hell man
+2025-12-19 12:11:33,745 [INFO] storybook_api - LLM generating next question
+2025-12-19 12:11:41,339 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-19 12:11:55,861 [INFO] storybook_api - Generating gist for genre: Mystery
+2025-12-19 12:11:55,862 [INFO] storybook_api - Calling LLM for story gist
+2025-12-19 12:11:57,151 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"

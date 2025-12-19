@@ -4,6 +4,7 @@ import { AppContext } from "../../context/AppContext";
 import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import { ProgressStep3 } from '../helperComponents/Steps.jsx'
+import storyImage from "../../assets/images/story-image-1.jpg";
 
 const TemplateSelection = () => {
   const params = useParams();
@@ -59,34 +60,34 @@ const TemplateSelection = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 min-h-screen bg-black">
       <ProgressStep3 />
       {/* <button className="bg-red-700" onClick={fetchdata}>test btn</button> */}
-      <div className="grid md:grid-cols-2 gap-8 mt-6">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-purple-400 mb-2">Story Title</h1>
-          <p className="text-white">{storyData?.title}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6">
+        <div className="p-4 md:p-6">
+          <h1 className="text-xl md:text-2xl font-bold text-purple-400 mb-2">Story Title</h1>
+          <p className="text-white text-sm md:text-base">{storyData?.title}</p>
 
-          <h2 className="text-xl font-bold text-purple-400 mt-6 mb-2">Genre</h2>
-          <p className="text-white">{storyData?.genre}</p>
+          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Genre</h2>
+          <p className="text-white text-sm md:text-base">{storyData?.genre}</p>
 
-          <h2 className="text-xl font-bold text-purple-400 mt-6 mb-2">
+          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">
             Character
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {storyData?.characterDetails?.map((char, index) => (
               <span
                 key={index-1}
-                className="bg-gray-700 text-white px-4 py-2 rounded-full text-sm">
+                className="bg-gray-700 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm">
                 {char.name}
               </span>
             ))}
           </div>
           {/* <h2 className="text-xl font-bold text-purple-400 mt-6 mb-2">Gist <small>(you can edit this prompt)</small> </h2> */}
-          <h2 className="text-xl font-bold text-purple-400 mt-6 mb-2">Prompt <small className="text-sm text-white font-light">(you can edit this prompt)</small> </h2>
+          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Prompt <small className="text-xs md:text-sm text-white font-light">(you can edit this prompt)</small> </h2>
           <textarea
-            className="text-gray-300 text-sm leading-relaxed border border-gray-700 rounded-lg w-full p-4 bg-gray-800"
-            rows={5} cols={80}
+            className="text-gray-300 text-xs md:text-sm leading-relaxed border border-gray-700 rounded-lg w-full p-3 md:p-4 bg-gray-800 min-h-[120px]"
+            rows={5}
             value={storyData?.gist}
             onChange={(e) => {
             setStoryData((prev) => ({ ...prev, gist: e.target.value }));
@@ -98,8 +99,8 @@ const TemplateSelection = () => {
 
             {/* loading indicator */}
             {loading && (
-              <div className="mt-6">
-                <p className="text-center text-purple-300 mb-2">
+              <div className="mt-4 md:mt-6">
+                <p className="text-center text-purple-300 text-xs md:text-sm mb-2">
                   Generating scenes…✨ wait for 1 to 2 minutes.
                 </p>
                 <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -109,15 +110,16 @@ const TemplateSelection = () => {
             )}
 
 
-          <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg mt-6 transition-colors"
+          <button className="w-full bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white py-3 md:py-3.5 rounded-lg mt-4 md:mt-6 transition-colors text-sm md:text-base font-semibold"
            onClick={handleSubmit}
+           disabled={loading}
           >
-            Generate Story
+            {loading ? "Generating..." : "Generate Story"}
           </button>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">Book Templates <small className="text-sm text-white font-light">(select one template)</small></h2>
+        <div className="p-4 md:p-0">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Book Templates <small className="text-xs md:text-sm text-white font-light">(select one template)</small></h2>
 
           <div className="relative">
             <div className="overflow-hidden">
@@ -127,9 +129,9 @@ const TemplateSelection = () => {
                   transform: `translateX(-${selectedTemplate * 100}%)`,
                 }}>
                 {templates.map((template, idx) => (
-                  <div key={idx} className="w-full flex-shrink-0 px-2">
+                  <div key={idx} className="w-full flex-shrink-0 px-1 md:px-2">
                     <div
-                      className={`border-4 rounded-lg ${
+                      className={`border-4 rounded-lg overflow-hidden ${
                         selectedTemplate === idx
                           ? "border-purple-500"
                           : "border-gray-700"
@@ -141,17 +143,22 @@ const TemplateSelection = () => {
                           : "aspect-[3/2]"
                       } 
                         bg-gray-800 flex items-center justify-center mx-auto
-                        max-h-[70vh] w-auto`}
+                        max-h-[50vh] md:max-h-[70vh] w-auto relative`}
                       style={{ height: "auto" }}>
-                      <div className="text-center">
-                     <div className="flex items-center justify-center gap-2 ms-6">
-                          <p className="text-white font-bold">{template.name}</p>
+                      <img 
+                        src={storyImage} 
+                        alt={template.name}
+                        className="w-full h-full object-cover absolute inset-0"
+                      />
+                      <div className="text-center relative z-10 bg-black/60 px-4 py-3 rounded-lg backdrop-blur-sm">
+                     <div className="flex items-center justify-center gap-2">
+                          <p className="text-white font-bold text-sm md:text-base">{template.name}</p>
                           {selectedTemplate === idx && (
-                            <BadgeCheck size={20} className="text-green-400" />
+                            <BadgeCheck size={18} className="text-green-400 md:w-5 md:h-5" />
                           )}
                      </div>
 
-                        <p className="text-gray-400 text-sm">{template.size}</p>
+                        <p className="text-gray-400 text-xs md:text-sm">{template.size}</p>
                       </div>
                     </div>
                   </div>
@@ -163,8 +170,9 @@ const TemplateSelection = () => {
               onClick={() =>
                 setSelectedTemplate(Math.max(0, selectedTemplate - 1))
               }
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-900/80 text-white p-2 rounded-full hover:bg-gray-800">
-              <ChevronLeft size={24} />
+              disabled={loading}
+              className="absolute left-0 md:left-2 top-1/2 -translate-y-1/2 bg-gray-900/90 text-white p-2 md:p-3 rounded-full hover:bg-gray-800 active:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation">
+              <ChevronLeft size={20} className="md:w-6 md:h-6" />
             </button>
             <button
               onClick={() =>
@@ -172,19 +180,20 @@ const TemplateSelection = () => {
                   Math.min(templates.length - 1, selectedTemplate + 1)
                 )
               }
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-900/80 text-white p-2 rounded-full hover:bg-gray-800">
-              <ChevronRight size={24} />
+              disabled={loading}
+              className="absolute right-0 md:right-2 top-1/2 -translate-y-1/2 bg-gray-900/90 text-white p-2 md:p-3 rounded-full hover:bg-gray-800 active:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation">
+              <ChevronRight size={20} className="md:w-6 md:h-6" />
             </button>
           </div>
 
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center gap-2 md:gap-3 mt-4 md:mt-6">
             {templates.map((_, idx) => (
               <button
                 key={idx}
                 disabled={loading}
                 onClick={() => setSelectedTemplate(idx)}
-                className={`w-3 h-3 rounded-full ${
-                  selectedTemplate === idx ? "bg-purple-500" : "bg-gray-600"
+                className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all touch-manipulation ${
+                  selectedTemplate === idx ? "bg-purple-500 scale-110" : "bg-gray-600"
                 }`}
               />
             ))}
