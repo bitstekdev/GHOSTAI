@@ -22,6 +22,10 @@ const storyPageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  html: {
+    type: String,
+    required: false
+  },
   prompt: {
     type: String,
     required: true

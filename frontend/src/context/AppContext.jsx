@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import api, { setupAxiosInterceptors } from "../services/axiosInstance";
 
-
-
 export const AppContext = createContext();
 
-const AppContextProvider = (props) => {
+function AppContextProvider(props) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const nav = useNavigate();
 
@@ -254,11 +252,8 @@ const createAddress = async (addressData) => {
     isAuthenticated,
     setIsAuthenticated,
     storyId,
-    setStoryId,    fetchAddresses,
-    createAddress,
-    addresses,
-    loadingAddresses,
-    addressError,    fetchAddresses,
+    setStoryId,    
+    fetchAddresses,
     createAddress,
     addresses,
     loadingAddresses,
@@ -268,6 +263,6 @@ const createAddress = async (addressData) => {
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
   );
-};
+}
 
 export default AppContextProvider;
