@@ -251,7 +251,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
         })
       );
 
-      addBotMessage("Story created successfully! Redirecting you now... 🎉");
+      addBotMessage("Story  Redirecting you now... 🎉");
       setTimeout(() => {
         navigateTo(`/questioner/${storyId}`);
       }, 1500);
@@ -322,14 +322,28 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
                   key={index}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-xl px-4 py-3 rounded-2xl ${
-                      message.type === 'user'
-                        ? 'bg-purple-600 text-white rounded-br-none'
-                        : 'bg-gray-800 text-gray-100 rounded-bl-none'
-                    }`}
-                  >
-                    <p className="whitespace-pre-line text-base leading-relaxed">{message.text}</p>
+                  <div className="max-w-xl">
+                    {/* Heading */}
+                    <p
+                      className={`text-sm font-semibold mb-1 ${
+                        message.type === 'user'
+                          ? 'text-gray-400 text-right'
+                          : 'text-purple-300'
+                      }`}
+                    >
+                      {message.type === 'user' ? 'You' : 'Ghostverse AI'}
+                    </p>
+
+                    {/* Bubble */}
+                    <div
+                      className={`px-4 py-3 rounded-2xl ${
+                        message.type === 'user'
+                          ? 'bg-purple-600 text-white rounded-br-none'
+                          : 'bg-gray-800 text-gray-100 rounded-bl-none'
+                      }`}
+                    >
+                      <p className="whitespace-pre-line text-base leading-relaxed">{message.text}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -361,29 +375,56 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
           )}
         </div>
 
-        {/* Input Area - Fixed at Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 bg-black py-6 px-4">
+        {/* Input Area - Ask Anything Style */}
+        <div className="fixed bottom-0 left-8 right-0 bg-black py-6 px-4">
           <div className="max-w-3xl mx-auto">
-            <div className="flex justify-center gap-3">
+            <div className="relative -mx-[6%]">
+              {/* Input */}
               <input
                 ref={inputRef}
                 type="text"
                 placeholder={loading ? "Processing..." : "Ask anything..."}
-                className="w-full max-w-xl bg-gray-900 border border-gray-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-gray-800 transition-all placeholder-gray-500"
+                className="
+                  w-[100%]
+                  bg-[#0f172a]
+                  text-white
+                  placeholder-gray-400
+                  px-5 pr-18 pl-10 py-3
+                  rounded-full
+                  border-2 border-purple-600
+                  focus:outline-none
+                  focus:ring-2 focus:ring-purple-600/40
+                  transition
+                "
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
                 disabled={loading}
               />
+
+              {/* Send Icon inside input */}
               <button
                 onClick={handleSendMessage}
                 disabled={loading || !userInput.trim()}
-                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white p-3 rounded-full transition-colors flex items-center justify-center"
+                className="
+                  absolute right-4 top-1/2 -translate-y-1/2
+                  text-gray-400
+                  hover:text-purple-400
+                  transition
+                  disabled:opacity-30
+                  disabled:cursor-not-allowed
+                "
                 title="Send message"
               >
-                <Send size={20} />
+                <Send size={22} />
               </button>
             </div>
+
             {msg && (
               <div className="mt-2 p-2 bg-red-900/50 border border-red-700 rounded-lg">
                 <p className="text-red-300 text-xs">{msg}</p>
