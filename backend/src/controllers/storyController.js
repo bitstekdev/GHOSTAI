@@ -30,7 +30,7 @@ exports.startQuestionnaire = async (req, res, next) => {
       data: result
     });
   } catch (error) {
-    console.log(error);
+    console.error('Questionnaire error:', { userId: req.user.id });
     next(error);
   }
 };
@@ -142,16 +142,17 @@ exports.createStory = async (req, res, next) => {
 
 
     const pagePromises = storyResult.pages.map(page =>
-  StoryPage.findOneAndUpdate(
-    { story: story._id, pageNumber: page.page },   // Find existing page
-    {
-      text: page.text,
-      prompt: page.prompt,
-      status: 'pending'
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  )
-);
+      StoryPage.findOneAndUpdate(
+        { story: story._id, pageNumber: page.page },   // Find existing page
+        {
+          text: page.text,
+          html: page.html || page.text,
+          prompt: page.prompt,
+          status: 'pending'
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      )
+    );
 
 
     await Promise.all(pagePromises);
@@ -277,7 +278,6 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    console.log("Generate titles request body:", req.body);
     const { storyId, selectedTitle, genre } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
@@ -304,7 +304,6 @@ exports.generateTitles = async (req, res, next) => {
 exports.regenerateTitles = async (req, res, next) => {
   try {
     const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
-    console.log("Regenerate titles request body:", req.body);
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 

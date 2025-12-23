@@ -1,0 +1,49 @@
+/* Story HTML Content Styling matching FastAPI output */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.story-html-content {
+  font-family: 'Poppins', 'Montserrat', sans-serif;
+  color: #111827;
+}
+
+.story-html-content .container {
+  max-width: 720px;
+  margin: auto;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.story-html-content .adventure-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.story-html-content .highlight-place {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.story-html-content .highlight-action {
+  color: #92400e;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.story-html-content .highlight-emotion {
+  color: #166534;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.story-html-content .highlight-emphasis {
+  font-size: 1.35em;
+  font-weight: 600;
+  color: #7c2d12;
+  letter-spacing: 0.04em;
+}

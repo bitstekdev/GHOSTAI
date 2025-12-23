@@ -21,6 +21,9 @@ from fastapi import UploadFile, File, Form
 import base64
 import logging
 from logging.handlers import RotatingFileHandler
+from fastapi_utilities import ttl_lru_cache
+
+
 
 # ----------------------------
 # GLOBAL LOGGING SETUP
@@ -37,6 +40,74 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("storybook_api")
+
+# ============================================================
+# 🧠 QUESTIONNAIRE LLM FALLBACK (ONLY)
+# ============================================================
+
+QUESTIONNAIRE_MODELS = [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "mistralai/mistral-7b-instruct:free",
+    "xiaomi/mimo-v2-flash:free",
+]
+
+import time
+from fastapi import HTTPException
+
+def call_questionnaire_llm(
+    messages,
+    temperature=0.7,
+    timeout=60,
+):
+    last_error = None
+    primary_model = QUESTIONNAIRE_MODELS[0]
+
+    for idx, model in enumerate(QUESTIONNAIRE_MODELS):
+        try:
+            # 🔍 Attempt log
+            logger.info(f"🧠 Questionnaire LLM attempt [{idx+1}/{len(QUESTIONNAIRE_MODELS)}]: {model}")
+
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                timeout=timeout,
+            )
+
+            # 🔄 Shift detection log
+            if idx > 0:
+                logger.warning(
+                    f"🔁 Questionnaire LLM SHIFTED | "
+                    f"from={primary_model} → to={model}"
+                )
+
+            logger.info(f"✅ Questionnaire LLM success: {model}")
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            last_error = str(e)
+
+            # ❌ Failure log
+            logger.error(
+                f"❌ Questionnaire LLM failed | "
+                f"model={model} | "
+                f"error={e}"
+            )
+
+            # Small backoff
+            time.sleep(0.8)
+
+    # ❌ Total failure
+    logger.critical(
+        "🚨 Questionnaire LLM DOWN | "
+        f"all_models_failed | last_error={last_error}"
+    )
+
+    raise HTTPException(
+        status_code=503,
+        detail="Questionnaire service temporarily unavailable"
+    )
+
 
 # ============================================================
 # 🧠 Setup (Production Safe)
@@ -103,15 +174,12 @@ class GistResponse(BaseModel):
 # 🧩 Core Logic
 # ============================================================
 
-def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruct:free"):
+def generate_next_question(conversation):
     logger.info("LLM generating next question")
-
-    """Generate next conversational question."""
 
     if len(conversation) == 0:
         return "Why write this book?"
 
-    # Build the conversation context
     context = "\n".join(
         [f"Q{i+1}: {c.question}\nA{i+1}: {c.answer}" for i, c in enumerate(conversation)]
     )
@@ -127,16 +195,11 @@ def generate_next_question(conversation, model="meta-llama/llama-3.3-70b-instruc
         {"role": "user", "content": f"Conversation so far:\n{context}\nNext question:"},
     ]
 
-    try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.7,
-        )
-        return response.choices[0].message.content.strip()
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+    # 🔥 Fallback ONLY here
+    return call_questionnaire_llm(
+        messages=messages,
+        temperature=0.7,
+    )
 
 
 def generate_gist(conversation, genre="Family", model="meta-llama/llama-3.3-70b-instruct:free"):
@@ -173,6 +236,7 @@ Rules:
             model=model,
             messages=messages,
             temperature=0.6,
+            timeout=60,
         )
         return response.choices[0].message.content.strip()
 
@@ -221,6 +285,7 @@ class PageOutput(BaseModel):
     page: int
     text: str
     prompt: str
+    html: str 
 
 class StoryResponse(BaseModel):
     pages: List[PageOutput]
@@ -319,6 +384,7 @@ Original Paragraph:
             {"role": "user", "content": story_rewrite_prompt}
         ],
         temperature=0.6,
+        timeout=60,
     )
 
     new_story_text = story_resp.choices[0].message.content.strip()
@@ -396,6 +462,7 @@ But with a slightly different camera angle or composition.
             {"role": "user", "content": rewrite_prompt}
         ],
         temperature=0.7,
+        timeout=60,
     )
 
     new_prompt_raw = prompt_resp.choices[0].message.content.strip()
@@ -442,6 +509,7 @@ def inject_character_descriptions(prompt, character_map):
     - Gender consistency hint
     - Replaces ALL plain name occurrences (not just once)
     - Still prevents double-injecting @Name[...] if already present
+    - Safe for regeneration loops
     """
 
     # ------------------------------------------------------
@@ -484,17 +552,16 @@ def inject_character_descriptions(prompt, character_map):
     implied_names = names[3:]
 
     # ------------------------------------------------------
-    # 4) Inject @Name[desc] for ALL occurrences
+    # 4) Inject @Name[desc] for ALL occurrences (SAFE)
     # ------------------------------------------------------
     for name in visible_names:
         desc = character_map[name].strip()
 
-        # If already injected, skip
+        # Skip if already injected
         if re.search(rf'@{re.escape(name)}\s*\[', prompt, flags=re.IGNORECASE):
             continue
 
-        # Replace ALL plain name occurrences
-        pattern = rf'\b{re.escape(name)}\b'
+        pattern = rf'(?<!@)\b{re.escape(name)}\b'
         replacement = f"@{name}[{desc}]"
         prompt = re.sub(pattern, replacement, prompt, flags=re.IGNORECASE)
 
@@ -597,6 +664,90 @@ def genre_visual_style(genre):
 
     return genre_styles.get(genre, "")
 
+
+def generate_html_for_pages(story_pages: Dict[str, str], genre: str) -> Dict[str, str]:
+    """
+    Generates semantic HTML for ALL pages in a SINGLE LLM call.
+    Returns dict: { "Page 1": "<div>...</div>", ... }
+    """
+
+    system_prompt = f"""
+You are an expert storybook HTML formatter.
+
+TASK:
+You will receive a JSON object mapping Page numbers to story text.
+For EACH page, convert the text into semantic HTML.
+
+GLOBAL RULES:
+- Output ONLY valid JSON
+- Keys must remain exactly the same (Page 1, Page 2, ...)
+- Values must be HTML strings
+
+HTML RULES:
+- NO <html>, <head>, <style>, or <body>
+- Each value MUST be wrapped exactly as:
+
+<div class="container">
+  <p class="adventure-text">
+    ...
+  </p>
+</div>
+
+STRICT RULES:
+- Output ONLY valid HTML (no markdown, no explanations)
+- Use ONLY these classes:
+  highlight-place
+  highlight-action
+  highlight-emotion
+  highlight-emphasis
+- highlight-place → ONLY physical locations (room, house, table, street)
+- highlight-action → verbs or actions,visible physical action only
+- highlight-emotion → feelings or mental states internal state / value / feeling
+- highlight-emphasis → very important story turning points OR final lesson only
+- NEVER highlight time words (morning, evening, night)
+- NEVER highlight objects or people
+- Do NOT overuse highlights
+
+HIGHLIGHT RULES (apply intelligently):
+- Places → <span class="highlight-place">
+- Actions → <span class="highlight-action">
+- Emotions → <span class="highlight-emotion">
+- ONE major emphasis per page max → <span class="highlight-emphasis">
+
+QUALITY RULES:
+- Preserve original wording
+- Do NOT over-highlight
+- Do NOT add or remove meaning
+- No explanations
+- No comments
+- No markdown
+- No escaping
+
+GENRE CONTEXT: {genre}
+
+Return ONLY the JSON object.
+"""
+
+    user_prompt = json.dumps(story_pages, ensure_ascii=False)
+
+    resp = client.chat.completions.create(
+        model=STORY_MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.4,
+        timeout=60,
+    )
+
+    raw = resp.choices[0].message.content.strip()
+
+    html_map = extract_json_from_text(raw)
+    if not html_map:
+        raise RuntimeError("Failed to parse HTML JSON from LLM")
+
+    return html_map
+
 def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int):
     """
     Returns list of tuples: [(page_text, prompt), ...] length == num_pages
@@ -635,24 +786,19 @@ You are a masterful storyteller who creates coherent, a bit poetic, emotional, a
 Guiding Principles:
 - Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning,” to gently invite the reader in.
 - Avoid unnecessary side plots.
+- Each page MUST explicitly include at least one of the provided character names.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
-- Each page should unfold in 3–4 meaningful, well-crafted sentences.
-- Every page MUST explicitly include at least one of the provided character names.
+- Each page should unfold in 2–4 meaningful, well-crafted sentences.
+- Every page must include at least one named character (explicit name, not pronouns).
+- You may describe characters physically ONLY if it is already provided in character_details.
 - Never invent new characters or new names.
-
-STRICT RULES ABOUT CHARACTER DETAILS:
-- NEVER include, reference, hint at, or restate the provided character_details inside the narrative.
-- Do NOT describe characters physically unless the exact physical detail exists word-for-word in character_details.
-- If a physical detail is NOT explicitly present in character_details, you MUST NOT invent it, infer it, or imply it.
-- No invented clothing, no invented colors, no invented hairstyles, no invented body features, no invented accessories, no invented expressions.
-
-GENRE & TONE:
 - Maintain a consistent emotional tone that matches the genre: {genre}.
-- The narrative must fully align with the genre: {genre}.
+- Genre must match: {genre}.
+- Label each part exactly as: Page 1, Page 2, ...
 
-FORMATTING:
-- Label each section exactly as: Page 1, Page 2, Page 3, ...
+
+
 """
 
 
@@ -667,6 +813,7 @@ FORMATTING:
                 {"role": "user", "content": user_content}
             ],
             temperature=0.8,
+            timeout=60,
         )
         story_output = resp.choices[0].message.content.strip()
     except Exception as e:
@@ -677,6 +824,9 @@ FORMATTING:
     for i in range(1, num_pages + 1):
         tag = f"Page {i}"
         story_pages[tag] = extract_page_from_story(story_output, tag) or ""
+        # --- Generate HTML for ALL pages (SINGLE LLM CALL)
+    html_pages = generate_html_for_pages(story_pages, genre)
+
 
     # --- Build image prompt system
     image_prompt_system = f"""
@@ -694,6 +844,11 @@ RULES FOR EVERY PAGE:
 - Always show characters interacting with their surroundings.
 - If 2 characters are present, both MUST appear in the prompt.
 - If 3+ characters appear, show the first 3 clearly, others implied softly.
+
+ABSOLUTE CHARACTER CONSTRAINT:
+- ONLY the explicitly named characters may appear.
+- NO crowd, NO background people, NO silhouettes, NO partial humans.
+- Public places must be shown EMPTY except for the named characters.
 
 START EVERY PROMPT WITH:
 "ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement, dynamic action, looking away from the camera, expressive body language, dramatic lighting, depth of field, atmospheric haze, environmental interaction, cinematic perspective"
@@ -718,6 +873,7 @@ CRITICAL:
                 {"role": "user", "content": json.dumps(story_pages)}
             ],
             temperature=0.7,
+            timeout=60,
         )
 
         raw_output = prompt_resp.choices[0].message.content.strip()
@@ -796,15 +952,14 @@ CRITICAL:
     pages_out = []
     for i in range(1, num_pages + 1):
         key = f"Page {i}"
+
         page_text = story_pages.get(key, "")
         prompt_text = prompt_dict.get(key, "")
+        page_html = html_pages.get(key, "")
 
-        # inject anchors
         prompt_text = inject_character_descriptions(prompt_text, character_map)
-        style= genre_visual_style(genre)
-        if style:
-            prompt_text = f"{prompt_text}, {style}"
-        pages_out.append((page_text, prompt_text))
+
+        pages_out.append((page_text, prompt_text, page_html))
 
     return pages_out
 
@@ -986,7 +1141,10 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
             raise RuntimeError("No job id returned from RunPod.")
 
         start_time = time.time()
+        deadline = time.time() + DEFAULT_TIMEOUT
         while True:
+            if time.time() > deadline:
+                raise RuntimeError("TTL exceeded: RunPod image generation timed out.")
             status_resp = requests.get(RUNPOD_HIDREAM_STATUS.format(job_id), headers=headers, timeout=30)
             if status_resp.status_code != 200:
                 raise RuntimeError(f"Status check failed: {status_resp.status_code} {status_resp.text}")
@@ -1105,7 +1263,7 @@ def get_dimensions(orientation: str):
     return 1536, 1024
 
 def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
-                         blur_strength: int = 6, opacity_boost: float = 0.35) -> Image.Image:
+                         blur_strength: int = 6, opacity_boost: float = 0.65) -> Image.Image:
     """
     Apply left-side fade (blur + white overlay) so the left side becomes drawable for text.
     """
@@ -1245,6 +1403,8 @@ def run_runpod_sdxl(prompt: str, width: int, height: int, seed: int = None):
 
     start_time = time.time()
     while True:
+        if time.time() - start_time > JOB_TIMEOUT:
+            raise RuntimeError("TTL exceeded: RunPod SDXL job timed out.")
         status = requests.get(RUNPOD_SDXL_STATUS.format(job_id), headers=headers, timeout=30)
         if status.status_code != 200:
             raise RuntimeError(f"RunPod status check failed: {status.status_code} {status.text}")
@@ -1322,6 +1482,7 @@ Now generate exactly 5 NEW titles:
         top_p=0.85,
         frequency_penalty=1.4,
         presence_penalty=1.0,
+        timeout=60,
     )
 
     raw = resp.choices[0].message.content.strip()
@@ -1609,6 +1770,7 @@ You are a cinematic visual prompt generator for AI image models.
 STRICT RULES:
 - NO text, NO title, NO symbols, NO lettering.
 - Absolutely NO characters.
+- Absolutely NO humans, people, faces, silhouettes, reflections, shadows, statues, mannequins, crowds, or body parts.
 - MUST be photorealistic, modern, sharp, and cinematic.
 - Only ONE visual scene (35–45 words).
 - Must be based ONLY on objects/locations/atmosphere from the extracted visuals.
@@ -1854,7 +2016,16 @@ def story_generate(req: StoryRequest):
 
         pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages)
 
-        page_objects = [PageOutput(page=i+1, text=pages[i][0], prompt=pages[i][1]) for i in range(len(pages))]
+        page_objects = [
+            PageOutput(
+                page=i + 1,
+                text=pages[i][0],
+                prompt=pages[i][1],
+                html=pages[i][2]   # ✅ NEW
+            )
+            for i in range(len(pages))
+        ]
+
 
         return StoryResponse(pages=page_objects, ready_for_images=True, message="Story and prompts generated successfully")
 
@@ -1914,8 +2085,8 @@ def regenerate_images(req: RegenRequest):
     results = []
 
     for page in req.pages:
-        # character_details MUST be included in the RegenRequest model
-        result = wrap_regen_page(
+        # 1️⃣ Regenerate story + prompt + image
+        new_story, new_prompt, image_b64 = wrap_regen_page(
             story_text=page.text,
             old_prompt=page.prompt,
             character_details=page.character_details,
@@ -1923,18 +2094,28 @@ def regenerate_images(req: RegenRequest):
             orientation=req.orientation
         )
 
+        # 2️⃣ 🔥 Regenerate HTML (SINGLE-PAGE LLM CALL)
+        html_map = generate_html_for_pages(
+            {f"Page {page.page}": new_story},
+            genre="Family"   # or page.genre if you pass it
+        )
+
+        new_html = html_map.get(f"Page {page.page}", "")
+
+        # 3️⃣ Collect result
         results.append({
             "page": page.page,
-            "new_story": result[0],
-            "new_prompt": result[1],
-            "image_path": result[2],
+            "new_story": new_story,
+            "new_html": new_html,     # ✅ HTML regenerated
+            "new_prompt": new_prompt,
+            "image_base64": image_b64
         })
 
     return {
         "pages": results,
-        "message": "Regeneration completed."
+        "message": "Regeneration completed (story + prompt + HTML)."
     }
-
+# ============================
 
 # ----------------------------
 # Run with: uvicorn images_api_hidream:app --reload

@@ -240,7 +240,7 @@ const Dashboard = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div className="total-stories bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6">
-                        <h3 className="text-white text-sm mb-2">Total Stories Generated</h3>
+                        <h3 className="text-white text-sm mb-2">Total Stories </h3>
                         <div className="flex items-end justify-between">
                             <p className="text-5xl font-bold text-white">{allStories.length}</p>
                             <div className="flex gap-1 items-end h-16">

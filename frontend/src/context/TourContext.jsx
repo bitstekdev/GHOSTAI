@@ -15,7 +15,15 @@ export const useTourContext = () => {
 
 export const TourProvider = ({ children }) => {
   const navigate = useNavigate();
-  const { backendUrl, userData, setUserData } = useContext(AppContext);
+  const appContext = useContext(AppContext);
+  
+  // Safety check: if AppContext is not available, render children without tour functionality
+  if (!appContext) {
+    console.warn('TourProvider: AppContext is not available');
+    return <>{children}</>;
+  }
+  
+  const { backendUrl, userData, setUserData } = appContext;
   const [activeTour, setActiveTour] = useState(null);
   const [tourSteps, setTourSteps] = useState([]);
   const [run, setRun] = useState(false);

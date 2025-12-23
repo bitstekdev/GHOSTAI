@@ -4,6 +4,17 @@ const Image = require('../models/Image');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
 
+// Remove outer HTML/doctype wrappers returned by the generator
+const stripHtmlWrapper = (html) => {
+  if (!html) return '';
+  return html
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\/?html[^>]*>/gi, '')
+    .replace(/<head[^>]*>[\s\S]*?<\/?head>/gi, '')
+    .replace(/<\/?body[^>]*>/gi, '')
+    .trim();
+};
+
 // @desc    Generate character images for story pages
 // @route   POST /api/images/generate-characters/:storyId
 // @access  Private
@@ -592,14 +603,21 @@ exports.regenerateCharacterImage = async (req, res) => {
     //-------------------------------------------------------------
     const regenResult = await fastApiService.regenerateImages(apiPayload);
 
-    // console.log("Regenerate Result from FastAPI:", regenResult);
+    console.log("Regenerate Result from FastAPI:", regenResult);
 
-    const newStory = regenResult?.pages?.[0]?.new_story;
-    const newPrompt = regenResult?.pages?.[0]?.new_prompt;
-    const base64 = regenResult?.pages?.[0]?.image_path;
+    const pageResp = regenResult?.pages?.[0] || {};
+    const base64 =
+      pageResp.image_path ||
+      pageResp.image_base64 ||
+      pageResp.hidream_image_base64;
+
+    // Extract regenerated story, HTML, and prompt (keep wrappers intact)
+    const newStory = pageResp.new_story || pageResp.text || page.text;
+    const newHtml = pageResp.new_html || pageResp.html || page.html || newStory;
+    const newPrompt = pageResp.new_prompt || pageResp.prompt || page.prompt;
 
     if (!base64) {
-      return res.status(500).json({ success: false, message: "No image returned from FastAPI" });
+      return res.status(502).json({ success: false, message: "FastAPI returned no image data" });
     }
 
     // ------------------------------------------------------------------------------------
@@ -612,8 +630,9 @@ exports.regenerateCharacterImage = async (req, res) => {
       version: `regen-${page.oldStory.length + 1}`
     });
 
-    // Update page story + prompt
+    // Update page story, HTML, and prompt
     page.text = newStory;
+    page.html = newHtml;
     page.prompt = newPrompt;
     await page.save();
 
