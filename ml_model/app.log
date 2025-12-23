@@ -377,3 +377,156 @@ Despite the destruction caused by his transformations, he becomes remembered for
 2025-12-19 12:11:55,861 [INFO] storybook_api - Generating gist for genre: Mystery
 2025-12-19 12:11:55,862 [INFO] storybook_api - Calling LLM for story gist
 2025-12-19 12:11:57,151 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-19 18:16:40,821 [INFO] storybook_api - Start questionnaire called
+2025-12-22 14:03:44,049 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-12-22 14:06:50,702 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-12-22 14:07:10,660 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-12-22 14:07:27,648 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:07:51,032 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:07:51,036 [INFO] openai._base_client - Retrying request to /chat/completions in 0.482217 seconds
+2025-12-22 14:07:58,628 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:07:58,631 [INFO] openai._base_client - Retrying request to /chat/completions in 0.863901 seconds
+2025-12-22 14:08:07,126 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:09:29,870 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:09:57,923 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:09:57,925 [INFO] openai._base_client - Retrying request to /chat/completions in 0.455318 seconds
+2025-12-22 14:10:06,116 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:10:26,289 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:10:26,293 [INFO] openai._base_client - Retrying request to /chat/completions in 0.476160 seconds
+2025-12-22 14:10:33,374 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:10:34,612 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:10:46,156 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:10:46,159 [INFO] openai._base_client - Retrying request to /chat/completions in 0.498958 seconds
+2025-12-22 14:10:53,486 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 14:10:53,489 [INFO] openai._base_client - Retrying request to /chat/completions in 0.973379 seconds
+2025-12-22 14:11:02,129 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:11:06,470 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2025-12-22 14:12:04,614 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:47:00,708 [INFO] storybook_api - Start questionnaire called
+2025-12-22 14:47:54,779 [INFO] storybook_api - Next question request received. Answer: Story of an inspiring coder
+2025-12-22 14:48:11,521 [INFO] storybook_api - Next question request received. Answer: One day yogesh went to college and didnt studied for exam
+2025-12-22 14:48:11,522 [INFO] storybook_api - LLM generating next question
+2025-12-22 14:48:18,471 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:48:37,307 [INFO] storybook_api - Generating gist for genre: Family
+2025-12-22 14:48:37,309 [INFO] storybook_api - Calling LLM for story gist
+2025-12-22 14:48:38,436 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:49:04,945 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:49:15,401 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:49:31,787 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:49:48,073 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 14:49:57,023 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 14:53:24,786 [INFO] storybook_api - /coverback/generate called. Genre=Family, Title=Cold Hard Truth
+2025-12-22 15:15:53,428 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:16:17,103 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:16:28,105 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 15:17:42,197 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:22:46,941 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:23:27,311 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:24:39,624 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:26:48,108 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:27:04,753 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:27:19,774 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 15:28:30,076 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:33:17,316 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:33:29,043 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:33:36,966 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 15:34:50,878 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:40:31,317 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:40:43,900 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 15:40:43,903 [INFO] openai._base_client - Retrying request to /chat/completions in 0.378747 seconds
+2025-12-22 15:40:51,103 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 15:40:51,107 [INFO] openai._base_client - Retrying request to /chat/completions in 0.816103 seconds
+2025-12-22 15:40:58,750 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 15:56:22,543 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:56:28,072 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:56:35,330 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2025-12-22 15:57:22,275 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:58:06,953 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:58:19,703 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 15:58:24,748 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2025-12-22 15:59:18,141 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:00:28,945 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:00:38,483 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 404 Not Found"
+2025-12-22 16:05:03,578 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:05:13,459 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:05:22,226 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:06:28,020 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:10:20,600 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:10:38,479 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:10:45,275 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:11:49,824 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 404 Not Found"
+2025-12-22 16:13:43,293 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:13:53,685 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 404 Not Found"
+2025-12-22 16:16:08,193 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:16:17,937 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:16:27,741 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:17:30,266 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:23:43,542 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:23:56,780 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 500 Internal Server Error"
+2025-12-22 16:23:56,786 [INFO] openai._base_client - Retrying request to /chat/completions in 0.467972 seconds
+2025-12-22 16:24:04,737 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:24:09,386 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:25:13,511 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:29:04,352 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:29:11,199 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:29:18,591 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:30:33,079 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:36:51,580 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:37:00,157 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:37:06,617 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:38:10,163 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:42:14,009 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:42:20,535 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:42:26,056 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:43:31,604 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:45:48,112 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:45:56,364 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:46:02,982 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:47:09,135 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:50:18,067 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:50:26,439 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:50:38,028 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-22 16:51:44,048 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:57:32,121 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:57:40,277 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 16:57:47,328 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2025-12-22 16:58:32,874 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:05:54,210 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:06:01,378 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:06:06,974 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2025-12-22 17:06:54,914 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:25:26,777 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:25:33,848 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:25:38,488 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-22 17:26:38,361 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:02,531 [INFO] storybook_api - Generating gist for genre: Family
+2025-12-22 17:29:02,534 [INFO] storybook_api - Calling LLM for story gist
+2025-12-22 17:29:03,975 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:17,697 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:25,171 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:33,260 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:43,969 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-22 17:29:51,682 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-22 17:33:11,250 [INFO] storybook_api - /coverback/generate called. Genre=Family, Title=Coding My Future
+2025-12-22 18:22:47,315 [INFO] storybook_api - Start questionnaire called
+2025-12-23 11:24:06,927 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 11:24:11,184 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 11:24:15,568 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-23 11:25:56,116 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 12:58:16,192 [INFO] storybook_api - Next question request received. Answer: to gift a spefcial person
+2025-12-23 12:58:35,475 [INFO] storybook_api - Next question request received. Answer: he wwas
+2025-12-23 12:58:35,477 [INFO] storybook_api - LLM generating next question
+2025-12-23 12:58:44,079 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 12:58:50,726 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-12-23 12:58:50,728 [INFO] openai._base_client - Retrying request to /chat/completions in 0.425745 seconds
+2025-12-23 12:58:52,218 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-12-23 12:58:52,220 [INFO] openai._base_client - Retrying request to /chat/completions in 0.760701 seconds
+2025-12-23 12:58:54,130 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-12-23 12:58:59,614 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 13:01:42,471 [INFO] storybook_api - Generating gist for genre: Baby Shower
+2025-12-23 13:01:42,473 [INFO] storybook_api - Calling LLM for story gist
+2025-12-23 13:01:44,333 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 13:02:03,868 [INFO] storybook_api - Generating gist for genre: Baby Shower
+2025-12-23 13:02:03,869 [INFO] storybook_api - Calling LLM for story gist
+2025-12-23 13:02:05,161 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-23 14:24:43,215 [INFO] storybook_api - Start questionnaire called

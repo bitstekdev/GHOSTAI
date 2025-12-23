@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
 import confetti from "canvas-confetti";
+import "../../styles/story-content.css";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
 // //square images------------------------------------
 // import Image from "../../assets/images/square.png";
@@ -480,7 +481,15 @@ const openEdit = () => {
               />
               <div className="absolute inset-0 mt-2 sm:mt-6 px-2 sm:px-10 py-2 sm:py-6 overflow-y-auto">
                 <div className="bg-white/35 p-0.5 sm:p-1 rounded-lg">
-                <p className="text-black text-xs sm:text-sm leading-relaxed" style={pageTextStyle}>{page.text}</p>
+                {page.html ? (
+                  <div 
+                    className="story-html-content text-black text-xs sm:text-sm leading-relaxed" 
+                    style={pageTextStyle}
+                    dangerouslySetInnerHTML={{ __html: page.html }}
+                  />
+                ) : (
+                  <p className="text-black text-xs sm:text-sm leading-relaxed" style={pageTextStyle}>{page.text}</p>
+                )}
                 </div>
               </div>
             </div>

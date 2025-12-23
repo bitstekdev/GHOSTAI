@@ -10,10 +10,10 @@ const ProtectedRoute = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-r from-black to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="w-16 h-16 text-purple-500 animate-spin mx-auto mb-4" />
-          <p className="text-white text-xl">Loading your story...</p>
-        </div>
+      <div className="text-center">
+        <img src="/src/assets/images/logo.gif" alt="Loading" className="w-16 h-16 mx-auto mb-4" />
+        <p className="text-white text-xl">Loading your story...</p>
+      </div>
       </div>
     );
   }

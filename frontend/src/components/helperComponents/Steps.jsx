@@ -30,7 +30,7 @@ const ProgressStep1 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             3
           </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -107,7 +107,7 @@ const ProgressStep2 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             3
           </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -184,7 +184,7 @@ const ProgressStep3 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm sm:text-base ring-2 sm:ring-4 ring-purple-500/30">
             3
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -261,7 +261,7 @@ const ProgressStep4 = () => {
           <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
             ✓
           </div>
-          <span className="text-white font-medium text-sm hidden sm:inline">Refined</span>
+          <span className="text-white font-medium text-sm hidden sm:inline">Summary</span>
         </div>
 
         <ChevronRight className="text-purple-500" size={20} />
@@ -338,7 +338,7 @@ const ProgressStep5 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
             ✓
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
@@ -415,7 +415,7 @@ const ProgressStep6 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
             ✓
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
@@ -492,7 +492,7 @@ const ProgressStep7 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
             ✓
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Refined</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
         </div>
 
         <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />

@@ -215,7 +215,7 @@ const TitleSelection = () => {
 
       {/* Final Submit Button */}
       <button
-        className="w-full mt-6 bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold"
+        className="w-full mt-6 bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold"
         onClick={handleCreateBook}
         disabled={creatingBook}
       >

@@ -1,14 +1,17 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import api from "../../services/axiosInstance";
-import { PenTool } from "lucide-react";
+import { Send, Bot, User } from "lucide-react";
 import Joyride from 'react-joyride';
 import { AppContext } from '../../context/AppContext'
 import {ProgressStep1} from '../helperComponents/Steps.jsx'
 import { useTourContext } from '../../context/TourContext';
 import { generateStoryTourSteps, tourStyles } from '../../config/tourSteps';
+import BlurText from '../helperComponents/TextType';
 
 const GenerateStory = () => {
   const {navigateTo} = useContext(AppContext)
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -18,12 +21,14 @@ const GenerateStory = () => {
     characterDetails: [],
   });
 
-  const [showCharacterForm, setShowCharacterForm] = useState(false);
-  const [charName, setCharName] = useState("");
-  const [charDesc, setCharDesc] = useState("");
-  const [editIndex, setEditIndex] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [userInput, setUserInput] = useState("");
+  const [currentStep, setCurrentStep] = useState("title"); // title, genre, length, numCharacters, characters, confirm
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [currentCharacter, setCurrentCharacter] = useState(null);
+  const [showIntro, setShowIntro] = useState(true);
+  const [showFirstQuestion, setShowFirstQuestion] = useState(false);
 
   // Use tour context
   const {
@@ -33,14 +38,12 @@ const GenerateStory = () => {
     activeTour
   } = useTourContext();
 
-  // Only run tour on this page if it's the onboarding tour
   const shouldRunTourOnThisPage = activeTour === 'onboarding' && 
     window.location.pathname === '/generatestory';
 
   const handleTourCallback = (data) => {
     const { status, type } = data;
     
-    // Navigate to Stories when generate story tour finishes
     if (type === 'tour:end' || status === 'finished') {
       setTimeout(() => {
         navigateTo('/stories');
@@ -50,82 +53,227 @@ const GenerateStory = () => {
     contextHandleCallback(data);
   };
 
-  // Add or Edit Character
-  const handleAddCharacter = () => {
-    if (!charName.trim() || !charDesc.trim()) return;
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    const newChar = { name: charName.trim(), details: charDesc.trim() };
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [currentStep]);
 
-    setFormData((prev) => {
-      let updated = [...prev.characterDetails];
+  // Hide intro after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+      setShowFirstQuestion(true);
+      // Add the first question after intro finishes
+      setMessages([{
+        type: "bot",
+        text: "👋 Welcome! Let's create your story together. What would you like to title your story? ✍️",
+        timestamp: new Date()
+      }]);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
-      if (editIndex !== null) {
-        updated[editIndex] = newChar;
-      } else {
-        updated.push(newChar);
-      }
-
-      return { ...prev, characterDetails: updated };
-    });
-
-    setCharName("");
-    setCharDesc("");
-    setEditIndex(null);
-    setShowCharacterForm(false);
+  const addBotMessage = (text) => {
+    setMessages(prev => [...prev, {
+      type: "bot",
+      text,
+      timestamp: new Date()
+    }]);
   };
 
-  const handleDeleteCharacter = (i) => {
-    setFormData((prev) => ({
-      ...prev,
-      characterDetails: prev.characterDetails.filter((_, idx) => idx !== i),
-    }));
+  const addUserMessage = (text) => {
+    setMessages(prev => [...prev, {
+      type: "user",
+      text,
+      timestamp: new Date()
+    }]);
   };
 
-  const handleEditCharacter = (i) => {
-    const char = formData.characterDetails[i];
-    setCharName(char.name);
-    setCharDesc(char.details);
-    setEditIndex(i);
-    setShowCharacterForm(true);
+  const handleSendMessage = () => {
+    if (!userInput.trim() || loading) return;
+
+    const input = userInput.trim();
+    addUserMessage(input);
+    setUserInput("");
+
+    setTimeout(() => {
+      processUserInput(input);
+    }, 500);
   };
 
+  const handleGenreSelect = (value) => {
+    if (!value || loading) return;
+    addUserMessage(value);
+    processUserInput(value);
+  };
 
-  // Submit Form-------------------------------------
-const handleSubmit = async () => {
-  console.log("Submitting Form Data:", formData);
+  const processUserInput = (input) => {
+    switch (currentStep) {
+      case "title":
+        setFormData(prev => ({ ...prev, title: input }));
+        addBotMessage(`Great! "${input}" is a wonderful title. 📖 Now, Select a genre for your story?`);
+        // addBotMessage("Choose from: Fantasy, Adventure, Family, Mystery, Housewarming, Corporate Promotion, Marriage, Baby Shower, Birthday, Sci-Fi");
+        setCurrentStep("genre");
+        break;
 
-  try {
+      case "genre":
+        const validGenres = ["Fantasy", "Adventure", "Family", "Mystery", "Housewarming", "Corporate Promotion", "Marriage", "Baby Shower", "Birthday", "Sci-Fi"];
+        const genre = validGenres.find(g => g.toLowerCase() === input.toLowerCase());
+        
+        if (genre) {
+          setFormData(prev => ({ ...prev, genre }));
+            addBotMessage(`${genre}? Excellent choice! 🎉 How many pages would you like your story to be? `);
+          setCurrentStep("length");
+        } else {
+          addBotMessage("Please choose a valid genre from the list above.");
+        }
+        break;
+
+      case "length":
+        const length = parseInt(input);
+        if (length >= 1 && length <= 10) {
+          setFormData(prev => ({ ...prev, length: length.toString() }));
+          addBotMessage(`Perfect! ${length} page${length > 1 ? 's' : ''} it is! 📄 How many main characters will be in your story? (1-10)`);
+          setCurrentStep("numCharacters");
+        } else {
+          addBotMessage("Please enter a number between 1 and 10.");
+        }
+        break;
+
+      case "numCharacters":
+        const numChars = parseInt(input);
+        if (numChars >= 1 && numChars <= 10) {
+          setFormData(prev => ({ ...prev, numCharacters: numChars.toString() }));
+          if (numChars > 0) {
+            addBotMessage(`Great! Now let's add details for your ${numChars} character${numChars > 1 ? 's' : ''}. 👤`);
+            addBotMessage("Please provide the name of character #1:");
+            setCurrentStep("characterName");
+            setCurrentCharacter({ index: 0, name: "", details: "" });
+          } else {
+            showConfirmation();
+          }
+        } else {
+          addBotMessage("Please enter a number between 1 and 10.");
+        }
+        break;
+
+      case "characterName":
+        setCurrentCharacter(prev => ({ ...prev, name: input }));
+        addBotMessage(`Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "yogesh : indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`);
+        setCurrentStep("characterDetails");
+        break;
+
+      case "characterDetails":
+        const newChar = { name: currentCharacter.name, details: input };
+        setFormData(prev => ({
+          ...prev,
+          characterDetails: [...prev.characterDetails, newChar]
+        }));
+        
+        const nextIndex = currentCharacter.index + 1;
+        const totalChars = parseInt(formData.numCharacters);
+        
+        if (nextIndex < totalChars) {
+          addBotMessage(`Character added! ✅ Now, please provide the name of character #${nextIndex + 1}:`);
+          setCurrentStep("characterName");
+          setCurrentCharacter({ index: nextIndex, name: "", details: "" });
+        } else {
+          showConfirmation();
+        }
+        break;
+
+      case "confirm":
+        if (input.toLowerCase() === "yes" || input.toLowerCase() === "y") {
+          handleSubmit();
+        } else {
+          addBotMessage("What would you like to change? (title, genre, length, characters)");
+          setCurrentStep("edit");
+        }
+        break;
+
+      case "edit":
+        const editChoice = input.toLowerCase();
+        if (editChoice.includes("title")) {
+          addBotMessage("What would you like the new title to be?");
+          setCurrentStep("title");
+        } else if (editChoice.includes("genre")) {
+          addBotMessage("Select the Genre or occasion? ");
+          setCurrentStep("genre");
+        } else if (editChoice.includes("length")) {
+          addBotMessage("Number of pages? (1-10)");
+          setCurrentStep("length");
+        } else if (editChoice.includes("character")) {
+          setFormData(prev => ({ ...prev, characterDetails: [] }));
+          addBotMessage("Let's start over with characters. What's the name of your first character?");
+          setCurrentStep("characterName");
+          setCurrentCharacter({ index: 0, name: "", details: "" });
+        } else {
+          addBotMessage("Please specify what you'd like to edit: title, genre, length, or characters");
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const showConfirmation = () => {
+    const summary = `
+📚 **Story Summary:**
+- Title: ${formData.title}
+- Genre: ${formData.genre}
+- Length: ${formData.length} page${formData.length > 1 ? 's' : ''}
+- Characters: ${formData.numCharacters}
+${formData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
+
+Is this correct? (Type 'yes' to proceed or 'no' to make changes)
+    `;
+    addBotMessage(summary);
+    setCurrentStep("confirm");
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
-    const response = await api.post("/api/v1/story/start", formData);
+    addBotMessage("Creating your amazing story... ✨");
 
-    console.log("API Response:", response.data);
+    try {
+      const response = await api.post("/api/v1/story/start", formData);
+      const { storyId, data } = response.data;
 
-    const { storyId, data } = response.data;
+      localStorage.setItem(
+        "conversationData",
+        JSON.stringify({
+          storyId,
+          conversation: data.conversation,
+        })
+      );
 
-    // STORE first question & story ID
-    localStorage.setItem(
-      "conversationData",
-      JSON.stringify({
-        storyId,
-        conversation: data.conversation, // first question
-      })
-    );
+      addBotMessage("Story created successfully! Redirecting you now... 🎉");
+      setTimeout(() => {
+        navigateTo(`/questioner/${storyId}`);
+      }, 1500);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || "An error occurred";
+      setMsg(errorMsg);
+      addBotMessage(`Oops! ${errorMsg} Please try again.`);
+      console.error("Error submitting story:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Navigate to Questioner UI
-    navigateTo(`/questioner/${storyId}`);
-
-  } catch (error) {
-    setMsg(error.response?.data?.message || "An error occurred");
-    console.error("Error submitting story:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-4 sm:px-6 py-10">
-      {/* Joyride Tour Component */}
+    <div className="min-h-screen w-full bg-black text-white flex flex-col">
       <Joyride
         steps={generateStoryTourSteps}
         run={run && shouldRunTourOnThisPage}
@@ -145,184 +293,105 @@ const handleSubmit = async () => {
       />
       
       <ProgressStep1 />
-    <div className="relative p-6 py-10 max-w-3xl w-full">
-      {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 flex items-center gap-2">
-        <PenTool size={32} className="text-purple-500" />
-        Story Details
-      </h1>
 
-      <div className="space-y-6">
-
-        {/* Story Title */}
-        <div>
-          <label className="text-white block mb-2">Story Title</label>
-          <input
-            type="text"
-            placeholder="Enter story title"
-            className="story-title-input w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-            value={formData.title}
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-          />
-        </div>
-
-        {/* Genre */}
-        <div>
-          <label className="text-white block mb-2">Genre</label>
-          <select
-            className="story-genre-select w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-            value={formData.genre}
-            onChange={(e) =>
-              setFormData({ ...formData, genre: e.target.value })
-            }
-          >
-            <option value="">Select genre</option>
-            <option value="Fantasy">Fantasy</option>
-            <option value="Adventure">Adventure</option>
-            <option value="Family">Family</option>
-            <option value="Mystery">Mystery</option>
-            <option value="Housewarming">Housewarming</option>
-            <option value="Corporate Promotion">Corporate Promotion</option>
-            <option value="Marriage">Marriage</option>
-            <option value="Baby Shower">Baby Shower</option>
-            <option value="Birthday">Birthday</option>
-            <option value="Sci-Fi">Sci-Fi</option>
-            <option value="Friends">Friends</option>
-          </select>
-        </div>
-
-{/* 3 row (responsive) */}
-        <div className="flex flex-col md:flex-row justify-center gap-4">
-        {/* Story Length */}
-          <div className="w-full md:w-1/2">
-          <label className="text-white block mb-2">Story Length</label>
-          <select
-            className="story-length-select w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-            value={formData.length}
-            onChange={(e) =>
-              setFormData({ ...formData, length: e.target.value })
-            }
-          >
-            {[...Array(10)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1} Page{(i + 1) > 1 ? "s" : ""}
-              </option>
-            ))}
-          </select>
-          </div>
-          {/* number of characters */}
-          <div className="w-full md:w-1/2">
-          <label className="text-white block mb-2">Number of Characters</label>
-          <select
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white"
-            value={formData.numCharacters}
-            onChange={(e) =>
-              setFormData({ ...formData, numCharacters: e.target.value })
-            }
-          >
-            {[...Array(10)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1} Character{(i + 1) > 1 ? "s" : ""}
-              </option>
-            ))}
-          </select>
-          </div>
-        </div>
-
-        {/* Character Section */}
-        <div className="space-y-3">
-          <label className="text-white block mb-2">Character Details</label>
-
-          {/* Pills */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {formData.characterDetails.map((char, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 bg-purple-700 text-white px-3 py-1 rounded-full cursor-pointer"
-                onClick={() => handleEditCharacter(i)}
-              >
-                <span>{char.name}</span>
-                <button
-                  className="text-red-300 hover:text-red-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteCharacter(i);
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Add Character Button */}
-          {!showCharacterForm && (
-            <button
-              onClick={() => setShowCharacterForm(true)}
-              className="add-character-button bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
-            >
-              + Add Character Details
-            </button>
-          )}
-
-          {/* Character Add Form */}
-          {showCharacterForm && (
-            <div className="space-y-3 p-4 bg-gray-800 rounded-lg border border-gray-700">
-              <input
-                type="text"
-                placeholder="Character Name (e.g., Sreeram)"
-                className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded"
-                value={charName}
-                onChange={(e) => setCharName(e.target.value)}
-              />
-
-              <textarea
-                placeholder="Character Details (comma separated)"
-                className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded"
-                rows={3}
-                value={charDesc}
-                onChange={(e) => setCharDesc(e.target.value)}
-              />
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAddCharacter}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg"
-                >
-                  {editIndex !== null ? "Update Character" : "Add Character"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowCharacterForm(false);
-                    setCharName("");
-                    setCharDesc("");
-                    setEditIndex(null);
-                  }}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 rounded-lg"
-                >
-                  Cancel
-                </button>
+      {/* Chat Interface */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full pb-20">
+        {/* Messages Container */}
+        <div className="w-full max-w-4xl px-4 flex-1 flex flex-col justify-start overflow-y-auto pt-8 relative">
+          
+          {/* Intro Text in Center */}
+          {showIntro && (
+            <div className="absolute top-[40%] left-[15%] flex justify-start">
+              <div className="max-w-3xl flex justify-start">
+                <BlurText
+                  text="Create a book where your story lives."
+                  delay={30}
+                  className="text-3xl md:text-3xl font-bold text-left px-4 whitespace-nowrap"
+                  animateBy="words"
+                  direction="top"
+                />
               </div>
             </div>
           )}
-        </div>
-         {msg && <p className="text-red-500">{msg}</p>}
 
-        {/* Submit - aligned to the right */}
-        <div className="flex flex-col items-center md:items-end mt-2 w-full">
-          <p className="text-gray-400 text-sm text-center md:text-right">Let's begin your story</p> 
-          <button
-            onClick={handleSubmit}
-            className="generate-button bg-purple-600 hover:bg-purple-700 w-full md:w-1/2 text-white py-3 px-6 rounded-lg mt-4"
-          >
-            {loading ? "Creating..." : "Next"}
-          </button>
+          {/* Chat Messages */}
+          {showFirstQuestion && (
+            <div className="space-y-6">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xl px-4 py-3 rounded-2xl ${
+                      message.type === 'user'
+                        ? 'bg-purple-600 text-white rounded-br-none'
+                        : 'bg-gray-800 text-gray-100 rounded-bl-none'
+                    }`}
+                  >
+                    <p className="whitespace-pre-line text-base leading-relaxed">{message.text}</p>
+                  </div>
+                </div>
+              ))}
+
+              {currentStep === "genre" && (
+                <div className="flex flex-col gap-2 bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-gray-100 w-fit max-w-xs">
+                  <span className="font-semibold text-white">Select a genre</span>
+                  <select
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 w-56"
+                    onChange={(e) => handleGenreSelect(e.target.value)}
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Choose one</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Family">Family</option>
+                    <option value="Mystery">Mystery</option>
+                    <option value="Housewarming">Housewarming</option>
+                    <option value="Corporate Promotion">Corporate Promotion</option>
+                    <option value="Marriage">Marriage</option>
+                    <option value="Baby Shower">Baby Shower</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                  </select>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input Area - Fixed at Bottom */}
+        <div className="fixed bottom-0 left-0 right-0 bg-black py-6 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex justify-center gap-3">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder={loading ? "Processing..." : "Ask anything..."}
+                className="w-full max-w-xl bg-gray-900 border border-gray-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-gray-800 transition-all placeholder-gray-500"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={loading}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={loading || !userInput.trim()}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white p-3 rounded-full transition-colors flex items-center justify-center"
+                title="Send message"
+              >
+                <Send size={20} />
+              </button>
+            </div>
+            {msg && (
+              <div className="mt-2 p-2 bg-red-900/50 border border-red-700 rounded-lg">
+                <p className="text-red-300 text-xs">{msg}</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

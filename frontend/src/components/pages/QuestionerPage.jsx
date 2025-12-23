@@ -60,7 +60,7 @@ export default function QuestionerPage() {
     }
   };
 
-  const isFinished = conversation.length >= 3;
+  const isFinished = conversation.length >= 15;
   // const isFinished = conversation.length >= 2;
 
   const handleGetPrompt = async () => {
@@ -88,7 +88,7 @@ export default function QuestionerPage() {
       {/* Logo */}
       <div className="flex items-center justify-center mb-10">
         <img src={logoImg} alt="GHOST.ai" className="h-15" />
-        <span className="text-2xl font-bold">GHOST.ai</span>
+        <span className="text-2xl font-bold">Ghostverse.ai</span>
       </div>
 
       {/* Title */}
@@ -125,9 +125,9 @@ export default function QuestionerPage() {
         ) : (
           <button
             onClick={handleGetPrompt}
-            className="mt-6 w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold transition"
+            className="mt-6 w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition"
           >
-            {loading ? "Thinking..." : "Get Prompt"}
+            {loading ? "Thinking..." : "Get My Story Summary"}
           </button>
         )}
       </div>
@@ -136,14 +136,14 @@ export default function QuestionerPage() {
             <div className="w-full max-w-2xl mt-6">
             <div className="flex justify-between text-sm mb-1 text-gray-400">
                 {/* <span>Question {conversation.length} of 15</span> */}
-                <span>Question {conversation.length} of 3</span>
-                <span>{Math.round((conversation.length / 3) * 100)}%</span>
+                <span>Question {conversation.length} of 15</span>
+                <span>{Math.round((conversation.length / 15) * 100)}%</span>
             </div>
 
             <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                 <div
                 className="h-full bg-purple-600 transition-all duration-300"
-                style={{ width: `${(conversation.length / 3) * 100}%` }}
+                style={{ width: `${(conversation.length / 15) * 100}%` }}
                 ></div>
             </div>
             </div>

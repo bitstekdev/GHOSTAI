@@ -10,6 +10,7 @@ requests
 
 Pillow
 qrcode
+
 python-dotenv
 
 # For JSON/YAML helpers (LLM parsing)
@@ -18,3 +19,4 @@ PyYAML
 
 # Optional but recommended for stability in hashing and utils
 python-multipart
+fastapi-utilities

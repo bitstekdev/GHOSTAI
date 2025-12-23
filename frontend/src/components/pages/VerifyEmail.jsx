@@ -86,7 +86,7 @@ const VerifyEmail = () => {
             <p className="text-gray-300 mb-6">Click below to verify your email.</p>
             <button
               onClick={handleVerify}
-              className="bg-green-500 hover:bg-green-600 transition px-4 py-2 rounded-lg font-bold w-full">
+              className="bg-purple-500 hover:bg-purple-600 transition px-4 py-2 rounded-lg font-bold w-full">
               Verify Email
             </button>
           </>
@@ -120,7 +120,7 @@ const VerifyEmail = () => {
         {status === "success" && (
           <button
             onClick={() => navigate("/signin")}
-            className="bg-green-500 hover:bg-green-600 transition px-4 py-2 rounded-lg font-bold w-full mt-4">
+            className="bg-purple-500 hover:bg-purple-600 transition px-4 py-2 rounded-lg font-bold w-full mt-4">
             Sign In Now
           </button>
         )}

@@ -93,7 +93,7 @@ const App = () => {
           <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} />
           <Route path="/generatecovers/:storyId" element={<GenerateCovers />} />
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/generatestory" replace />} />
         </Route>
         </Route>
       </Routes>
