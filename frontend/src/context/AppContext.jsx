@@ -66,6 +66,8 @@ const navigateTo = (path) => {
 
 //------FUNCTIONS--------
 //   -------------------Signup-------------------
+<<<<<<< HEAD
+=======
 const signup = async (data) => {
   try {
     setLoading(true);
@@ -82,6 +84,7 @@ const signup = async (data) => {
     setLoading(false);
   }
 };
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
 //   -------------------Signin-------------------
 
@@ -238,7 +241,6 @@ const createAddress = async (addressData) => {
   const value = {
     backendUrl,
     navigateTo,
-    signup,
     signin,
     getProfile,
     updateProfile,
