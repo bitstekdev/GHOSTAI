@@ -66,25 +66,6 @@ const navigateTo = (path) => {
 
 //------FUNCTIONS--------
 //   -------------------Signup-------------------
-<<<<<<< HEAD
-=======
-const signup = async (data) => {
-  try {
-    setLoading(true);
-    const response = await api.post(`/api/auth/signup`, data);
-    return { success: true, message: response.data.message };
-  } catch (error) {
-    const errors = error.response?.data?.errors;
-    const message =
-      (Array.isArray(errors) && errors[0]?.msg) ||
-      error.response?.data?.message ||
-      "Something went wrong!";
-    return { success: false, message };
-  } finally {
-    setLoading(false);
-  }
-};
->>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
 //   -------------------Signin-------------------
 
