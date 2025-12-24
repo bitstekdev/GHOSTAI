@@ -168,20 +168,22 @@ const GenerateStory = () => {
 
       case "characterDetails":
         const newChar = { name: currentCharacter.name, details: input };
-        setFormData(prev => ({
-          ...prev,
-          characterDetails: [...prev.characterDetails, newChar]
-        }));
+        const updatedFormData = {
+          ...formData,
+          characterDetails: [...formData.characterDetails, newChar]
+        };
+
+        setFormData(updatedFormData);
         
         const nextIndex = currentCharacter.index + 1;
-        const totalChars = parseInt(formData.numCharacters);
+        const totalChars = parseInt(updatedFormData.numCharacters, 10);
         
         if (nextIndex < totalChars) {
           addBotMessage(`Character added! ✅ Now, please provide the name of character #${nextIndex + 1}:`);
           setCurrentStep("characterName");
           setCurrentCharacter({ index: nextIndex, name: "", details: "" });
         } else {
-          showConfirmation();
+          showConfirmation(updatedFormData);
         }
         break;
 
@@ -220,14 +222,15 @@ const GenerateStory = () => {
     }
   };
 
-  const showConfirmation = () => {
+  const showConfirmation = (dataOverride) => {
+    const summaryData = dataOverride ?? formData;
     const summary = `
 📚 **Story Summary:**
-- Title: ${formData.title}
-- Genre: ${formData.genre}
-- Length: ${formData.length} page${formData.length > 1 ? 's' : ''}
-- Characters: ${formData.numCharacters}
-${formData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
+- Title: ${summaryData.title}
+- Genre: ${summaryData.genre}
+- Length: ${summaryData.length} page${summaryData.length > 1 ? 's' : ''}
+- Characters: ${summaryData.numCharacters}
+${summaryData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
 
 Is this correct? (Type 'yes' to proceed or 'no' to make changes)
     `;
@@ -383,7 +386,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
               <input
                 ref={inputRef}
                 type="text"
-                placeholder={loading ? "Processing..." : "Ask anything..."}
+                placeholder={loading ? "Processing..." : "Type here..."}
                 className="
                   w-[100%]
                   bg-[#0f172a]

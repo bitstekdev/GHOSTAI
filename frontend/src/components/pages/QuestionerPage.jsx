@@ -195,20 +195,28 @@ export default function QuestionerPage() {
   const handleSend = async () => {
     if (!answer.trim()) return;
 
+    const userAnswer = answer;
+    const lastQuestion = conversation[conversation.length - 1];
+    const updatedConvWithAnswer = [
+      ...conversation.slice(0, -1),
+      { ...lastQuestion, answer: userAnswer }
+    ];
+    
+    setConversation(updatedConvWithAnswer);
+    setAnswer("");
     setLoading(true);
 
     try {
-      const cleanedConversation = conversation.filter((msg) => msg && msg.question);
+      const cleanedConversation = updatedConvWithAnswer.filter((msg) => msg && msg.question);
       const response = await api.post("/api/v1/story/next", {
         storyId: storyIdParam,
         conversation: cleanedConversation,
-        answer
+        answer: userAnswer
       });
 
       const result = response.data.data;
       setConversation(result.conversation);
       updateLocalStorage(result.conversation);
-      setAnswer("");
     } catch (err) {
       console.error("Next Question Error:", err?.response?.data || err);
     } finally {
@@ -217,8 +225,8 @@ export default function QuestionerPage() {
   };
 
   /* -------------------- Finish -------------------- */
-  const questionCount = conversation.filter((msg) => msg && msg.question).length;
-  const isFinished = questionCount >= 15;
+  const answeredCount = conversation.filter((msg) => msg && msg.question && msg.answer).length;
+  const isFinished = answeredCount >= 15;
 
   const handleGetPrompt = async () => {
     try {
@@ -304,13 +312,14 @@ export default function QuestionerPage() {
         </div>
       </div>
 
-      {/* Input Area  */}
-      <div className="px-6 py-6 bg-black">
-        <div className="max-w-3xl mx-auto">
-          {!isFinished ? (
-            <div className="relative">
-              {/* Textarea */}
+     { /* Input Area */}
+        <div className="px-6 py-6 bg-black ">
+          <div className="max-w-3xl mx-auto">
+            {!isFinished ? (
+          <div className="relative">
+            {/* Textarea */}
               <textarea
+                autoFocus
                 rows={1}
                 className="
                   w-full resize-none
