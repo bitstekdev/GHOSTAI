@@ -6,10 +6,7 @@ const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000'
 
 const fastApiClient = axios.create({
   baseURL: FASTAPI_BASE_URL,
-  timeout: 600000, // 10 minutes for long-running operations
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 600000 // 10 minutes for long-running operations
 });
 
 // Questionnaire endpoints--------------------------------------------------
@@ -115,14 +112,17 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
       contentType: "image/png"
     });
 
-    Object.entries(options).forEach(([key, value]) => {
-      form.append(key, String(value));
-    });
+    for (const [key, value] of Object.entries(options)) {
+      if (value !== undefined && value !== null) {
+        form.append(key, String(value));
+      }
+    }
 
     const response = await axios.post(
       `${FASTAPI_BASE_URL}/faceswap`,
       form,
       {
+        timeout: 600000, // 10 minutes - explicit timeout for long RunPod operations
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
         headers: form.getHeaders(), // REQUIRED for `form-data`

@@ -601,3 +601,22 @@ Despite the destruction caused by his transformations, he becomes remembered for
 2025-12-24 12:58:47,390 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2025-12-24 12:58:58,859 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
 2025-12-24 13:00:01,732 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:04:57,081 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:05:04,051 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:05:10,795 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-24 17:06:19,499 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:12:46,966 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:13:29,447 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:14:08,298 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:14:26,949 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:14:40,264 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:14:49,294 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-24 17:15:53,201 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-24 17:16:52,366 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2025-12-24 17:17:55,175 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2025-12-24 17:18:53,941 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2025-12-24 17:22:01,673 [INFO] storybook_api - /coverback/generate called. Genre=Adventure, Title=Beyond The Horizon
+2025-12-24 17:33:22,172 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:33:27,351 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-24 17:33:31,137 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-24 17:34:32,069 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"

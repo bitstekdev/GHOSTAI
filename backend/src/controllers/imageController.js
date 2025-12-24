@@ -408,12 +408,17 @@ exports.faceSwap = async (req, res) => {
       options
     );
 
-    const swappedBase64 = swapResult.swapped_image;
+    console.log("✅ FaceSwap FastAPI response keys:", Object.keys(swapResult));
+    
+    const swappedBase64 = swapResult.image_base64;
+    
+    console.log("📏 Base64 length:", swappedBase64?.length);
 
     if (!swappedBase64) {
+      console.error("❌ FastAPI returned no image_base64");
       return res.status(500).json({
         success: false,
-        message: "Failed to generate swapped image"
+        message: "FastAPI returned no image_base64"
       });
     }
 
@@ -428,39 +433,46 @@ exports.faceSwap = async (req, res) => {
     // Upload new swapped image to S3
     const buffer = Buffer.from(swappedBase64, "base64");
 
-    const s3Result = await s3Service.uploadToS3(
-      buffer,
-      `stories/${imageDoc.story}/faceswap`,
-      `faceswap-${Date.now()}.png`,
-      "image/png"
-    );
+    try {
+      const s3Result = await s3Service.uploadToS3(
+        buffer,
+        `stories/${imageDoc.story}/faceswap`,
+        `faceswap-${Date.now()}.png`,
+        "image/png"
+      );
 
-    // Update DB with new image data
-    // imageDoc.base64Data = swappedBase64;
-    imageDoc.s3Key = s3Result.key;
-    imageDoc.s3Url = s3Result.url;
-    imageDoc.s3Bucket = s3Result.bucket;
-    imageDoc.size = buffer.length;
-    imageDoc.metadata = {
-      ...imageDoc.metadata,
-      model: "faceswap",
-      generationTime: Date.now(),
-    };
+      // Update DB with new image data
+      // imageDoc.base64Data = swappedBase64;
+      imageDoc.s3Key = s3Result.key;
+      imageDoc.s3Url = s3Result.url;
+      imageDoc.s3Bucket = s3Result.bucket;
+      imageDoc.size = buffer.length;
+      imageDoc.metadata = {
+        ...imageDoc.metadata,
+        model: "faceswap",
+        generationTime: Date.now(),
+      };
 
-    await imageDoc.save();
+      await imageDoc.save();
 
-    return res.json({
-      success: true,
-      message: "Face swap updated successfully",
-      data: imageDoc
-    });
+      // Return ONLY metadata, not full imageDoc
+      return res.json({
+        success: true,
+        message: "Face swap updated successfully",
+        imageId: imageDoc._id,
+        imageUrl: imageDoc.s3Url
+      });
+      
+    } catch (s3Error) {
+      console.error("❌ S3 upload failed:", s3Error);
+      throw new Error(`S3 upload failed: ${s3Error.message}`);
+    }
 
   } catch (err) {
-    console.error("FaceSwap Error:", err);
+    console.error("🔥 FaceSwap controller error:", err);
     return res.status(500).json({
       success: false,
-      message: "Server error",
-      error: err.toString(),
+      message: err.message || "Server error"
     });
   }
 };
