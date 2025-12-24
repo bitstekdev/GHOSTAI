@@ -83,7 +83,7 @@ const StoryFlipbook = () => {
 };
 //////////////////////////////////////////////////////////////////////////////////////
 
-  useEffect(() => {
+useEffect(() => {
   
     // 🎉 Fire confetti animation when page loads
     const duration = 2 * 1000;
@@ -120,7 +120,7 @@ const openFaceSwap = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    setErrorMessage("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Face Swap is only available on the LEFT page of a book.");
     return;
   }
 
@@ -154,7 +154,7 @@ const openEdit = () => {
   // console.log("Current page data for Face Swap:", current);
   // Only allow spreads
   if (current?.type !== "spread") {
-    setErrorMessage("Face Swap is only available on the LEFT page of a spread.");
+    setErrorMessage("Edit is only available on the pages.");
     return;
   }
 
@@ -169,7 +169,7 @@ const openEdit = () => {
 
   // Only allow swapping if left-page character image exists
   if (!pageDoc.characterImage?.s3Url) {
-    setErrorMessage("This page has no character image for face swapping.");
+    setErrorMessage("This page has no character image for editing.");
     return;
   }
 
@@ -432,17 +432,6 @@ const openEdit = () => {
 
 
     // COVER (SINGLE PAGE)
-    // allPages.push({
-    //   type: "single",
-    //   jsx: (
-    //     <div className="w-full h-full relative rounded-lg overflow-hidden">
-    //       <img src={story.coverImage?.s3Url} className="w-full h-full object-cover" />
-    //       <div className="absolute inset-0 flex flex-col items-center justify-start p-12 text-white">
-    //         <h1 className="text-3xl md:text-5xl text-center font-bold drop-shadow-lg">{story.title}</h1>
-    //       </div>
-    //     </div>
-    //   ),
-    // });
       allPages.push({
         type: "single",
         jsx: (
@@ -499,17 +488,6 @@ const openEdit = () => {
     });
 
     // BACK COVER
-    // allPages.push({
-    //   type: "single",
-    //   jsx: (
-    //    <div className="w-full h-full relative rounded-lg overflow-hidden">
-    //     <img src={story.backCoverImage?.s3Url} className="w-full h-full object-cover " />
-    //      <div className="absolute inset-0 mt-20 px-10 py-6 overflow-y-auto">
-    //       <p className="text-white text-sm leading-relaxed">{story.backCoverBlurb}</p>
-    //       </div>
-    //   </div>
-    //   ),
-    // });
     allPages.push({
       type: "single",
       jsx: (
@@ -605,12 +583,14 @@ const openEdit = () => {
     if (currentPage < pages.length - 1 && !isFlipping) {
       setIsFlipping(true);
       setCurrentPage(currentPage + 1);
+      setErrorMessage("");
       setTimeout(() => setIsFlipping(false), 500);
     }
   };
   const prevPage = () => {
     if (currentPage > 0 && !isFlipping) {
       setIsFlipping(true);
+      setErrorMessage("");
       setCurrentPage(currentPage - 1);
       setTimeout(() => setIsFlipping(false), 500);
     }
@@ -685,6 +665,7 @@ const openEdit = () => {
             </div>
           </div>
         </div>
+        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
 
         {/* RESPONSIVE FRAME */}
         <div ref={wrapperRef} className="flex justify-center w-full px-2">
@@ -715,6 +696,7 @@ const openEdit = () => {
                 if (!isFlipping) {
                   setIsFlipping(true);
                   setCurrentPage(idx);
+                  setErrorMessage("");
                   setTimeout(() => setIsFlipping(false), 500);
                 }
               }}

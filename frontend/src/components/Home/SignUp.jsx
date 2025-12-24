@@ -7,7 +7,11 @@ import { AppContext } from '../../context/AppContext'
 
 const SignUp = () => {
   const navigate = useNavigate();
+<<<<<<< HEAD
+  const { backendUrl  } = useContext(AppContext);
+=======
   const { signup, backendUrl  } = useContext(AppContext);
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -15,6 +19,7 @@ const SignUp = () => {
   const [confirmPassError, setConfirmPassError] = useState("");
   const [resendEmailBtn, setResendEmailBtn] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState("success"); // success | error
   const [submitting, setSubmitting] = useState(false);
@@ -25,6 +30,21 @@ const SignUp = () => {
     password: "",
     confirmPassword: "",
   });
+
+  const signup = async (data) => {
+  try {
+    setLoading(true);
+    const response = await api.post(`${backendUrl}/api/auth/signup`, data);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Something went wrong!",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const passwordValidation = (password) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -67,6 +87,14 @@ const handleSubmit = async (e) => {
     return;
   }
 
+<<<<<<< HEAD
+  const result = await signup(formData);
+  if (result.success) {
+    setResendEmailBtn(true);
+  }
+  console.log(result.message);
+  setMsg(result.message);
+=======
   // Show message FIRST
   setMsg("✅ Verification email has been sent to your email. Please check your inbox.");
   setMsgType("success");
@@ -75,6 +103,7 @@ const handleSubmit = async (e) => {
   // Small delay so message renders before loader
   setTimeout(async () => {
     setSubmitting(true);
+>>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
     const result = await signup(formData);
 
