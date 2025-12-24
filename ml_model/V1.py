@@ -707,6 +707,9 @@ STRICT RULES:
 - NEVER highlight time words (morning, evening, night)
 - NEVER highlight objects or people
 - Do NOT overuse highlights
+- If multiple lessons appear, choose ONLY the strongest one for highlight-emphasis
+- highlight-place must be a literal, physical location (not symbolic or metaphorical)
+
 
 HIGHLIGHT RULES (apply intelligently):
 - Places → <span class="highlight-place">
@@ -789,7 +792,7 @@ Guiding Principles:
 - Each page MUST explicitly include at least one of the provided character names.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
-- Each page should unfold in 2–4 meaningful, well-crafted sentences.
+- Each page should unfold in 3–5 meaningful, well-crafted sentences.
 - Every page must include at least one named character (explicit name, not pronouns).
 - You may describe characters physically ONLY if it is already provided in character_details.
 - Never invent new characters or new names.
@@ -797,7 +800,10 @@ Guiding Principles:
 - Genre must match: {genre}.
 - Label each part exactly as: Page 1, Page 2, ...
 
-
+**STRICT CONSTRAINTS**:
+- Do NOT include, paraphrase, or hint at any information from character_details.
+- Do NOT describe physical appearance, clothing, age, or traits unless they are explicitly stated in the story gist.
+- Character names may be used, but no other character_details are allowed in the narrative.
 
 """
 
@@ -1770,7 +1776,6 @@ You are a cinematic visual prompt generator for AI image models.
 STRICT RULES:
 - NO text, NO title, NO symbols, NO lettering.
 - Absolutely NO characters.
-- Absolutely NO humans, people, faces, silhouettes, reflections, shadows, statues, mannequins, crowds, or body parts.
 - MUST be photorealistic, modern, sharp, and cinematic.
 - Only ONE visual scene (35–45 words).
 - Must be based ONLY on objects/locations/atmosphere from the extracted visuals.
@@ -1909,6 +1914,47 @@ def run_banana_edit(prompt, image_b64, output_format):
 RUNPOD_FACESWAP_URL = "https://api.runpod.ai/v2/njyoog9u3bm8oa/runsync"
 def faceswap_to_base64(file: UploadFile):
     return base64.b64encode(file.file.read()).decode("utf-8")
+
+def call_runpod_faceswap(
+    source_bytes: bytes,
+    target_bytes: bytes,
+    source_index: int = -1,
+    target_index: int = -1,
+    upscale: int = 1,
+    codeformer_fidelity: float = 0.5,
+    background_enhance: bool = True,
+    face_restore: bool = True,
+    face_upsample: bool = False,
+    output_format: str = "JPEG"
+) -> str:
+    payload = {
+        "input": {
+            "source_image": base64.b64encode(source_bytes).decode(),
+            "target_image": base64.b64encode(target_bytes).decode(),
+            "source_indexes": str(source_index),
+            "target_indexes": str(target_index),
+            "background_enhance": background_enhance,
+            "face_restore": face_restore,
+            "face_upsample": face_upsample,
+            "upscale": upscale,
+            "codeformer_fidelity": codeformer_fidelity,
+            "output_format": output_format
+        }
+    }
+
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    r = requests.post(RUNPOD_FACESWAP_URL, json=payload, headers=headers, timeout=120)
+    r.raise_for_status()
+
+    result = r.json()
+    if "output" not in result or "image" not in result["output"]:
+        raise RuntimeError(f"Invalid FaceSwap response: {result}")
+
+    return result["output"]["image"]
 
     
 # ============================================================
@@ -2427,8 +2473,10 @@ async def edit_image_api(
 async def faceswap_api(
     source: UploadFile = File(...),
     target: UploadFile = File(...),
+
     source_index: int = Form(-1),
     target_index: int = Form(-1),
+
     upscale: int = Form(1),
     codeformer_fidelity: float = Form(0.5),
     background_enhance: bool = Form(True),
@@ -2436,47 +2484,27 @@ async def faceswap_api(
     face_upsample: bool = Form(False),
     output_format: str = Form("JPEG")
 ):
+    try:
+        source_bytes = await source.read()
+        target_bytes = await target.read()
 
-    # Convert to Base64
-    source_b64 = faceswap_to_base64(source)
-    target_b64 = faceswap_to_base64(target)
+        image_b64 = call_runpod_faceswap(
+            source_bytes=source_bytes,
+            target_bytes=target_bytes,
+            source_index=source_index,
+            target_index=target_index,
+            upscale=upscale,
+            codeformer_fidelity=codeformer_fidelity,
+            background_enhance=background_enhance,
+            face_restore=face_restore,
+            face_upsample=face_upsample,
+            output_format=output_format
+        )
 
-    payload = {
-        "input": {
-            "source_image": source_b64,
-            "target_image": target_b64,
-            "source_indexes": str(source_index),
-            "target_indexes": str(target_index),
-            "background_enhance": background_enhance,
-            "face_restore": face_restore,
-            "face_upsample": face_upsample,
-            "upscale": upscale,
-            "codeformer_fidelity": codeformer_fidelity,
-            "output_format": output_format
+        return {
+            "status": "success",
+            "image_base64": image_b64
         }
-    }
 
-    headers = {
-        "Authorization": f"Bearer {RUNPOD_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    # Call RunPod
-    rp = requests.post(RUNPOD_FACESWAP_URL, json=payload, headers=headers)
-
-    if rp.status_code != 200:
-        return JSONResponse({"error": rp.text}, status_code=500)
-
-    result = rp.json()
-
-    if "output" not in result or "image" not in result["output"]:
-        return JSONResponse({
-            "error": "No image returned from worker",
-            "raw_response": result
-        }, status_code=500)
-
-    return {
-        "swapped_image": result["output"]["image"],
-        "source_index": source_index,
-        "target_index": target_index
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
