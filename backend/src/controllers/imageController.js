@@ -389,10 +389,17 @@ exports.faceSwap = async (req, res) => {
     console.log("FaceSwap - Target Buffer Length:", targetBuffer.length);
 
 
+    // Normalize index values: UI sends -1, "", undefined, NaN → all become 0 (model semantics)
+    const normalizeIndex = (val) => {
+      const n = Number(val);
+      if (Number.isInteger(n) && n >= 0) return n;
+      return 0; // fallback for -1, NaN, undefined, empty strings
+    };
+
     // Prepare options
     const options = {
-      source_index: parseInt(req.body.source_index),
-      target_index: parseInt(req.body.target_index),
+      source_index: normalizeIndex(req.body.source_index),
+      target_index: normalizeIndex(req.body.target_index),
       upscale: parseInt(req.body.upscale || 0),
       codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
       background_enhance: req.body.background_enhance !== "false",
