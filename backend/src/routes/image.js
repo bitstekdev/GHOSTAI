@@ -14,6 +14,7 @@ const {
   faceSwap,
   editImage,
   regenerateCharacterImage,
+  revertImage,
   getPageImages, 
   testRoute,
 } = require('../controllers/imageController');
@@ -27,6 +28,7 @@ router.post('/generate-covers', protect, generateCover);
 router.post('/faceswap', protect, upload.single("source"), faceSwap);
 router.post('/edit', protect, editImage);
 router.post('/regenerate', protect, regenerateCharacterImage);
+router.post('/revert', protect, revertImage);
 
 
 
