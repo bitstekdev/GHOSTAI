@@ -100,6 +100,20 @@ exports.regenerateTitles = async (story, genre, previousTitles) => {
 // Face swap--------------------------------------------------------------
 exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
   try {
+    // Defensive sanitization: ensure index values are valid for model
+    const sanitizeIndex = (v) => {
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 0 ? n : 0;
+    };
+
+    // Sanitize indexes before sending to model
+    if (options.source_index !== undefined) {
+      options.source_index = sanitizeIndex(options.source_index);
+    }
+    if (options.target_index !== undefined) {
+      options.target_index = sanitizeIndex(options.target_index);
+    }
+
     const form = new FormData();
 
     form.append("source", sourceBuffer, {
