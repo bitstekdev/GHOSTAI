@@ -7,11 +7,7 @@ import { AppContext } from '../../context/AppContext'
 
 const SignUp = () => {
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const { backendUrl  } = useContext(AppContext);
-=======
-  const { signup, backendUrl  } = useContext(AppContext);
->>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
+  const { backendUrl } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -87,14 +83,6 @@ const handleSubmit = async (e) => {
     return;
   }
 
-<<<<<<< HEAD
-  const result = await signup(formData);
-  if (result.success) {
-    setResendEmailBtn(true);
-  }
-  console.log(result.message);
-  setMsg(result.message);
-=======
   // Show message FIRST
   setMsg("✅ Verification email has been sent to your email. Please check your inbox.");
   setMsgType("success");
@@ -103,7 +91,6 @@ const handleSubmit = async (e) => {
   // Small delay so message renders before loader
   setTimeout(async () => {
     setSubmitting(true);
->>>>>>> 85d30f3f3d8264bdb429d4ce2f8446929f6d098f
 
     const result = await signup(formData);
 
