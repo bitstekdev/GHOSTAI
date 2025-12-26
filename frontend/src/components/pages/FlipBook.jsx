@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw, History } from "lucide-react";
 import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
+import ImageHistoryModal from "../helperComponents/ImageHistoryModal.jsx";
 import confetti from "canvas-confetti";
 import "../../styles/story-content.css";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
@@ -33,6 +34,8 @@ const StoryFlipbook = () => {
   const [regenerateLoading, setRegenerateLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyPage, setHistoryPage] = useState(null);
 
   const [showEdit, setShowEdit] = useState(false);
   const [editPage, setEditPage] = useState(null);
@@ -656,6 +659,29 @@ const openEdit = () => {
                 </span>
               </button>
               
+              <button 
+                className="flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm"
+                onClick={() => {
+                  const rawPages = storyData?.pages || [];
+                  const current = pages[currentPage];
+                  
+                  // Only allow history on spread pages
+                  if (current?.type !== "spread") {
+                    return;
+                  }
+                  
+                  // Map UI page index → MongoDB page index (same logic as Face Swap)
+                  const mongoPageIndex = currentPage - 1;
+                  const pageDoc = rawPages[mongoPageIndex];
+                  
+                  if (pageDoc) {
+                    setHistoryPage(pageDoc);
+                    setShowHistory(true);
+                  }
+                }}>
+                <History size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Revert</span>
+              </button>
+              
               <button className="relative flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm">
                 <Scissors size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Eraser</span>
                 <span className="absolute -top-2 sm:-top-3 -right-3 sm:-right-5 bg-blue-500 text-white text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
@@ -732,6 +758,22 @@ const openEdit = () => {
               setStoryData(res.data.data);
             } catch (err) {
               console.error("Error refreshing story after face swap:", err);
+            }
+          }}
+        />
+      )}
+
+      {/* image history modal */}
+      {showHistory && historyPage && (
+        <ImageHistoryModal
+          page={historyPage}
+          onClose={() => setShowHistory(false)}
+          onUpdated={async () => {
+            try {
+              const res = await api.get(`/api/v1/story/${storyId}`);
+              setStoryData(res.data.data);
+            } catch (err) {
+              console.error("Error refreshing story after revert:", err);
             }
           }}
         />

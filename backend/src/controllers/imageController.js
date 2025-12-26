@@ -15,6 +15,16 @@ const stripHtmlWrapper = (html) => {
     .trim();
 };
 
+// Helper: push the current image state into history with a descriptive label
+const pushCurrentToHistory = (imageDoc, label = 'update') => {
+  if (!imageDoc) return;
+  imageDoc.oldImages.push({
+    s3Key: imageDoc.s3Key,
+    s3Url: imageDoc.s3Url,
+    version: `${label}-${Date.now()}`
+  });
+};
+
 // @desc    Generate character images for story pages
 // @route   POST /api/images/generate-characters/:storyId
 // @access  Private
@@ -429,13 +439,8 @@ exports.faceSwap = async (req, res) => {
       });
     }
 
-    // Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'faceswap');
 
     // Upload new swapped image to S3
     const buffer = Buffer.from(swappedBase64, "base64");
@@ -527,13 +532,8 @@ exports.editImage = async (req, res) => {
       });
     }
 
-    // 4️⃣ Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // 4️⃣ Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'edit');
 
     // 5️⃣ Upload new swapped image to S3
     const buffer = Buffer.from(editedBase64, "base64");
@@ -553,7 +553,7 @@ exports.editImage = async (req, res) => {
     imageDoc.size = buffer.length;
     imageDoc.metadata = {
       ...imageDoc.metadata,
-      model: "faceswap",
+      model: "edit",
       generationTime: Date.now(),
     };
 
@@ -656,14 +656,10 @@ exports.regenerateCharacterImage = async (req, res) => {
     await page.save();
 
     // ------------------------------------------------------------------------------------
-    //  SAVE OLD IMAGE DATA IN image.oldImages[]
+    //  SAVE CURRENT IMAGE INTO HISTORY BEFORE UPDATING
     // ------------------------------------------------------------------------------------
     if (existingImage) {
-      existingImage.oldImages.push({
-        s3Key: existingImage.s3Key,
-        s3Url: existingImage.s3Url,
-        version: `regen-${existingImage.oldImages.length + 1}`
-      });
+      pushCurrentToHistory(existingImage, 'regenerate');
     }
 
     // ------------------------------------------------------------------------------------
@@ -766,6 +762,85 @@ exports.getPageImages = async (req, res, next) => {
   }
 };
 
+
+// @desc    Revert image to a previous version
+// @route   POST /api/images/revert
+// @access  Private
+exports.revertImage = async (req, res) => {
+  try {
+    const { imageId, versionIndex } = req.body;
+
+    if (!imageId || versionIndex === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "imageId and versionIndex are required"
+      });
+    }
+
+    const image = await Image.findById(imageId);
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: "Image not found"
+      });
+    }
+
+    const old = image.oldImages[versionIndex];
+
+    if (!old) {
+      return res.status(404).json({
+        success: false,
+        message: "Requested version does not exist"
+      });
+    }
+
+    // If already at this version, do nothing
+    if (old.s3Key === image.s3Key) {
+      return res.json({
+        success: true,
+        message: "Image already at requested version",
+        image
+      });
+    }
+
+    // Preserve current image before swapping so it can be reverted again
+    image.oldImages.push({
+      s3Key: image.s3Key,
+      s3Url: image.s3Url,
+      version: `revert-from-${old.version}`
+    });
+
+    // Swap to selected old image
+    image.s3Key = old.s3Key;
+    image.s3Url = old.s3Url;
+
+    // Remove the restored version from history to avoid duplication
+    image.oldImages.splice(versionIndex, 1);
+
+    image.metadata = {
+      ...image.metadata,
+      model: "revert",
+      revertedFromVersion: old.version,
+      revertedAt: Date.now()
+    };
+
+    await image.save();
+
+    return res.json({
+      success: true,
+      message: "Image reverted successfully",
+      image
+    });
+
+  } catch (err) {
+    console.error("Revert Image Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
 
 // test route 
 exports.testRoute = async (req, res, next) => {
