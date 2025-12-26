@@ -9,14 +9,12 @@
 .story-html-content .container {
   max-width: 720px;
   margin: auto;
-  background: #ffffff;
-  padding: 32px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 .story-html-content .adventure-text {
-  font-size: 1.05rem;
+  font-size: inherit;
   line-height: 1.6;
   letter-spacing: 0.02em;
   margin: 0;
@@ -28,7 +26,7 @@
 }
 
 .story-html-content .highlight-action {
-  color: #92400e;
+  color: #090909;
   background: #fef3c7;
   padding: 2px 6px;
   border-radius: 6px;
@@ -42,8 +40,8 @@
 }
 
 .story-html-content .highlight-emphasis {
-  font-size: 1.35em;
+  font-size: 1.15em;
   font-weight: 600;
-  color: #7c2d12;
+  color: #2b4393;
   letter-spacing: 0.04em;
 }

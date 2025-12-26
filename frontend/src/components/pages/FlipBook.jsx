@@ -286,7 +286,7 @@ const openEdit = () => {
     const getCoverTitleSize = (orientation) => {
       switch (orientation) {
         case "Portrait":
-          return "text-5xl md:text-5xl";
+          return "text-4xl md:text-4xl";
         case "Landscape":
           return "text-7xl md:text-7xl";
         case "Square":
@@ -317,9 +317,9 @@ const openEdit = () => {
         case "Landscape":
           return "13px";
         case "Square":
-          return "14px";
+          return "12px";
         default:
-          return "13px";
+          return "12px";
       }
     };
 
@@ -472,12 +472,12 @@ const openEdit = () => {
                 <div className="bg-white/35 p-0.5 sm:p-1 rounded-lg">
                 {page.html ? (
                   <div 
-                    className="story-html-content text-black text-xs sm:text-sm leading-relaxed" 
+                    className="story-html-content text-black leading-relaxed" 
                     style={pageTextStyle}
                     dangerouslySetInnerHTML={{ __html: page.html }}
                   />
                 ) : (
-                  <p className="text-black text-xs sm:text-sm leading-relaxed" style={pageTextStyle}>{page.text}</p>
+                  <p className="text-black leading-relaxed" style={pageTextStyle}>{page.text}</p>
                 )}
                 </div>
               </div>
