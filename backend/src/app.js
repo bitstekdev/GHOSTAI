@@ -25,8 +25,8 @@ app.use(
 );
 
 app.use(cors({
- // origin: "http://localhost:5173",
-  origin: "https://ghostverse.ai",
+  origin: "http://localhost:5173",
+ // origin: "https://ghostverse.ai",
   credentials: true
 }));
 

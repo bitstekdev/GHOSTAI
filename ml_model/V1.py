@@ -22,6 +22,8 @@ import base64
 import logging
 from logging.handlers import RotatingFileHandler
 from fastapi_utilities import ttl_lru_cache
+from fastapi.responses import JSONResponse
+
 
 
 
@@ -784,27 +786,163 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
     # --- Story system prompt
     story_system_prompt = f"""
-You are a masterful storyteller who creates coherent, a bit poetic, emotional, and cinematic narratives suitable for readers of all ages.
+You are a masterful storyteller who writes with cinematic restraint, poetic compression, and emotional economy.
 
-Guiding Principles:
-- Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning,” to gently invite the reader in.
+Your writing style MUST strictly mirror the EXAMPLE below in all of the following ways:
+- Short, purposeful sentences with no filler or explanatory prose
+- Each sentence must carry a narrative or emotional beat
+- Minimalist, cinematic language that implies more than it explains
+- Rhythm and flow similar to verse, even when written as sentences
+- No conversational tone, no modern phrasing, no casual narration
+
+The EXAMPLE below is NOT inspiration.  
+It is a STYLE CONTRACT.  
+Your output must feel as if it could exist beside the EXAMPLE without stylistic contrast.
+
+────────────────────────────────────
+
+STORY RULES (NON-NEGOTIABLE):
+
+- Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning.”
 - Avoid unnecessary side plots.
-- Each page MUST explicitly include at least one of the provided character names.
 - Build the entire narrative solely from the provided story gist and characters.
 - The story must contain EXACTLY {num_pages} pages.
-- Each page should unfold in 3–5 meaningful, well-crafted sentences.
-- Every page must include at least one named character (explicit name, not pronouns).
-- You may describe characters physically ONLY if it is already provided in character_details.
-- Never invent new characters or new names.
+- Each page must contain 3–5 sentences only.
+- Each page MUST explicitly include at least one provided character name.
+- Never invent new characters, names, or events.
 - Maintain a consistent emotional tone that matches the genre: {genre}.
-- Genre must match: {genre}.
-- Label each part exactly as: Page 1, Page 2, ...
+- Genre must strictly match: {genre}.
+- Label sections exactly as: Page 1, Page 2, ...
 
-**STRICT CONSTRAINTS**:
-- Do NOT include, paraphrase, or hint at any information from character_details.
-- Do NOT describe physical appearance, clothing, age, or traits unless they are explicitly stated in the story gist.
-- Character names may be used, but no other character_details are allowed in the narrative.
+────────────────────────────────────
 
+STRICT CONSTRAINTS (HARD FAIL IF VIOLATED):
+
+- Do NOT include, paraphrase, reference, or hint at any information from character_details.
+- Do NOT describe physical appearance, clothing, age, or traits unless explicitly stated in the story gist.
+- Character names may be used, but no additional character details are allowed.
+- Do NOT add explanations, summaries, morals, or author commentary.
+- Do NOT modernize language or tone.
+
+────────────────────────────────────
+
+STYLE ENFORCEMENT RULE:
+
+If a sentence does not advance emotion, memory, or consequence, it must be removed.
+If a sentence explains instead of evokes, it must be rewritten.
+If the rhythm feels different from the EXAMPLE, it must be corrected.
+
+────────────────────────────────────
+
+EXAMPLE (STYLE REFERENCE — DO NOT COPY CONTENT):
+Chapter 1
+The Fall of Threads (Early 1990)
+The looms fell silent, the fabrics grew thin,
+The world closed its doors, but he looked within.
+Where others saw endings, he searched for a start,
+Majeed was a man with an unbroken heart.
+-------------------------------
+Chapter 2
+Apprenticeship of a Dream (1995/96)
+He travelled through cities, through ovens, through flame,
+He shadowed the bakers who taught him their game.
+With flour on his hands and resolve in his eyes,
+He baked up a dream where old business dies.
+-------------------------------
+Chapter 3
+The First Bread (1997)
+On July 27, 1997, the ovens grew warm,
+A small shop was ready, a dream took form. 
+The streets of Hyderabad carried the cheer,
+A bakery was born, where old fears disappeared.
+-----------------------------
+Chapter 4
+Childhood in the Kitchen (Late 1990’s)
+His wife stood steady, his partner in strife,
+Six children grew up in the fragrance of life.
+With spices as toys and flour as play,
+They learned their father’s dream each day.
+-------------------------------
+Chapter 5
+The Long Night
+But storms do not wait, and debts do not sleep,
+Dark nights came heavy, the silence ran deep.
+With ten rupees left and his daughter in pain,
+He prayed through the night for her fever to wane.
+-------------------------------
+Chapter 6
+Do or Die (1999-2000)
+The bakery was shuttered, the debts had grown wide,
+But looking at his children asleep by his side —
+He whispered, “I’ll fight, for them I’ll endure.
+I’ll build us a future, steady and sure.”
+-------------------------------
+Chapter 7
+A Family Story (Early 2000’s)
+
+The children grew older, their voices grew strong,
+Ideas at dinner, debates before song.
+Their mother, the backbone, their father, the flame,
+Together they carried one vision, one name.
+-------------------------------
+Chapter 8
+The Birth of Haleem (2001)
+In 2001, Pista House’s haleem was born,
+A dish slow-cooked from dusk until dawn.
+At Ramzan, the lanterns lit queues down the street,
+A meal became memory — humble, complete.
+-------------------------------
+Chapter 9
+The Name Becomes a Nation’s (2005-10)
+
+From one shop in Hyderabad, the story took flight,
+Airports and cities all spoke of its might.
+By 2010, with the GI tag earned,
+Pista House became the pride it had yearned.
+-------------------------------
+Chapter 10
+The Custodians of Taste (2010’s)
+
+The secret was trust, more than spices or rice,
+Each portion was dignity, memory, slice.
+Customers bought more than food, this was true —
+They bought belonging, they bought something new.
+-------------------------------
+Chapter 11
+The People Behind (2010’s)
+
+It wasn’t just Majeed, but hands many more,
+The chefs and the servers, the team at the door.
+Each smile was a promise, each hand played a part,
+Together they carried the work of his heart.
+-------------------------------
+Chapter 12 
+Father to Sons (2010s–2020s)
+Two sons at his side, the ladle they bear,
+A recipe guarded with love and with care.
+Tradition alive, innovation in view,
+Together they built something timeless and true.
+-------------------------------
+Chapter 13
+Across the World (2010s–2020s)
+From Hyderabad’s lanes to faraway lands,
+The flavours of Pista House passed into new hands.
+Yet the heartbeat remained in each kitchen they knew:
+“You are not a customer — you are family too.”
+-------------------------------
+Chapter 14
+Tomorrow’s Table – 2020’s
+The story continues in laughter and song,
+In tables of strangers where all still belong.
+The welcome is endless, the warmth shining wide,
+For food is the story where hearts coincide.
+-------------------------------
+Chapter 15
+The Golden Ladle (Epilogue)
+Not just food in a pan, but a will to endure,
+From looms that fell silent to ovens made sure.
+The ladle still rises, its glow shining through —
+Tough times don’t last. Tough people do.
 """
 
 
@@ -1915,47 +2053,6 @@ RUNPOD_FACESWAP_URL = "https://api.runpod.ai/v2/njyoog9u3bm8oa/runsync"
 def faceswap_to_base64(file: UploadFile):
     return base64.b64encode(file.file.read()).decode("utf-8")
 
-def call_runpod_faceswap(
-    source_bytes: bytes,
-    target_bytes: bytes,
-    source_index: int = -1,
-    target_index: int = -1,
-    upscale: int = 1,
-    codeformer_fidelity: float = 0.5,
-    background_enhance: bool = True,
-    face_restore: bool = True,
-    face_upsample: bool = False,
-    output_format: str = "JPEG"
-) -> str:
-    payload = {
-        "input": {
-            "source_image": base64.b64encode(source_bytes).decode(),
-            "target_image": base64.b64encode(target_bytes).decode(),
-            "source_indexes": str(source_index),
-            "target_indexes": str(target_index),
-            "background_enhance": background_enhance,
-            "face_restore": face_restore,
-            "face_upsample": face_upsample,
-            "upscale": upscale,
-            "codeformer_fidelity": codeformer_fidelity,
-            "output_format": output_format
-        }
-    }
-
-    headers = {
-        "Authorization": f"Bearer {RUNPOD_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    r = requests.post(RUNPOD_FACESWAP_URL, json=payload, headers=headers, timeout=120)
-    r.raise_for_status()
-
-    result = r.json()
-    if "output" not in result or "image" not in result["output"]:
-        raise RuntimeError(f"Invalid FaceSwap response: {result}")
-
-    return result["output"]["image"]
-
     
 # ============================================================
 # ⚡ FastAPI Endpoints
@@ -2473,10 +2570,8 @@ async def edit_image_api(
 async def faceswap_api(
     source: UploadFile = File(...),
     target: UploadFile = File(...),
-
     source_index: int = Form(-1),
     target_index: int = Form(-1),
-
     upscale: int = Form(1),
     codeformer_fidelity: float = Form(0.5),
     background_enhance: bool = Form(True),
@@ -2484,27 +2579,47 @@ async def faceswap_api(
     face_upsample: bool = Form(False),
     output_format: str = Form("JPEG")
 ):
-    try:
-        source_bytes = await source.read()
-        target_bytes = await target.read()
 
-        image_b64 = call_runpod_faceswap(
-            source_bytes=source_bytes,
-            target_bytes=target_bytes,
-            source_index=source_index,
-            target_index=target_index,
-            upscale=upscale,
-            codeformer_fidelity=codeformer_fidelity,
-            background_enhance=background_enhance,
-            face_restore=face_restore,
-            face_upsample=face_upsample,
-            output_format=output_format
-        )
+    # Convert to Base64
+    source_b64 = faceswap_to_base64(source)
+    target_b64 = faceswap_to_base64(target)
 
-        return {
-            "status": "success",
-            "image_base64": image_b64
+    payload = {
+        "input": {
+            "source_image": source_b64,
+            "target_image": target_b64,
+            "source_indexes": str(source_index),
+            "target_indexes": str(target_index),
+            "background_enhance": background_enhance,
+            "face_restore": face_restore,
+            "face_upsample": face_upsample,
+            "upscale": upscale,
+            "codeformer_fidelity": codeformer_fidelity,
+            "output_format": output_format
         }
+    }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    # Call RunPod
+    rp = requests.post(RUNPOD_FACESWAP_URL, json=payload, headers=headers)
+
+    if rp.status_code != 200:
+        return JSONResponse({"error": rp.text}, status_code=500)
+
+    result = rp.json()
+
+    if "output" not in result or "image" not in result["output"]:
+        return JSONResponse({
+            "error": "No image returned from worker",
+            "raw_response": result
+        }, status_code=500)
+
+    return {
+        "swapped_image": result["output"]["image"],
+        "source_index": source_index,
+        "target_index": target_index
+    }
