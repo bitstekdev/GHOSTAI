@@ -19,11 +19,13 @@ const GenerateStory = () => {
     length: "3",
     numCharacters: "2",
     characterDetails: [],
+    entryMode: "questionnaire",
+    gist: "",
   });
 
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
-  const [currentStep, setCurrentStep] = useState("title"); // title, genre, length, numCharacters, characters, confirm
+  const [currentStep, setCurrentStep] = useState("title"); // title, genre, length, numCharacters, characterName, characterDetails, confirm, storyDirection, gistInput, edit
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [currentCharacter, setCurrentCharacter] = useState(null);
@@ -189,11 +191,49 @@ const GenerateStory = () => {
 
       case "confirm":
         if (input.toLowerCase() === "yes" || input.toLowerCase() === "y") {
-          handleSubmit();
+          addBotMessage(
+`Awesome! One last thing 😊
+
+How would you like to continue?
+
+1️⃣ Guide me further with questions  
+2️⃣ I already know what the book should be about
+
+(Type 1 or 2)`
+          );
+          setCurrentStep("storyDirection");
         } else {
           addBotMessage("What would you like to change? (title, genre, length, characters)");
           setCurrentStep("edit");
         }
+        break;
+
+      case "storyDirection":
+        if (input === "1") {
+          setFormData(prev => ({ ...prev, entryMode: "questionnaire" }));
+          handleSubmit();
+        } 
+        else if (input === "2") {
+          setFormData(prev => ({ ...prev, entryMode: "gist" }));
+          addBotMessage(
+            "Great 💫 Please describe what your book should be about. This will become the story prompt."
+          );
+          setCurrentStep("gistInput");
+        } 
+        else {
+          addBotMessage("Please type 1 or 2 to continue.");
+        }
+        break;
+
+      case "gistInput":
+        if (input.length < 20) {
+          addBotMessage("Can you share a bit more detail so I can shape it into a story?");
+          return;
+        }
+
+        const nextData = { ...formData, entryMode: "gist", gist: input.trim() };
+        setFormData(nextData);
+        handleSubmit(nextData);
         break;
 
       case "edit":
@@ -238,26 +278,56 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
     setCurrentStep("confirm");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (payload) => {
+    const dataToSend = payload || formData;
+
+    // Guard: Ensure all required fields are present
+    if (
+      !dataToSend.title ||
+      !dataToSend.genre ||
+      !dataToSend.length ||
+      !dataToSend.numCharacters ||
+      dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
+    ) {
+      addBotMessage("❌ Please complete all story details before continuing.");
+      return;
+    }
+
+    // Guard: Gist users must provide valid gist
+    if (
+      dataToSend.entryMode === "gist" &&
+      (!dataToSend.gist || dataToSend.gist.length < 20)
+    ) {
+      addBotMessage("❌ Please provide a valid story idea (at least 20 characters).");
+      return;
+    }
+
     setLoading(true);
     addBotMessage("Creating your amazing story... ✨");
 
     try {
-      const response = await api.post("/api/v1/story/start", formData);
+      const response = await api.post("/api/v1/story/start", dataToSend);
       const { storyId, data } = response.data;
 
-      localStorage.setItem(
-        "conversationData",
-        JSON.stringify({
-          storyId,
-          conversation: data.conversation,
-        })
-      );
+      // Store conversation ONLY for questionnaire users
+      if (dataToSend.entryMode === "questionnaire" && data?.conversation) {
+        localStorage.setItem(
+          "conversationData",
+          JSON.stringify({
+            storyId,
+            conversation: data.conversation,
+          })
+        );
+      }
 
-      addBotMessage("Story  Redirecting you now... 🎉");
+      addBotMessage("Redirecting you now... 🎉");
       setTimeout(() => {
-        navigateTo(`/questioner/${storyId}`);
-      }, 1500);
+        if (dataToSend.entryMode === "questionnaire") {
+          navigateTo(`/questioner/${storyId}`);
+        } else {
+          navigateTo(`/templateselection/${storyId}`);
+        }
+      }, 1200);
     } catch (error) {
       const errorMsg = error.response?.data?.message || "An error occurred";
       setMsg(errorMsg);

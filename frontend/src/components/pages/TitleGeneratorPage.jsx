@@ -19,7 +19,7 @@ const TitleSelection = () => {
 
   useEffect(() => {
     fetchStoryData();
-    console.log("Story ID:", storyData);
+    if (import.meta.env.DEV) console.log("Story ID:", storyId);
   }, []);
 
   const fetchStoryData = async () => {
@@ -36,7 +36,7 @@ const TitleSelection = () => {
 
   // Generate AI Titles
   const handleGenerateTitles = async () => {
-    console.log("Generating titles for story ID:", storyId);
+    if (import.meta.env.DEV) console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -98,7 +98,7 @@ const TitleSelection = () => {
         title: selectedTitle,
       });
 
-      console.log("Book creation response:", res.data);
+      if (import.meta.env.DEV) console.log("Book creation succeeded");
       navigateTo(`/backgroundgenerator/${res.data.storyId}`);
 
     } catch (err) {
@@ -220,7 +220,7 @@ const TitleSelection = () => {
         disabled={creatingBook}
       >
         {creatingBook ? (
-         <p>loading</p>
+         <p>loading.....</p>
         ) : (
           "Create My Book"
         )}
