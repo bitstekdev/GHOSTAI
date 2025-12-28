@@ -27,7 +27,7 @@ const TemplateSelection = () => {
     const fetchStoryData = async () => {
       try {
         const response = await api.get(`/api/v1/story/${storyIdParam}`);
-        console.log("Story Data:", response.data.data.story);
+        if (import.meta.env.DEV) console.log("Story data loaded");
         setStoryData(response.data.data.story);
       } catch (error) {
         console.error("Error fetching story data:", error);
@@ -38,20 +38,31 @@ const TemplateSelection = () => {
   }, []);
 
   
+  const saveGist = async () => {
+    // Persist edited gist to backend; backend validates and stores securely
+    await api.patch(`/api/v1/story/${storyIdParam}/gist`, {
+      gist: storyData?.gist,
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
+      // 1) Save edited gist first
+      await saveGist();
+
+      // 2) Generate story; backend reads gist from DB
       const response = await api.post("/api/v1/story/create", {
-      storyId: storyIdParam,
-      gist: storyData?.gist,
-      genre: storyData?.genre,
-      numCharacters: storyData?.numCharacters,
-      characterDetails: storyData?.characterDetails,
-      numPages: storyData?.numOfPages,
-      orientation: templates[selectedTemplate].name,
-    });
+        storyId: storyIdParam,
+        genre: storyData?.genre,
+        numCharacters: storyData?.numCharacters,
+        characterDetails: storyData?.characterDetails,
+        numPages: storyData?.numOfPages,
+        orientation: templates[selectedTemplate].name,
+      });
+
       navigateTo(`/titlegenerator/${storyIdParam}`);
-      console.log("Generate Story Response:", response.data);
+      if (import.meta.env.DEV) console.log("Story generation started");
     } catch (error) {
       console.error("Error generating story:", error);
     } finally {

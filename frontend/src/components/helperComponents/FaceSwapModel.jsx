@@ -29,7 +29,7 @@ const handleApply = async () => {
     setError("");
 
     // DEBUG: Log values before submission
-    console.log("🎯 FaceSwapModal - UI values before submit:", {
+    if (import.meta.env.DEV) console.log("🎯 FaceSwapModal - UI values before submit:", {
       sourceIndex,
       targetIndex,
       file: file?.name
@@ -45,7 +45,7 @@ const handleApply = async () => {
     formData.append("target_index", targetIndex);
     
     // DEBUG: Log FormData contents
-    console.log("🎯 FaceSwapModal - FormData being sent:", {
+    if (import.meta.env.DEV) console.log("🎯 FaceSwapModal - FormData being sent:", {
       source_index: sourceIndex,
       target_index: targetIndex
     });

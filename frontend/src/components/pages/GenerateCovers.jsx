@@ -20,7 +20,7 @@ const GenerateCovers = () => {
       const res = await api.post("/api/v1/images/generate-covers", {
         storyId: storyId,
       });
-      console.log("Cover generation response:", res.data);
+      if (import.meta.env.DEV) console.log("Cover generation requested");
 
       navigateTo(`/flipbook/${storyId}`);
     } catch (err) {

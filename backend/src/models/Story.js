@@ -49,6 +49,16 @@ const storySchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  entryMode: {
+    type: String,
+    enum: ['questionnaire', 'gist'],
+    default: 'questionnaire'
+  },
+  gistSource: {
+    type: String,
+    enum: ['ai', 'user'],
+    default: 'ai'
+  },
   conversation: [conversationSchema],
   numCharacters: {
     type: Number,

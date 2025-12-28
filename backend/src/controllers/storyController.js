@@ -4,14 +4,37 @@ const Image = require('../models/Image');
 const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
 
-// @desc    Start questionnaire
+// @desc    Start story (hybrid: questionnaire or direct gist)
 // @route   POST /api/story/start
 // @access  Private
-exports.startQuestionnaire = async (req, res, next) => {
-    const { title, genre, length, characterDetails, numCharacters } = req.body;
+exports.startStory = async (req, res, next) => {
   try {
+    const {
+      title,
+      genre,
+      length,
+      characterDetails,
+      numCharacters,
+      entryMode = 'questionnaire',
+      gist
+    } = req.body;
 
-     // Create story document
+    if (!genre || !length || !numCharacters) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    if (entryMode === 'gist') {
+      if (!gist || gist.trim().length < 20) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid story idea'
+        });
+      }
+    }
+
     const story = await Story.create({
       user: req.user.id,
       title,
@@ -19,18 +42,26 @@ exports.startQuestionnaire = async (req, res, next) => {
       numOfPages: length,
       numCharacters,
       characterDetails,
-      step: 1
+      entryMode,
+      gist: entryMode === 'gist' ? gist : null,
+      gistSource: entryMode === 'gist' ? 'user' : 'ai',
+      step: entryMode === 'gist' ? 3 : 1
     });
-    
-    const result = await fastApiService.startQuestionnaire();
 
-    res.status(200).json({
+    if (entryMode === 'questionnaire') {
+      const result = await fastApiService.startQuestionnaire();
+      return res.status(200).json({
+        success: true,
+        storyId: story._id,
+        data: result
+      });
+    }
+
+    return res.status(200).json({
       success: true,
-      storyId: story._id,
-      data: result
+      storyId: story._id
     });
   } catch (error) {
-    console.error('Questionnaire error:', { userId: req.user.id });
     next(error);
   }
 };
@@ -42,20 +73,31 @@ exports.nextQuestion = async (req, res, next) => {
   try {
     const {storyId, conversation, answer } = req.body;
 
+    const story = await Story.findById(storyId);
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: 'Story not found'
+      });
+    }
+
+    if (story.entryMode === 'gist') {
+      return res.status(400).json({
+        message: 'Questionnaire not allowed for this story'
+      });
+    }
+
     const result = await fastApiService.nextQuestion(conversation, answer);
 
     if (result) {
-      // Update story conversation
-      const story = await Story.findByIdAndUpdate(storyId);
-      if (story) {
-        conversation.push({
-          question: result.question,
-          answer: answer
-        });
-        story.conversation = conversation;
-        story.step = 2;
-        await story.save();
-      }
+      conversation.push({
+        question: result.question,
+        answer: answer
+      });
+      story.conversation = conversation;
+      story.step = 2;
+      await story.save();
     }
 
     res.status(200).json({
@@ -77,12 +119,26 @@ exports.generateGist = async (req, res, next) => {
 
     const story = await Story.findById(storyId);
 
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: 'Story not found'
+      });
+    }
+
+    if (story.entryMode === 'gist') {
+      return res.status(400).json({
+        message: 'Questionnaire not allowed for this story'
+      });
+    }
+
     const result = await fastApiService.generateGist(conversation, story.genre);
     
     if (result) {
       // Update story gist and step
       if (story) {
         story.gist = result.gist;
+        story.gistSource = 'ai';
         story.step = 3;
         await story.save();
       }
@@ -105,7 +161,6 @@ exports.createStory = async (req, res, next) => {
   try {
     const {
       storyId,
-      gist,
       genre,
       numCharacters,
       characterDetails,
@@ -113,7 +168,17 @@ exports.createStory = async (req, res, next) => {
       orientation
     } = req.body;
 
-    // console.log("request body:", req.body);
+    const story = await Story.findById(storyId);
+
+    if (!story || !story.gist) {
+      return res.status(400).json({
+        success: false,
+        message: 'Story gist not found'
+      });
+    }
+
+    const gist = story.gist;
+    const storyGenre = genre || story.genre;
     
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
     // console.log("Fixed Character Details:", fixedCharacterDetails);
@@ -127,18 +192,14 @@ exports.createStory = async (req, res, next) => {
       gist,
       numCharacters,
       fixedCharacterDetails,
-      genre,
+      storyGenre,
       numPages
     );
 
-
-    // update story document
-    const story = await Story.findByIdAndUpdate(storyId, {
-      gist,
-      orientation: orientation || 'Portrait',
-      step: 4,
-      status: 'generating'
-    }, { new: true });
+    story.orientation = orientation || story.orientation || 'Portrait';
+    story.step = 4;
+    story.status = 'generating';
+    await story.save();
 
 
     const pagePromises = storyResult.pages.map(page =>
@@ -190,6 +251,32 @@ exports.createStory = async (req, res, next) => {
   }
 };
 
+// @desc    Update story gist (user-provided)
+// @route   PATCH /api/story/:id/gist
+// @access  Private
+exports.updateGist = async (req, res, next) => {
+  try {
+    const { gist } = req.body;
+
+    if (!gist || gist.trim().length < 20) {
+      return res.status(400).json({ message: 'Invalid gist' });
+    }
+
+    const story = await Story.findOne({ _id: req.params.id, user: req.user.id });
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    story.gist = gist;
+    story.gistSource = 'user';
+    story.step = Math.max(3, story.step || 3);
+    await story.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 // @desc    Get all user stories
