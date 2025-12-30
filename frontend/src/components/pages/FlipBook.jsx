@@ -44,6 +44,8 @@ const StoryFlipbook = () => {
 
   const wrapperRef = useRef(null);
   const [scale, setScale] = useState(1);
+  const [showToolbar, setShowToolbar] = useState(false);
+  const hideToolbarTimer = useRef(null);
 
   const { storyId } = useParams();
 
@@ -280,6 +282,15 @@ const openEdit = () => {
     return () => window.removeEventListener("resize", handleResize);
   });
 
+  // Toolbar auto-hide cleanup
+  useEffect(() => {
+    return () => {
+      if (hideToolbarTimer.current) {
+        clearTimeout(hideToolbarTimer.current);
+      }
+    };
+  }, []);
+
   // ============================
   // FONT SIZE SCALING UTILITY
   // ============================
@@ -421,6 +432,35 @@ const openEdit = () => {
   };
 
   // ============================
+  // Toolbar show/hide helpers
+  // ============================
+  const showToolbarTemporarily = () => {
+    setShowToolbar(true);
+
+    if (hideToolbarTimer.current) {
+      clearTimeout(hideToolbarTimer.current);
+    }
+
+    hideToolbarTimer.current = setTimeout(() => {
+      setShowToolbar(false);
+    }, 2500);
+  };
+
+  const hideToolbarImmediately = () => {
+    if (hideToolbarTimer.current) {
+      clearTimeout(hideToolbarTimer.current);
+    }
+    setShowToolbar(false);
+  };
+
+  // Hide toolbar when modals open
+  useEffect(() => {
+    if (showFaceSwap || showEdit || showHistory || showRegenerateConfirm) {
+      hideToolbarImmediately();
+    }
+  }, [showFaceSwap, showEdit, showHistory, showRegenerateConfirm]);
+
+  // ============================
   // PAGE GENERATION
   // ============================
   const generatePages = () => {
@@ -455,40 +495,58 @@ const openEdit = () => {
       });
 
     // STORY SPREAD PAGES
-    pages.forEach((page) => {
-      allPages.push({
-        type: "spread",
-        jsx: (
-          <div className="flex w-full h-full overflow-hidden">
-            {/* LEFT PAGE */}
-            <div style={{ width: "50%", height: "100%" }}>
-              <img src={page.characterImage?.s3Url} className="w-full h-full object-cover" />
-            </div>
+pages.forEach((page, index) => {
+  const isImageLeft = index % 2 === 0;
 
-            {/* RIGHT PAGE */}
-            <div className="relative" style={{ width: "50%", height: "100%" }}>
-              <img
-                src={page.backgroundImage?.s3Url}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 mt-2 sm:mt-6 px-2 sm:px-10 py-2 sm:py-6 overflow-y-auto">
-                <div className="bg-white/35 p-0.5 sm:p-1 rounded-lg">
-                {page.html ? (
-                  <div 
-                    className="story-html-content text-black leading-relaxed" 
-                    style={pageTextStyle}
-                    dangerouslySetInnerHTML={{ __html: page.html }}
-                  />
-                ) : (
-                  <p className="text-black leading-relaxed" style={pageTextStyle}>{page.text}</p>
-                )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ),
-      });
-    });
+  const ImageBlock = (
+    <div style={{ width: "50%", height: "100%" }}>
+      <img
+        src={page.characterImage?.s3Url}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+
+  const TextBlock = (
+    <div className="relative" style={{ width: "50%", height: "100%" }}>
+      <img
+        src={page.backgroundImage?.s3Url}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
+      <div className="absolute inset-0 mt-2 sm:mt-6 px-2 sm:px-10 py-2 sm:py-6 overflow-y-auto">
+        {/* <div className="bg-white/35 p-0.5 sm:p-1 rounded-lg"> */}
+                <div className=" p-0.5 sm:p-1 rounded-lg">
+          {page.html ? (
+            <div
+              className="story-html-content text-black leading-relaxed"
+              style={pageTextStyle}
+              dangerouslySetInnerHTML={{ __html: page.html }}
+            />
+          ) : (
+            <p
+              className="text-black leading-relaxed"
+              style={pageTextStyle}
+            >
+              {page.text}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  allPages.push({
+    type: "spread",
+    jsx: (
+      <div className="flex w-full h-full overflow-hidden">
+        {isImageLeft ? ImageBlock : TextBlock}
+        {isImageLeft ? TextBlock : ImageBlock}
+      </div>
+    ),
+  });
+});
+
 
     // BACK COVER
     allPages.push({
@@ -502,8 +560,9 @@ const openEdit = () => {
             alt="Back cover"
           />
           <div className="absolute inset-0 mt-10 sm:mt-20 px-4 sm:px-10 py-4 sm:py-6 overflow-y-auto">
-            <div className="bg-white/55 p-1.5 sm:p-2 rounded-lg">
-              <p className="text-gray-800 text-xs sm:text-sm leading-relaxed font-bold">
+            {/* <div className="bg-white/55 p-1.5 sm:p-2 rounded-lg"> */}
+                        <div className=" p-1.5 sm:p-2 rounded-lg">
+              <p className="text-black-800 text-xs sm:text-sm leading-relaxed font-bold">
                 {story.backCoverBlurb}
               </p>
             </div>
@@ -607,108 +666,109 @@ const openEdit = () => {
           <h1 className="text-white text-lg sm:text-2xl font-bold">Ghostverse.ai</h1>
         </div>
 
-        {/* BUTTON BAR */}
-        <div className="flex justify-center mb-4 sm:mb-8 px-2 sm:px-4 mt-12 sm:mt-0">
-          <div
-            className="w-full max-w-3xl bg-gray-900 px-3 sm:px-8 py-3 sm:py-4 rounded-xl border border-gray-700 flex flex-wrap 
-                  justify-center sm:justify-between 
-                  items-center 
-                  gap-3 sm:gap-6 
-                  text-white 
-                  shadow-xl
-                  text-sm sm:text-base
-          ">
-            <div className="flex items-center w-full sm:w-auto justify-center">
-              <button
-                onClick={prevPage}
-                disabled={currentPage === 0 || isFlipping}
-                className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed p-1">
-                <ChevronLeft size={20} />
-              </button>
-              <span className="min-w-24 sm:min-w-32 text-center font-medium text-xs sm:text-sm">
-                {pageLabel()}
-              </span>
-              <button
-                onClick={nextPage}
-                disabled={currentPage === pages.length - 1 || isFlipping}
-                className="hover:text-purple-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed p-1">
-                <ChevronRight size={20} />
-              </button>
-            </div>
+        {/* NOTE: Top button bar removed — replaced with left toolbar next to the book */}
+        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
 
-            <div className="hidden sm:block h-6 w-px bg-gray-700" />
-            
-            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4">
+        {/* LAYOUT: left toolbar + book */}
+        <div className="flex justify-center w-full px-2">
+          <div className="flex justify-center items-start gap-4 w-full">
+
+            {/* LEFT ACTION BAR */}
+            <div
+              className={
+                `hidden sm:flex flex-col gap-4 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-xl sticky top-24 transition-all duration-300 ease-out ` +
+                (showToolbar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 pointer-events-none")
+              }>
               <button
-                className="flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm"
-                onClick={() => setShowRegenerateConfirm(true)}>
-                <RefreshCcw size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">regenerate</span>
+                onClick={() => setShowRegenerateConfirm(true)}
+                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                <RefreshCcw size={20} />
+                Regenerate
               </button>
 
               <button
-                className="flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm"
-                onClick={openEdit}>
-                <Edit size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Edit</span>
+                onClick={openEdit}
+                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                <Edit size={20} />
+                Edit
               </button>
 
-              <button className="relative flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm"
-                onClick={openFaceSwap}>
-                <Users size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Face Swap</span>
-                <span className="absolute -top-2 sm:-top-3 -right-3 sm:-right-5 bg-blue-500 text-white text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
-                  Beta
-                </span>
+              <button
+                onClick={openFaceSwap}
+                className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
+                <Users size={20} />
+                Face Swap
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">Beta</span>
               </button>
-              
-              <button 
-                className="flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm"
+
+              <button
                 onClick={() => {
                   const rawPages = storyData?.pages || [];
                   const current = pages[currentPage];
-                  
-                  // Only allow history on spread pages
-                  if (current?.type !== "spread") {
-                    return;
-                  }
-                  
-                  // Map UI page index → MongoDB page index (same logic as Face Swap)
+                  if (current?.type !== "spread") return;
                   const mongoPageIndex = currentPage - 1;
                   const pageDoc = rawPages[mongoPageIndex];
-                  
                   if (pageDoc) {
                     setHistoryPage(pageDoc);
                     setShowHistory(true);
                   }
-                }}>
-                <History size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Revert</span>
+                }}
+                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                <History size={20} />
+                Revert
               </button>
-              
-              <button className="relative flex items-center gap-1 hover:text-purple-400 transition-colors text-xs sm:text-sm">
-                <Scissors size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Eraser</span>
-                <span className="absolute -top-2 sm:-top-3 -right-3 sm:-right-5 bg-blue-500 text-white text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
-                  V2
-                </span>
+
+              <button className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
+                <Scissors size={20} />
+                Erase
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">V2</span>
               </button>
             </div>
-          </div>
-        </div>
-        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
 
-        {/* RESPONSIVE FRAME */}
-        <div ref={wrapperRef} className="flex justify-center w-full px-2">
-          <div
-            className="rounded-lg sm:rounded-2xl shadow-2xl bg-gray-800 p-2 sm:p-4"
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: "top center",
-            }}>
+            {/* BOOK WRAPPER */}
             <div
-              className="transition-all duration-500"
-              style={
-                pages[currentPage]?.type === "spread"
-                  ? spreadDimensions
-                  : singlePageDimensions
-              }>
-              {pages[currentPage]?.jsx}
+              ref={wrapperRef}
+              className="flex justify-center w-full px-2 relative"
+              onMouseMove={showToolbarTemporarily}
+              onTouchStart={showToolbarTemporarily}
+            >
+              <div
+                className="rounded-lg sm:rounded-2xl shadow-2xl bg-gray-800 p-2 sm:p-4 relative"
+                style={{
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top center",
+                }}>
+
+                {/* LEFT ARROW */}
+                {currentPage > 0 && (
+                  <button
+                    onClick={prevPage}
+                    className="absolute left-0 top-0 h-full w-16 flex items-center justify-start bg-gradient-to-r from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20"
+                  >
+                    <ChevronLeft size={48} className="text-white/80 ml-2" />
+                  </button>
+                )}
+
+                {/* RIGHT ARROW */}
+                {currentPage < pages.length - 1 && (
+                  <button
+                    onClick={nextPage}
+                    className="absolute right-0 top-0 h-full w-16 flex items-center justify-end bg-gradient-to-l from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20"
+                  >
+                    <ChevronRight size={48} className="text-white/80 mr-2" />
+                  </button>
+                )}
+
+                <div
+                  className="transition-all duration-500"
+                  style={
+                    pages[currentPage]?.type === "spread"
+                      ? spreadDimensions
+                      : singlePageDimensions
+                  }>
+                  {pages[currentPage]?.jsx}
+                </div>
+              </div>
             </div>
           </div>
         </div>

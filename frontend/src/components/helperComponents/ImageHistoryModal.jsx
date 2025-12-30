@@ -2,6 +2,16 @@ import React, { useState } from "react";
 import api from "../../services/axiosInstance";
 import { X, History, RotateCcw } from "lucide-react";
 
+const getVersionLabel = (version) => {
+  if (!version) return "Archived";
+  const v = String(version).toLowerCase();
+  if (v.includes("faceswap")) return "Face Swap";
+  if (v.includes("edit")) return "Edited";
+  if (v.includes("regenerate")) return "Regenerated";
+  if (v.includes("revert")) return "Reverted";
+  return "Previous Version";
+};
+
 const ImageHistoryModal = ({ page, onClose, onUpdated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -91,12 +101,20 @@ const ImageHistoryModal = ({ page, onClose, onUpdated }) => {
                   className="border border-gray-700 rounded-lg p-4 bg-gray-800/30 hover:bg-gray-800/50 transition"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-300">
+                          {getVersionLabel(oldImage.version)}
+                        </span>
+                        <span
+                          className="text-xs text-gray-400 truncate max-w-[420px]"
+                          title={oldImage.version || "Archived"}
+                        >
+                          {oldImage.version || "Archived"}
+                        </span>
+                      </div>
                       <span className="text-sm font-medium text-gray-400">
                         Version {oldImages.length - index}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {oldImage.version || "archived"}
                       </span>
                     </div>
                     <button
