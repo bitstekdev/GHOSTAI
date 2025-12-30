@@ -1,0 +1,31 @@
+2025-12-26 14:19:15,361 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 14:19:20,849 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 14:19:28,317 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-26 14:21:10,780 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:39:35,282 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:39:42,838 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:39:54,776 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:40:10,475 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:40:25,878 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-26 15:40:31,877 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2025-12-26 15:42:21,179 [INFO] storybook_api - Generating image for page=2, orientation=Portrait
+2025-12-26 15:46:11,840 [INFO] storybook_api - /coverback/generate called. Genre=Adventure, Title=Soul On Fire
+2025-12-28 17:17:17,023 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-28 17:17:38,955 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-28 17:18:25,163 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-28 17:18:49,286 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-28 17:19:04,910 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-28 17:20:07,837 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2025-12-28 17:21:10,679 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2025-12-28 17:25:10,549 [INFO] storybook_api - /coverback/generate called. Genre=Fantasy, Title=Everyday Brave Hearts
+2025-12-30 13:39:01,710 [INFO] storybook_api - Start questionnaire called
+2025-12-30 13:39:21,755 [INFO] storybook_api - Next question request received. Answer: a story of a aspirant
+2025-12-30 13:39:21,762 [INFO] storybook_api - LLM generating next question
+2025-12-30 13:39:26,029 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:44:20,216 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:44:23,590 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:44:28,616 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:44:36,714 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:44:56,055 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-30 13:45:14,243 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2025-12-30 13:48:30,992 [INFO] storybook_api - /coverback/generate called. Genre=Adventure, Title=Into New Light
