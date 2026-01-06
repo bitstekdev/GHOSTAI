@@ -22,6 +22,27 @@ import base64
 import logging
 from logging.handlers import RotatingFileHandler
 from fastapi_utilities import ttl_lru_cache
+import sys
+sys.stdout.reconfigure(encoding="utf-8")
+
+import boto3
+from pathlib import Path
+import os
+import re
+import uuid
+import json
+import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Dict
+
+import pdfplumber
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from openai import OpenAI
+from docx import Document
+from dotenv import load_dotenv
+
 
 
 
@@ -81,7 +102,7 @@ def call_questionnaire_llm(
                     f"from={primary_model} → to={model}"
                 )
 
-            logger.info(f"✅ Questionnaire LLM success: {model}")
+            logger.info(f"[OK] Questionnaire LLM success: {model}")
             return response.choices[0].message.content.strip()
 
         except Exception as e:
@@ -242,7 +263,444 @@ Rules:
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gist generation failed: {str(e)}")
-    
+# hidream_preview_api_base64.py
+
+import requests
+import random
+import uuid
+from typing import Dict
+
+# -------------------------------------------------
+# HiDream / RunPod CONFIG (Gist Images)
+# -------------------------------------------------
+RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
+RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY")
+
+HEADERS = {
+    "Authorization": f"Bearer {RUNPOD_API_KEY}",
+    "Content-Type": "application/json",
+}
+
+NEGATIVE_PROMPT_GIST = (
+    "blurry, anime, cartoon, illustration, painterly, oil painting, "
+    "watercolor, sketch, surreal, abstract, text, watermark"
+)
+
+GIST_IMAGE_SYSTEM_PROMPT = """
+You are a cinematic visual prompt generator for AI images.
+
+Convert a STORY GIST into ONE SDXL/HiDream-ready cinematic image prompt
+that depicts a SINGLE, CLEAR, PHYSICAL SCENE derived directly from the gist.
+
+CRITICAL SCENE RULES:
+- The image MUST depict a concrete, physically plausible scene.
+- The scene must be directly implied by the gist.
+- Do NOT include any humans, characters, faces, bodies, silhouettes, or people of any kind.
+- The scene should communicate the story through environment, objects, setting, lighting, and atmosphere only.
+- Do NOT use abstract, symbolic, metaphorical, or dreamlike imagery.
+- Do NOT invent locations, objects, or events not supported by the gist.
+
+COMPOSITION RULES:
+- Cinematic wide shot or medium-wide shot only.
+- Strong environmental storytelling through space, light, and physical details.
+- Neutral framing that works for landscape, portrait, and square formats.
+- Scene should feel like an empty moment from a film, just before or after human presence.
+
+STYLE RULES (UNIVERSAL):
+- Hyperrealistic cinematic rendering.
+- Physically plausible lighting.
+- Natural materials and textures.
+- Subtle filmic contrast.
+- Unified, restrained color palette.
+- Grounded realism.
+
+STRICT EXCLUSIONS:
+- NO humans, people, characters, or character representations.
+- NO portraits.
+- NO abstract symbolism.
+- NO painterly, illustrative, anime, cartoon, or stylized art.
+- NO text, logos, typography, or watermarks.
+
+OUTPUT RULES:
+- Return ONLY the final SDXL/HiDream prompt text.
+- No explanations.
+- No formatting.
+- No JSON.
+"""
+
+def generate_image_prompt_from_gist(gist: str) -> str:
+    response = client.chat.completions.create(
+        model="meta-llama/llama-3.3-70b-instruct:free",
+        messages=[
+            {"role": "system", "content": GIST_IMAGE_SYSTEM_PROMPT},
+            {"role": "user", "content": gist},
+        ],
+        temperature=0.3,
+        timeout=60,
+    )
+
+    prompt = response.choices[0].message.content.strip()
+    if len(prompt) < 50:
+        raise RuntimeError("Invalid image prompt from gist")
+
+    return prompt
+
+def get_gist_dimensions(orientation: str):
+    o = (orientation or "landscape").lower()
+    if o == "portrait":
+        return 768, 1024
+    if o == "square":
+        return 1024, 1024
+    return 1024, 768
+
+def build_hidream_workflow(prompt: str, width: int, height: int, seed: int):
+    return {
+        "input": {
+            "workflow": {
+                "54": {"class_type": "QuadrupleCLIPLoader", "inputs": {
+                    "clip_name1": "clip_l_hidream.safetensors",
+                    "clip_name2": "clip_g_hidream.safetensors",
+                    "clip_name3": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+                    "clip_name4": "llama_3.1_8b_instruct_fp8_scaled.safetensors",
+                }},
+                "55": {"class_type": "VAELoader", "inputs": {"vae_name": "ae.safetensors"}},
+                "69": {"class_type": "UNETLoader", "inputs": {
+                    "unet_name": "hidream_i1_full_fp16.safetensors",
+                    "weight_dtype": "default",
+                }},
+                "70": {"class_type": "ModelSamplingSD3", "inputs": {"shift": 3.0, "model": ["69", 0]}},
+                "16": {"class_type": "CLIPTextEncode", "inputs": {"text": prompt, "clip": ["54", 0]}},
+                "40": {"class_type": "CLIPTextEncode", "inputs": {"text": NEGATIVE_PROMPT_GIST, "clip": ["54", 0]}},
+                "53": {"class_type": "EmptySD3LatentImage", "inputs": {
+                    "width": width, "height": height, "batch_size": 1}},
+                "3": {"class_type": "KSampler", "inputs": {
+                    "seed": seed, "steps": 30, "cfg": 5,
+                    "sampler_name": "euler", "scheduler": "simple",
+                    "denoise": 1,
+                    "model": ["70", 0],
+                    "positive": ["16", 0],
+                    "negative": ["40", 0],
+                    "latent_image": ["53", 0],
+                }},
+                "8": {"class_type": "VAEDecode", "inputs": {"samples": ["3", 0], "vae": ["55", 0]}},
+                "9": {"class_type": "SaveImage", "inputs": {
+                    "filename_prefix": f"gist_{uuid.uuid4().hex[:6]}",
+                    "images": ["8", 0],
+                }},
+            }
+        }
+    }
+
+def extract_base64_image(resp: dict) -> str:
+    images = resp.get("output", {}).get("images", [])
+    if not images:
+        raise RuntimeError("No images returned")
+    return images[0]["data"]
+
+
+def generate_gist_image(prompt: str, width: int, height: int, seed: int) -> str:
+    payload = build_hidream_workflow(prompt, width, height, seed)
+    r = requests.post(RUNPOD_HIDREAM_URL, headers=HEADERS, json=payload, timeout=300)
+    if r.status_code != 200:
+        raise RuntimeError(r.text)
+    return extract_base64_image(r.json())
+
+def generate_preview_images_from_gist(gist: str) -> Dict:
+    prompt = generate_image_prompt_from_gist(gist)
+    seed = random.randint(1, 1_000_000_000)
+
+    images = {}
+    for o in ("landscape", "portrait", "square"):
+        w, h = get_gist_dimensions(o)
+        images[o] = {
+            "width": w,
+            "height": h,
+            "base64": generate_gist_image(prompt, w, h, seed),
+        }
+    return images
+# ============================================================
+# writing_style_story_generator_api.py
+
+def require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+OPENROUTER_API_KEY = require_env("OPENROUTER_API_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+DEFAULT_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
+
+
+# =========================================================
+# LOGGING
+# =========================================================
+BASE_LOG_DIR = "logs"
+os.makedirs(BASE_LOG_DIR, exist_ok=True)
+
+# =========================================================
+# AWS S3 CLIENT
+# =========================================================
+s3_client = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+)
+
+# =========================================================
+# OPENROUTER CLIENT
+# =========================================================
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
+
+# =========================================================
+# FASTAPI APP
+# =========================================================
+app = FastAPI(
+    title="Book Metadata Extraction API (AWS S3)",
+    version="1.0.0",
+)
+
+# =========================================================
+# REQUEST MODELS
+# =========================================================
+from typing import Optional
+
+class ProcessBooksS3Request(BaseModel):
+    user_id: str
+    s3_prefix: str
+    s3_bucket: Optional[str] = DEFAULT_S3_BUCKET
+ # uploads/<user_id>/books/
+
+# =========================================================
+# LOGGER
+# =========================================================
+def get_logger(user_id: str) -> logging.Logger:
+    logger = logging.getLogger(user_id)
+    logger.setLevel(logging.INFO)
+
+    if logger.handlers:
+        return logger
+
+    formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+
+    file_handler = logging.FileHandler(
+        os.path.join(BASE_LOG_DIR, f"{user_id}.log"),
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    return logger
+
+# =========================================================
+# TEXT EXTRACTION HELPERS
+# =========================================================
+def extract_text_from_pdf(path: Path) -> str:
+    text = ""
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+    return text
+
+
+def extract_text_from_docx(path: Path) -> str:
+    doc = Document(path)
+    return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+
+def extract_text_from_txt(path: Path) -> str:
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        return f.read()
+
+# =========================================================
+# S3 INGESTION (WITH PAGINATION)
+# =========================================================
+import tempfile
+
+def extract_text_from_s3(bucket: str, prefix: str, logger):
+    logger.info(f"📄 Scanning s3://{bucket}/{prefix}")
+
+    supported_exts = {".pdf", ".docx", ".txt"}
+    books_text = {}
+    book_ids = {}
+
+    paginator = s3_client.get_paginator("list_objects_v2")
+    found = False
+
+    temp_dir = Path(tempfile.gettempdir())
+    temp_dir.mkdir(parents=True, exist_ok=True)
+
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            ext = Path(key).suffix.lower()
+
+            if ext not in supported_exts:
+                continue
+
+            found = True
+            book_id = f"book_{uuid.uuid4().hex[:8]}"
+            filename = Path(key).name
+            book_ids[filename] = book_id
+
+            logger.info(f"📘 Downloading {key}")
+
+            local_path = temp_dir / f"{uuid.uuid4().hex}{ext}"
+
+            s3_client.download_file(bucket, key, str(local_path))
+
+            try:
+                if ext == ".pdf":
+                    text = extract_text_from_pdf(local_path)
+                elif ext == ".docx":
+                    text = extract_text_from_docx(local_path)
+                else:
+                    text = extract_text_from_txt(local_path)
+
+                books_text[book_id] = text[:12000]
+                logger.info(f"✅ Extracted {len(text)} chars")
+
+            finally:
+                if local_path.exists():
+                    local_path.unlink()
+
+    if not found:
+        raise HTTPException(400, "No supported files found in S3 prefix")
+
+    return books_text, book_ids
+
+
+# =========================================================
+# BOOK TYPE CLASSIFIER
+# =========================================================
+def classify_book_type(text: str, logger) -> str:
+    prompt = (
+        "Classify this book into ONE category:\n"
+        "- narrative_story\n"
+        "- coloring_or_activity_book\n"
+        "- poetry_or_rhymes\n"
+        "- instructional\n\n"
+        f"TEXT:\n{text[:2000]}"
+    )
+
+    response = client.chat.completions.create(
+        model="xiaomi/mimo-v2-flash:free",
+        messages=[
+            {"role": "system", "content": "You are a book classification engine."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0,
+        max_tokens=10,
+    )
+
+    book_type = response.choices[0].message.content.strip().lower()
+    logger.info(f"📘 Classified as {book_type}")
+    return book_type
+
+# =========================================================
+# METADATA PROMPT BUILDER
+# =========================================================
+def build_prompt(books_text: Dict[str, str]) -> str:
+    prompt = "Extract metadata from each book. Return JSON ONLY.\n\n"
+
+    for book_id, text in books_text.items():
+        prompt += f"{book_id}:\n\"\"\"{text}\"\"\"\n\n"
+
+    prompt += (
+        "{\n"
+        "  \"book_id\": {\n"
+        "    \"title\": \"\",\n"
+        "    \"writing_style\": \"\",\n"
+        "    \"genre\": \"\",\n"
+        "    \"example\": \"\"\n"
+        "  }\n"
+        "}"
+    )
+
+    return prompt
+# =========================================================
+
+
+
+def load_genre_style_map(
+    bucket: str,
+    user_id: str
+) -> Dict[str, Dict[str, str]]:
+    """
+    Loads books_metadata.json from S3 and builds:
+    {
+        genre: {
+            "writing_style": "...",
+            "example": "..."
+        }
+    }
+    One strong example per genre (longest example wins).
+    """
+
+    key = f"outputs/{user_id}/books_metadata.json"
+
+    try:
+        response = s3_client.get_object(Bucket=bucket, Key=key)
+        content = response["Body"].read().decode("utf-8")
+        data = json.loads(content)
+
+    except Exception:
+    # User has no books yet — return empty map
+        return {}
+
+
+    genre_map: Dict[str, Dict[str, str]] = {}
+
+    for book in data.get("books", []):
+        genre = (book.get("genre") or "").strip()
+        writing_style = (book.get("writing_style") or "").strip()
+        example = (book.get("example") or "").strip()
+
+        if not genre or not example:
+            continue
+
+        # choose the strongest example per genre (longest)
+        if genre not in genre_map:
+            genre_map[genre] = {
+                "writing_style": writing_style,
+                "example": example
+            }
+        else:
+            if len(example) > len(genre_map[genre]["example"]):
+                genre_map[genre] = {
+                    "writing_style": writing_style,
+                    "example": example
+                }
+
+    if not genre_map:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid genres found in books_metadata.json"
+        )
+
+    return genre_map
+
+
+
+# ============================================================
+
+
+
 # story_generator_api.py
 # FastAPI Story Page + Prompt Generator
 # Single-call API: generates exactly N pages and one cinematic image prompt per page
@@ -280,6 +738,7 @@ class StoryRequest(BaseModel):
     character_details: str = Field(..., description="Character details, one per line, format: Name: description")
     genre: str = Field("Family", description="Genre name")
     num_pages: int = Field(5, description="Exact number of pages to generate")
+    user_id:str = Field(..., description="User ID for S3 access")
 
 class PageOutput(BaseModel):
     page: int
@@ -664,6 +1123,87 @@ def genre_visual_style(genre):
 
     return genre_styles.get(genre, "")
 
+def parse_genres(genre: str) -> list[str]:
+    """
+    Supports:
+    - 'Family + Adventure'
+    - 'Family, Adventure'
+    - 'Family | Adventure'
+    """
+    separators = ["+", ",", "|", "/"]
+    normalized = genre
+
+    for sep in separators:
+        normalized = normalized.replace(sep, ",")
+
+    return [g.strip() for g in normalized.split(",") if g.strip()]
+
+
+def genre_writing_style(genre: str) -> str:
+    writing_styles = {
+        "Family": (
+            "Warm, intimate, emotionally grounded prose. "
+            "Focus on relationships, shared moments, and quiet growth. "
+            "Gentle pacing, soft imagery, and comforting emotional beats."
+        ),
+        "Fantasy": (
+            "Lyrical, atmospheric storytelling filled with wonder. "
+            "Evocative imagery, subtle magic, and poetic rhythm. "
+            "Imply enchantment rather than explaining it."
+        ),
+        "Adventure": (
+            "Energetic, forward-moving prose driven by action and discovery. "
+            "Strong verbs, vivid movement, and cinematic pacing."
+        ),
+        "Sci-Fi": (
+            "Clean, precise, imaginative prose with futuristic undertones. "
+            "Blend advanced technology with human emotion and clarity."
+        ),
+        "Mystery": (
+            "Tight, moody prose with controlled tension. "
+            "Short sentences, implication, and restrained suspense."
+        ),
+        "Birthday": (
+            "Bright, joyful, playful storytelling. "
+            "Celebratory tone, light emotions, and happy moments."
+        ),
+        "Corporate Promotion": (
+            "Polished, confident, aspirational narrative. "
+            "Professional warmth with clarity and inspiration."
+        ),
+        "Housewarming": (
+            "Comforting, welcoming prose focused on belonging. "
+            "Soft sensory details and calm emotional warmth."
+        ),
+        "Marriage": (
+            "Romantic, elegant, emotionally rich storytelling. "
+            "Lyrical expressions of connection and intimacy."
+        ),
+        "Baby Shower": (
+            "Tender, gentle, nurturing prose. "
+            "Soft rhythm, affection, and hopeful emotional beats."
+        ),
+    }
+
+    return writing_styles.get(genre, "")
+
+def blend_writing_styles(genres: list[str]) -> str:
+    styles = []
+    for g in genres:
+        style = genre_writing_style(g)
+        if style:
+            styles.append(style)
+    return " ".join(styles)
+
+
+def blend_visual_styles(genres: list[str]) -> str:
+    visuals = []
+    for g in genres:
+        v = genre_visual_style(g)
+        if v:
+            visuals.append(v)
+    return ", ".join(visuals)
+
 
 def generate_html_for_pages(story_pages: Dict[str, str], genre: str) -> Dict[str, str]:
     """
@@ -751,7 +1291,41 @@ Return ONLY the JSON object.
 
     return html_map
 
-def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int):
+def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,user_id:str):
+    
+    user_genre_map = load_genre_style_map(
+    bucket=DEFAULT_S3_BUCKET,
+    user_id=user_id
+    )
+
+    genres = parse_genres(genre)
+
+    writing_styles = []
+    examples = []
+
+    for g in genres:
+        if g in user_genre_map:
+            writing_styles.append(user_genre_map[g]["writing_style"])
+            examples.append(user_genre_map[g]["example"])
+        else:
+            style = genre_writing_style(g)
+            if style:
+                writing_styles.append(style)
+
+    if not writing_styles:
+        raise HTTPException(
+        status_code=400,
+        detail=f"Unknown genre combination: {genre}"
+        )
+
+    writing_style = " ".join(writing_styles)
+
+# Choose strongest example if available
+    style_example = max(examples, key=len) if examples else (
+    "On a quiet morning, something small began to change. "
+    "The moment felt ordinary, yet it carried meaning that would last."
+    )
+
     """
     Returns list of tuples: [(page_text, prompt), ...] length == num_pages
     """
@@ -764,37 +1338,25 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
     character_names = ", ".join(character_map.keys())
     
-    # character_map = {}
-    # segments = []
 
-    # # Split by newline first
-    # for line in character_details.splitlines():
-    #     if line.strip():
-    #         # Also split by semicolon inside each line
-    #         parts = [p.strip() for p in line.split(";") if p.strip()]
-    #         segments.extend(parts)
-
-    # # Parse "name: desc" pairs
-    # for seg in segments:
-    #     if ":" in seg:
-    #         name, desc = seg.split(":", 1)
-    #         character_map[name.strip()] = desc.strip()
-
-    # character_names = ", ".join(character_map.keys()
 
     # --- Story system prompt
-    story_system_prompt = f"""
+    story_system_prompt = story_system_prompt = f"""
 You are a masterful storyteller who writes with cinematic restraint, poetic compression, and emotional economy.
+
+WRITING STYLE DEFINITION:
+{writing_style}
 
 Your writing style MUST strictly mirror the EXAMPLE below in all of the following ways:
 - Short, purposeful sentences with no filler or explanatory prose
 - Each sentence must carry a narrative or emotional beat
 - Minimalist, cinematic language that implies more than it explains
+- Poetic is mandatory: use metaphor, simile, alliteration, and rhythm
 - Rhythm and flow similar to verse, even when written as sentences
 - No conversational tone, no modern phrasing, no casual narration
 
-The EXAMPLE below is NOT inspiration.  
-It is a STYLE CONTRACT.  
+The EXAMPLE below is NOT inspiration.
+It is a STYLE CONTRACT.
 Your output must feel as if it could exist beside the EXAMPLE without stylistic contrast.
 
 ────────────────────────────────────
@@ -833,115 +1395,9 @@ If the rhythm feels different from the EXAMPLE, it must be corrected.
 ────────────────────────────────────
 
 EXAMPLE (STYLE REFERENCE — DO NOT COPY CONTENT):
-Chapter 1
-The Fall of Threads (Early 1990)
-The looms fell silent, the fabrics grew thin,
-The world closed its doors, but he looked within.
-Where others saw endings, he searched for a start,
-Majeed was a man with an unbroken heart.
--------------------------------
-Chapter 2
-Apprenticeship of a Dream (1995/96)
-He travelled through cities, through ovens, through flame,
-He shadowed the bakers who taught him their game.
-With flour on his hands and resolve in his eyes,
-He baked up a dream where old business dies.
--------------------------------
-Chapter 3
-The First Bread (1997)
-On July 27, 1997, the ovens grew warm,
-A small shop was ready, a dream took form. 
-The streets of Hyderabad carried the cheer,
-A bakery was born, where old fears disappeared.
------------------------------
-Chapter 4
-Childhood in the Kitchen (Late 1990’s)
-His wife stood steady, his partner in strife,
-Six children grew up in the fragrance of life.
-With spices as toys and flour as play,
-They learned their father’s dream each day.
--------------------------------
-Chapter 5
-The Long Night
-But storms do not wait, and debts do not sleep,
-Dark nights came heavy, the silence ran deep.
-With ten rupees left and his daughter in pain,
-He prayed through the night for her fever to wane.
--------------------------------
-Chapter 6
-Do or Die (1999-2000)
-The bakery was shuttered, the debts had grown wide,
-But looking at his children asleep by his side —
-He whispered, “I’ll fight, for them I’ll endure.
-I’ll build us a future, steady and sure.”
--------------------------------
-Chapter 7
-A Family Story (Early 2000’s)
-
-The children grew older, their voices grew strong,
-Ideas at dinner, debates before song.
-Their mother, the backbone, their father, the flame,
-Together they carried one vision, one name.
--------------------------------
-Chapter 8
-The Birth of Haleem (2001)
-In 2001, Pista House’s haleem was born,
-A dish slow-cooked from dusk until dawn.
-At Ramzan, the lanterns lit queues down the street,
-A meal became memory — humble, complete.
--------------------------------
-Chapter 9
-The Name Becomes a Nation’s (2005-10)
-
-From one shop in Hyderabad, the story took flight,
-Airports and cities all spoke of its might.
-By 2010, with the GI tag earned,
-Pista House became the pride it had yearned.
--------------------------------
-Chapter 10
-The Custodians of Taste (2010’s)
-
-The secret was trust, more than spices or rice,
-Each portion was dignity, memory, slice.
-Customers bought more than food, this was true —
-They bought belonging, they bought something new.
--------------------------------
-Chapter 11
-The People Behind (2010’s)
-
-It wasn’t just Majeed, but hands many more,
-The chefs and the servers, the team at the door.
-Each smile was a promise, each hand played a part,
-Together they carried the work of his heart.
--------------------------------
-Chapter 12 
-Father to Sons (2010s–2020s)
-Two sons at his side, the ladle they bear,
-A recipe guarded with love and with care.
-Tradition alive, innovation in view,
-Together they built something timeless and true.
--------------------------------
-Chapter 13
-Across the World (2010s–2020s)
-From Hyderabad’s lanes to faraway lands,
-The flavours of Pista House passed into new hands.
-Yet the heartbeat remained in each kitchen they knew:
-“You are not a customer — you are family too.”
--------------------------------
-Chapter 14
-Tomorrow’s Table – 2020’s
-The story continues in laughter and song,
-In tables of strangers where all still belong.
-The welcome is endless, the warmth shining wide,
-For food is the story where hearts coincide.
--------------------------------
-Chapter 15
-The Golden Ladle (Epilogue)
-Not just food in a pan, but a will to endure,
-From looms that fell silent to ovens made sure.
-The ladle still rises, its glow shining through —
-Tough times don’t last. Tough people do.
+{style_example}
 """
+
 
 
     # --- Single LLM call to generate story pages
@@ -1204,12 +1660,12 @@ def get_deterministic_seed(prompt: str, page_num: int):
 def get_dimensions(orientation: str):
     if not orientation:
         orientation = "Landscape"
-    orientation = orientation.strip().lower()
-    if orientation == "portrait":
-        return 1024, 1536
-    if orientation == "square":
+    o = orientation.strip().lower()
+    if o == "portrait":
+        return 768, 1024
+    if o == "square":
         return 1024, 1024
-    return 1536, 1024
+    return 1024, 768
 
 # ----------------------------
 # Core: call runpod serverless workflow (based on your payload)
@@ -1737,7 +2193,7 @@ class CoverBackResponse(BaseModel):
 # Helper: OpenRouter LLM
 # ----------------------------
 
-def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="meta-llama/llama-3.3-70b-instruct:free", temperature=0.5, timeout=60) -> str:
+def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="xiaomi/mimo-v2-flash:free", temperature=0.5, timeout=60) -> str:
     if not OPENROUTER_API_KEY:
         # Fail fast with a descriptive error
         raise RuntimeError("OPENROUTER_API_KEY not set in environment")
@@ -2185,6 +2641,162 @@ def gist(data: GistInput):
     gist_text = generate_gist(conversation, genre=data.genre)
     return {"genre": data.genre, "gist": gist_text}
 
+@app.post("/gist/preview-images")
+def gist_preview_images(payload: GistResponse):
+    try:
+        images = generate_preview_images_from_gist(payload.gist)
+        return {
+            "genre": payload.genre,
+            "images": images
+        }
+    except Exception as e:
+        logger.exception("Gist image generation failed")
+        raise HTTPException(status_code=500, detail=str(e))
+# ============================
+
+@app.post("/upload-books")
+def upload_books(
+    user_id: str,
+    s3_bucket: str = DEFAULT_S3_BUCKET,
+    files: list[UploadFile] = File(...)
+):
+    uploaded = []
+
+    for file in files:
+        ext = Path(file.filename).suffix.lower()
+        if ext not in {".pdf", ".docx", ".txt"}:
+            continue
+
+        s3_key = f"uploads/{user_id}/books/{file.filename}"
+
+        s3_client.upload_fileobj(
+            file.file,
+            Bucket=s3_bucket,
+            Key=s3_key,
+        )
+
+        uploaded.append(s3_key)
+
+    if not uploaded:
+        raise HTTPException(400, "No valid files uploaded")
+
+    return {
+        "status": "uploaded",
+        "files": uploaded,
+        "next_step": "Call /process-books-s3",
+    }
+
+# =========================================================
+# PROCESS ENDPOINT (STEP 2)
+# =========================================================
+@app.post("/process-books-s3")
+def process_books_s3(payload: ProcessBooksS3Request):
+    logger = get_logger(payload.user_id)
+    logger.info("🚀 Processing books from S3")
+
+    books_text, book_ids = extract_text_from_s3(
+        payload.s3_bucket,
+        payload.s3_prefix,
+        logger,
+    )
+
+    book_types = {
+        bid: classify_book_type(text, logger)
+        for bid, text in books_text.items()
+    }
+
+    prompt = build_prompt(books_text)
+
+    completion = client.chat.completions.create(
+        model="xiaomi/mimo-v2-flash:free",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a strict data extraction engine.\n"
+                    "Your task is to extract structured metadata from book text.\n\n"
+                    "CRITICAL RULES:\n"
+                    "- The example MUST be narrative story content (not instructions, not introductions).\n"
+                    "- If the story text is the form of ->ex:'W e l c o m e t o t h e w i l d e s t g a r a g e i n t o w n' then first clean and process it,then use it to generate JSON"
+                    "- NEVER use the beginning pages of the book.\n"
+                    "- NEVER include welcome text, introductions, dedications, instructions, coloring prompts, or reader guidance.\n"
+                    "- Explicitly EXCLUDE text containing phrases like:\n"
+                    "  'welcome', 'this book was made for you', 'use crayons', 'color inside the lines',\n"
+                    "  'get comfy', 'just remember', 'this book is', 'with love'.\n"
+                    "- If such text appears at the start, SKIP IT and select text from later story pages.\n\n"
+                    "- The example must be approximately 1000–1500 words of STORY prose.\n"
+                    "- The example must demonstrate character action, scenes, or events.\n"
+                    "- Output MUST be valid JSON only.\n"
+                    "- No markdown, no explanations, no comments."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.3,
+    )
+
+    response_text = completion.choices[0].message.content
+    match = re.search(r"\{.*\}", response_text, re.DOTALL)
+
+    if not match:
+        raise HTTPException(500, "Invalid JSON from LLM")
+
+    parsed = json.loads(match.group())
+
+    books_output = []
+
+    for source_file, book_id in book_ids.items():
+        if book_id not in parsed:
+            continue
+
+        data = parsed[book_id]
+
+        books_output.append({
+            "book_id": book_id,
+            "source_file": source_file,
+            "book_type": book_types.get(book_id),
+            "title": data.get("title", ""),
+            "writing_style": data.get("writing_style", ""),
+            "genre": data.get("genre", ""),
+            "example": data.get("example", ""),
+        })
+
+    final_output = {
+        "user_id": payload.user_id,
+        "generated_at": datetime.utcnow().isoformat(),
+        "total_books": len(books_output),
+        "books": books_output,
+    }
+
+    output_key = f"outputs/{payload.user_id}/books_metadata.json"
+
+    s3_client.put_object(
+        Bucket=payload.s3_bucket,
+        Key=output_key,
+        Body=json.dumps(final_output, ensure_ascii=False, indent=2),
+        ContentType="application/json",
+    )
+
+    logger.info(f"✅ Uploaded s3://{payload.s3_bucket}/{output_key}")
+
+    return {
+        "status": "success",
+        "books_processed": len(books_output),
+        "s3_output": f"s3://{payload.s3_bucket}/{output_key}",
+    }
+
+@app.get("/genres")
+def get_genres(user_id: str):
+    genre_map = load_genre_style_map(
+        bucket=DEFAULT_S3_BUCKET,
+        user_id=user_id
+    )
+
+    return {
+        "genres": sorted(genre_map.keys())
+    }
+
+
 # -----------------------------
 # FastAPI endpoint
 # -----------------------------
@@ -2195,7 +2807,7 @@ def story_generate(req: StoryRequest):
         if req.num_pages < 1 or req.num_pages > 50:
             raise HTTPException(status_code=400, detail="num_pages must be between 1 and 50")
 
-        pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages)
+        pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages,req.user_id)
 
         page_objects = [
             PageOutput(

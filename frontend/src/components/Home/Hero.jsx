@@ -1,73 +1,100 @@
 import React from "react";
-import "../../styles/Hero.css"; 
-import Img from "../../assets/images/Hero.jpg"; // Importing hero image
+import { Sparkles, ArrowRight, Play } from "lucide-react";
 import { FaGhost } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
-
   const navigate = useNavigate();
 
   return (
-    <section id="home" className="flex flex-col items-center text-center px-6 md:px-16 py-16 text-white bg-gradient-to-b from-black via-[#1E1E1E] to-[#000000]">
-
-       <FaGhost className="absolute top-32 left-16 text-white/20 text-3xl animate-bounce" />
-      <FaGhost className="absolute top-32 right-16 text-white/20 text-2xl animate-bounce" />
-      <FaGhost className="absolute bottom-64 left-64 text-white/20 text-2xl animate-bounce" />
-      <FaGhost className="absolute bottom-64 right-64 text-white/20 text-3xl animate-bounce" />
-      <FaGhost className="absolute bottom-6 left-12 text-white/20 text-2xl animate-bounce" />
-      <FaGhost className="absolute bottom-6 right-12 text-white/20 text-3xl animate-bounce" />
-      
-
-      {/* Heading */}
-      <h1 className="text-4xl md:text-6xl font-bold leading-tight mozrilla">
-        Your Life. Your Story. Reimagined with<br />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-           GHOST.IO
-        </span>
-      </h1>
-
-      {/* Subtext */}
-      <p className="mt-6 text-gray-300 max-w-2xl text-sm md:text-base">
-        Share your story here and watch it unfold into a book more magical, more vivid, and more you than you ever dreamed.
-      </p>
-
-      {/* Buttons */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4">
-        <button className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:opacity-80 transition cursor-pointer"
-         onClick={() => navigate("/signup")}>
-          Get Started
-        </button>
-        <button className="border border-white px-6 py-3 rounded-lg font-medium text-white hover:bg-white text-black hover:text-black transition cursor-pointer">
-          Watch Demo
-        </button>
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden !pt-40 !pb-20 perspective-container bg-gradient-to-b from-black via-[#1E1E1E] to-black text-white"
+    >
+      {/* Background Atmosphere */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-2/4 -left-32 w-[850px] h-[850px] bg-polishedPurple/10 rounded-full blur-[180px] animate-pulse-slow" />
+        <div className="absolute bottom-1/4 -right-32 w-[850px] h-[850px] bg-polishedPurple/5 rounded-full blur-[180px]" />
       </div>
 
-      {/* Hero Image with Floating Cards */}
-      <div className="mt-12 relative max-w-xl w-full ">
-        <img
-          src={Img}
-          alt="AI handshake"
-          className="rounded-xl border border-white/16 shadow-lg w-full"
-        />
+      {/* Floating Ghosts */}
+      <FaGhost className="absolute top-32 left-16 text-white/20 text-3xl animate-bounce" />
+      <FaGhost className="absolute top-32 right-16 text-white/20 text-2xl animate-bounce" />
+      <FaGhost className="absolute bottom-20 left-32 text-white/20 text-2xl animate-bounce" />
+      <FaGhost className="absolute bottom-20 right-32 text-white/20 text-3xl animate-bounce" />
 
-        {/* Floating Badge Left */}
-        <div className="absolute top-4 -left-20 bg-[#1a1a2e] px-4 py-2 rounded-xl shadow-lg text-sm hidden sm:block">
-          <p className="text-gray-300">Generate story</p>
-          <div className="flex space-x-2 mt-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-400 to-pink-400"></div>
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-400"></div>
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-yellow-400"></div>
+      <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-20 items-center relative z-10">
+        
+        {/* LEFT — Text */}
+        <div className="space-y-6 reveal-hidden">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-polishedPurple/10 border border-polishedPurple/20 text-polishedPurple text-xs font-bold tracking-widest uppercase">
+            <Sparkles className="w-4 h-4" />
+            Every memory is a story
+          </div>
+
+          <h1 className="font-serif text-4xl md:text-8xl leading-[1.05] font-bold tracking-tighter">
+            Some lives deserve <br />
+            <span className="italic magic-shine">to be remembered</span> <br />
+            as stories.
+          </h1>
+
+          <p className="text-2xl text-white/50 max-w-xl leading-relaxed font-light">
+            Turn your life, your child, or your memories into a beautiful,
+            personalized storybook — created just for you.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-6 pt-4">
+            <button
+              onClick={() => navigate("/signup")}
+              className="bg-polishedPurple text-grey px-10 py-6 rounded-full font-serif text-xl hover:bg-white hover:text-black transition-all duration-700 shadow-[0_0_50px_rgba(147,51,234,0.35)] group flex items-center gap-3"
+            >
+              Create Your Book
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            <button className="group flex items-center gap-4 text-white/70 hover:text-white transition-all px-8 py-6">
+              <span className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-polishedPurple group-hover:border-polishedPurple transition-all">
+                <Play className="w-5 h-5 fill-current" />
+              </span>
+              <span className="font-serif text-xm">Watch Demo</span>
+            </button>
           </div>
         </div>
 
-        {/* Floating Badge Right */}
-        <div className="absolute bottom-4 -right-20 bg-[#1a1a2e] px-4 py-2 rounded-xl shadow-lg text-sm hidden sm:block">
-          <p className="font-semibold">Story Hub</p>
-          <p className="text-gray-400 text-xs">
-            Join the community and add <br/> colors to your stories.
-          </p>
-          {/* <p className="text-purple-300 text-xs mt-2">More 20k+ users</p> */}
+        {/* RIGHT — 3D Book */}
+        <div className="relative reveal-hidden reveal-delay-400">
+          <div className="relative z-20 transform rotate-y-12 rotate-x-6 animate-3d-float group">
+            <div className="absolute inset-0 bg-polishedPurple/20 blur-[120px] group-hover:bg-polishedPurple/40 transition-all" />
+
+            <div className="relative rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_50px_120px_rgba(0,0,0,0.7)] aspect-[4/5] bg-black">
+              <img
+                src="https://images.unsplash.com/photo-1544365558-35aa4afcf11f?q=80&w=1200&auto=format&fit=crop"
+                alt="Emotional storytelling"
+                className="w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+              <div className="absolute bottom-12 left-10 right-10">
+                <p className="font-serif italic text-3xl text-white leading-snug">
+                  “One day, your child will ask for a story about themselves…”
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Secondary Card */}
+          <div
+            className="absolute -bottom-16 -left-16 w-56 h-72 rounded-3xl overflow-hidden border-4 border-black shadow-2xl z-30 animate-3d-float"
+            style={{ animationDelay: "2s" }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=800&auto=format&fit=crop"
+              alt="Story book close up"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Sparkle Glow */}
+          <div className="absolute top-0 -right-8 w-24 h-24 bg-gold/10 rounded-full blur-2xl animate-pulse" />
         </div>
       </div>
     </section>

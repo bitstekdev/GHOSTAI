@@ -108,7 +108,7 @@ const handleSubmit = async (e) => {
   return (
     <section className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-[#1E1E1E] to-black text-white px-6">
       {/* Background Ghost AI text */}
-      <h1 className="absolute text-2xl font-bold text-white/20 select-none top-24 md:top-10">
+      <h1 className="absolute text-4xl font-bold text-white/20 select-none top-15 md:top-0">
         GHOSTVERSE AI
       </h1>
 
@@ -125,7 +125,7 @@ const handleSubmit = async (e) => {
       <FaGhost className="absolute top-1/2 right-10 text-white/10 text-3xl animate-spin-slow" />
 
       {/* Sign Up Form Container */}
-      <div className="relative z-10 w-full max-w-md bg-transpalent backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-white/10 md:mt-16">
+      <div className="relative z-10 w-full max-w-md bg-transparent backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-white/10 md:mt-8">
         <h2 className="text-3xl font-bold text-center mb-6">
           Create Your Account
         </h2>

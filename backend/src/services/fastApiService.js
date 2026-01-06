@@ -34,13 +34,21 @@ exports.generateGist = async (conversation, genre) => {
 };
 
 // Story generation--------------------------------------------------
-exports.generateStory = async (gist, numCharacters, fixedCharacterDetails, genre, numPages) => {
+exports.generateStory = async (
+  gist,
+  numCharacters,
+  fixedCharacterDetails,
+  genre,
+  numPages,
+  options = {}
+) => {
   const response = await fastApiClient.post('/story/generate', {
     gist,
     num_characters: numCharacters,
     character_details: fixedCharacterDetails,
     genre,
-    num_pages: numPages
+    num_pages: numPages,
+    ...options
   });
   return response.data;
 };
@@ -186,6 +194,76 @@ exports.regenerateImages = async (payload) => {
 
   } catch (err) {
     console.error("FastAPI regenerate error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+// Upload genre reference / books ------------------------------------------
+exports.uploadBooks = async (files, userId) => {
+  try {
+    const form = new FormData();
+
+    files.forEach((file) => {
+      form.append("files", file.buffer, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+      });
+    });
+
+    form.append("user_id", userId);
+
+    const response = await axios.post(
+      `${FASTAPI_BASE_URL}/upload-books`,
+      form,
+      {
+        timeout: 600000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: form.getHeaders(),
+      }
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error("uploadBooks error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+// Process uploaded books from S3 ------------------------------------------
+exports.processBooksFromS3 = async (userId) => {
+  try {
+    const payload = {
+      user_id: userId,
+      s3_prefix: `uploads/${userId}/books`,
+      s3_bucket: "writing-style", // optional if FastAPI has default
+    };
+
+    const response = await fastApiClient.post(
+      "/process-books-s3",
+      payload
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(
+      "processBooksFromS3 error:",
+      err.response?.data || err
+    );
+    throw err;
+  }
+};
+
+// Get learned genres for a user -------------------------------
+exports.getUserGenres = async (userId) => {
+  try {
+    const response = await fastApiClient.get(
+      "/genres",
+      { params: { user_id: userId } }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("getUserGenres error:", err.response?.data || err);
     throw err;
   }
 };
