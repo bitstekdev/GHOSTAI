@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
+  ,
+  customGenreProcessed: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });

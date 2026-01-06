@@ -14,7 +14,7 @@ import {
   LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logoImg from "../../assets/images/logo.gif";
+import logoImg from "../../assets/images/Ghostlogo1.png";
 import { AppContext } from "../../context/AppContext";
 
 export default function Sidebar({
@@ -82,8 +82,8 @@ export default function Sidebar({
 
           {shouldShow && (
             <div className="flex items-center gap-2">
-              <img src={logoImg} alt="GHOST.ai Logo" className="h-10 w-auto object-contain" />
-              <span className="text-white text-2xl font-bold ml-[-14px]">Ghostverse.ai</span>
+              <img src={logoImg} alt="Ghostverse.ai Logo" className="h-6 w-auto object-contain" />
+              <span className="text-white text-2xl font-bold ml-[-10px]">hostverse.ai</span>
             </div>
           )}
         </div>

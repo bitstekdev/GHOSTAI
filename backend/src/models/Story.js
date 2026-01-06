@@ -30,12 +30,24 @@ const storySchema = new mongoose.Schema({
     required: false,
     trim: true
   },
-  genre: {
-    type: String,
-    required: true,
-    enum: ['Fantasy', 'Adventure', 'Family', 'Mystery', 'Housewarming', 
-           'Corporate Promotion', 'Marriage', 'Baby Shower', 'Birthday', 'Sci-Fi', 'Friends']
-  },
+ genre: {
+  type: String,
+  required: true,
+  enum: [
+    'Fantasy',
+    'Adventure',
+    'Family',
+    'Mystery',
+    'Housewarming',
+    'Corporate Promotion',
+    'Marriage',
+    'Baby Shower',
+    'Birthday',
+    'Sci-Fi',
+    'Friends',
+    'Custom'
+  ]
+},
   numOfPages: {
     type: Number,
     required: true

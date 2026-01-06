@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import api from "../../services/axiosInstance";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Plus, Image, FileText } from "lucide-react";
 import Joyride from 'react-joyride';
 import { AppContext } from '../../context/AppContext'
 import {ProgressStep1} from '../helperComponents/Steps.jsx'
@@ -12,6 +12,10 @@ const GenerateStory = () => {
   const {navigateTo} = useContext(AppContext)
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const imageInputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [triggerUploadFromGenre, setTriggerUploadFromGenre] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -108,6 +112,22 @@ const GenerateStory = () => {
 
   const handleGenreSelect = (value) => {
     if (!value || loading) return;
+
+    // Custom Genre selected
+    if (value === "__custom__") {
+      addUserMessage("Custom Genre");
+      setFormData(prev => ({ ...prev, genre: "Custom" }));
+      addBotMessage(
+        "Awesome 🎨 Upload a reference document to define your custom genre."
+      );
+
+      setTriggerUploadFromGenre(true);
+      setShowUploadMenu(true);
+      setCurrentStep("length");
+      return;
+    }
+
+    // Normal genres
     addUserMessage(value);
     processUserInput(value);
   };
@@ -136,12 +156,12 @@ const GenerateStory = () => {
 
       case "length":
         const length = parseInt(input);
-        if (length >= 1 && length <= 10) {
+        if (length >= 1 && length <= 20) {
           setFormData(prev => ({ ...prev, length: length.toString() }));
-          addBotMessage(`Perfect! ${length} page${length > 1 ? 's' : ''} it is! 📄 How many main characters will be in your story? (1-10)`);
+          addBotMessage(`Perfect! ${length} page${length > 1 ? 's' : ''} it is! 📄 How many main characters will be in your story? (1-20)`);
           setCurrentStep("numCharacters");
         } else {
-          addBotMessage("Please enter a number between 1 and 10.");
+          addBotMessage("Please enter a number between 1 and 20.");
         }
         break;
 
@@ -440,6 +460,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
                     <option value="Baby Shower">Baby Shower</option>
                     <option value="Birthday">Birthday</option>
                     <option value="Sci-Fi">Sci-Fi</option>
+                    <option value="__custom__">✨ Customise Genre</option>
                   </select>
                 </div>
               )}
@@ -451,18 +472,104 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
         {/* Input Area - Ask Anything Style */}
         <div className="fixed bottom-0 left-8 right-0 bg-black py-6 px-4">
           <div className="max-w-3xl mx-auto">
+            {/* Hidden Image Input */}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                console.log("Image selected:", e.target.files);
+                setShowUploadMenu(false);
+                setTriggerUploadFromGenre(false);
+                e.target.value = null;
+              }}
+            />
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                console.log("File selected:", e.target.files);
+                setShowUploadMenu(false);
+                setTriggerUploadFromGenre(false);
+                e.target.value = null;
+              }}
+            />
+
             <div className="relative -mx-[6%]">
-              {/* Input */}
+              {/* Plus Button */}
+              <button
+                type="button"
+                onClick={() => setShowUploadMenu(prev => !prev)}
+                className="
+                  absolute left-4 top-1/2 -translate-y-1/2
+                  text-gray-400
+                  hover:text-purple-400
+                  transition
+                "
+                title="Upload"
+              >
+                <Plus size={22} />
+              </button>
+
+              {/* Upload Menu */}
+              {showUploadMenu && (
+                <div className="
+                  absolute bottom-14 left-2
+                  bg-[#020617]
+                  border border-gray-800
+                  rounded-xl
+                  shadow-lg
+                  w-44
+                  z-50
+                  overflow-hidden
+                ">
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    className="
+                      flex items-center gap-3
+                      px-4 py-3
+                      w-full
+                      text-sm
+                      text-gray-200
+                      hover:bg-gray-800
+                    "
+                  >
+                    <Image size={16} />
+                    Upload Image
+                  </button>
+
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="
+                      flex items-center gap-3
+                      px-4 py-3
+                      w-full
+                      text-sm
+                      text-gray-200
+                      hover:bg-gray-800
+                    "
+                  >
+                    <FileText size={16} />
+                    Upload File
+                  </button>
+                </div>
+              )}
+
+              {/* Text Input */}
               <input
                 ref={inputRef}
                 type="text"
                 placeholder={loading ? "Processing..." : "Type here..."}
                 className="
-                  w-[100%]
+                  w-full
                   bg-[#0f172a]
                   text-white
                   placeholder-gray-400
-                  px-5 pr-18 pl-10 py-3
+                  px-5 pr-18 pl-12 py-3
                   rounded-full
                   border-2 border-purple-600
                   focus:outline-none
@@ -480,7 +587,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
                 disabled={loading}
               />
 
-              {/* Send Icon inside input */}
+              {/* Send Button */}
               <button
                 onClick={handleSendMessage}
                 disabled={loading || !userInput.trim()}
@@ -511,3 +618,4 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
 };
 
 export default GenerateStory;
+

@@ -1,102 +1,132 @@
 import React from "react";
-import "../../styles/Hero.css"; // Importing styles for the footer
-import {  MessageCircle, Send, Phone } from "lucide-react"; // using lucide-react icons
-import { FaGoogle,FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa"; // because lucide-react doesn’t have Google logo
+import {
+  MessageCircle,
+  Send,
+  Phone,
+  ArrowRight,
+} from "lucide-react";
+import {
+  FaGoogle,
+  FaFacebookF,
+  FaInstagram,
+  FaYoutube,
+} from "react-icons/fa";
+import SignUp from "./SignUp";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleSignUpClick = () => {
+    navigate('/signup');
+  };
+
   return (
- <footer className="bg-gradient-to-b from-[#1E1E1E] to-black text-gray-400 px-6 md:px-16 py-12">
+    <footer className="relative bg-charcoalBlack text-ghostWhite/40 py-32 border-t border-ghostWhite/5 overflow-hidden">
+      
+      {/* Ambient Glow */}
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-polishedPurple/5 rounded-full blur-[140px]" />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-20">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
 
-        {/* Brand Info */}
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-4 logoFont">GHOST.ai</h2>
-          <p className="text-sm leading-relaxed">
-            From personal tales to ghostwriting, our platform makes storytelling simple for everyone.
-          </p>
-        </div>
+        {/* TOP GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 mb-32">
 
-        {/* Navigation */}
-        <div>
-          <h3 className="text-sm uppercase mb-4 text-gray-500 tracking-wider">Navigation</h3>
+          {/* BRAND */}
+          <div className="space-y-8">
+            <h2 className="font-serif text-4xl text-ghostWhite">
+              Ghostverse.ai
+            </h2>
+           <p className="text-2xl italic leading-relaxed max-w-lg font-light">
+              One day, your child will ask, <br />
+              <span className="text-ghostWhite font-medium">“Tell me a story about when I was little.”</span> <br />
+              Ghost helps you answer — beautifully.
+            </p>
+          </div>
+
+          {/* NAVIGATION */}
           <div>
-            <ul className="space-y-2">
+            <h3 className="text-xs uppercase tracking-[0.35em] text-ghostWhite mb-8 font-bold">
+              Navigation
+            </h3>
+            <ul className="space-y-5 text-lg font-light">
               <li>
-    <a href="#home" className="hover:text-white cursor-pointer">Home</a>
-  </li>
-  <li>
-    <a href="#about" className="hover:text-white cursor-pointer">About Us</a>
-  </li>
-  <li>
-    <a href="#features" className="hover:text-white cursor-pointer">Features</a>
-  </li>
-  <li>
-    <a href="#pricing" className="hover:text-white cursor-pointer">Pricing</a>
-  </li>
+                <a href="#home" className="hover:text-polishedPurple transition-colors">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-polishedPurple transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#pricing" className="hover:text-polishedPurple transition-colors">
+                  Pricing
+                </a>
+              </li>
             </ul>
           </div>
-        </div>
 
-        {/* Contact & Socials */}
-        <div>
-          <h3 className="text-sm uppercase mb-4 text-gray-500 tracking-wider">Contact Us</h3>
-          <p>+91 9999999999</p>
-          <p>+91 8888888888</p>
-          <p className="mt-2">help@ghost.ai</p>
+          {/* CONTACT */}
+          <div>
+            <h3 className="text-xs uppercase tracking-[0.35em] text-ghostWhite mb-8 font-bold">
+              Contact
+            </h3>
+            <div className="space-y-4 text-lg font-light">
+              <p>+91 99999 99999</p>
+              <p>+91 88888 88888</p>
+              <p className="text-ghostWhite/60">help@ghost.ai</p>
+            </div>
 
-          {/* Socials */}
-          <h3 className="text-sm uppercase mt-6 mb-4 text-gray-500 tracking-wider">Follow Us</h3>
-          <div className="flex space-x-4 mb-6">
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <FaFacebookF size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <FaGoogle size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <FaInstagram size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <FaYoutube size={18} />
-            </a>
+            {/* CHAT ICONS */}
+            <div className="flex gap-4 mt-8">
+              {[MessageCircle, Send, Phone].map((Icon, i) => (
+                <span
+                  key={i}
+                  className="w-11 h-11 rounded-full border border-ghostWhite/20 flex items-center justify-center hover:bg-polishedPurple hover:text-ghostWhite hover:border-polishedPurple transition-all cursor-pointer"
+                >
+                  <Icon size={18} />
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* LOCATION & SOCIAL */}
+          <div>
+            <h3 className="text-xs uppercase tracking-[0.35em] text-ghostWhite mb-8 font-bold">
+              Location
+            </h3>
+            <p className="text-lg font-light leading-relaxed mb-10">
+              2972 Hitech City <br />
+              Hyderabad, Telangana <br />
+              India
+            </p>
+
+            <h3 className="text-xs uppercase tracking-[0.35em] text-ghostWhite mb-6 font-bold">
+              Follow
+            </h3>
+            <div className="flex gap-4">
+              {[FaFacebookF, FaGoogle, FaInstagram, FaYoutube].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="w-11 h-11 rounded-full border border-ghostWhite/20 flex items-center justify-center hover:bg-ghostWhite hover:text-charcoalBlack transition-all"
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Location */}
-        <div>
-        <div>
-          <h3 className="text-sm uppercase mb-4 text-gray-500 tracking-wider">Location</h3>
-          <p className="leading-relaxed">
-            2972 Hitech City <br />
-            Hyderabad, Telangana, India 
+        {/* BOTTOM BAR */}
+        <div className="pt-16 border-t border-ghostWhite/5 flex flex-col md:flex-row justify-between items-center gap-10 text-xs uppercase tracking-[0.4em]">
+          <p>© 2025 — GHOSTVERSE.AI</p>
+          <p>
+            A <span className="text-ghostWhite/60">BITSTEK</span> Product
           </p>
         </div>
-         {/* Chat */}
-          <h3 className="text-sm uppercase mb-4 mt-4 text-gray-500 tracking-wider">Let’s Chat</h3>
-          <div className="flex space-x-4">
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <MessageCircle size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <Send size={18} />
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 hover:bg-white hover:text-black transition">
-              <Phone size={18} />
-            </a>
-          </div>
-          </div>
-      </div>
-
-      {/* Divider */}
-      {/* <hr className="my-10 border-gray-700" /> */}
-
-      {/* Bottom Bar */}
-      <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-        <p>© 2025 — <span className="text-white">GHOST.ai</span>. All rights reserved.</p>
-        <p className="mt-2 md:mt-0">
-          A <a href="https://bitstek.io/" className="hover:text-white" target="_blank" >BITSTEK</a> product
-        </p>
       </div>
     </footer>
   );

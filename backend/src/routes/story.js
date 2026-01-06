@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require("multer");
+const upload = multer(); 
 const {
   startStory,
   nextQuestion,
@@ -10,7 +12,9 @@ const {
   generateTitles,
   regenerateTitles,
   deleteStory,
-  updateGist
+  updateGist,
+  customGenre,
+  getCustomGenres
 } = require('../controllers/storyController');
 const { protect } = require('../middleware/auth');
 
@@ -21,6 +25,17 @@ router.post('/create', protect, createStory);
 router.get('/my-stories', protect, getMyStories);
 router.get('/:id', protect, getStory);
 router.patch('/:id/gist', protect, updateGist);
+router.post(
+  "/upload-genre",
+  protect,
+  upload.array("files"), 
+  customGenre
+);
+router.get(
+  "/custom-genres",
+  protect,
+  getCustomGenres
+);
 
 router.post('/titles/generate', protect, generateTitles);
 router.post('/titles/regenerate', protect, regenerateTitles);

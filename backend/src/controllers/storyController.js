@@ -189,12 +189,17 @@ exports.createStory = async (req, res, next) => {
     
     // Generate story pages from FastAPI
     const storyResult = await fastApiService.generateStory(
-      gist,
-      numCharacters,
-      fixedCharacterDetails,
-      storyGenre,
-      numPages
-    );
+  gist,
+  numCharacters,
+  fixedCharacterDetails,
+  storyGenre,
+  numPages,
+  {
+    user_id: story.user.toString(),
+    use_custom_genre: storyGenre === "Custom"
+  }
+);
+
 
     story.orientation = orientation || story.orientation || 'Portrait';
     story.step = 4;
@@ -442,5 +447,65 @@ exports.deleteStory = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+// @desc    Upload custom genre files AND process them
+// @route   POST /api/story/upload-genre
+// @access  Private
+exports.customGenre = async (req, res) => {
+  try {
+    // 🔒 Idempotency guard
+    if (req.user.customGenreProcessed) {
+      return res.status(200).json({
+        success: true,
+        message: "Custom genre already processed"
+      });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    // Upload
+    const uploadResult = await fastApiService.uploadBooks(
+      req.files,
+      req.user.id
+    );
+
+    // Process
+    const processResult = await fastApiService.processBooksFromS3(
+      req.user.id
+    );
+
+    // ✅ Mark as processed
+    req.user.customGenreProcessed = true;
+    await req.user.save();
+
+    res.status(200).json({
+      success: true,
+      upload: uploadResult,
+      process: processResult
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Custom genre upload failed" });
+  }
+};
+
+// @desc    Get learned custom genres
+// @route   GET /api/story/custom-genres
+// @access  Private
+exports.getCustomGenres = async (req, res) => {
+  try {
+    const result = await fastApiService.getUserGenres(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch custom genres"
+    });
   }
 };
