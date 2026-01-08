@@ -29,3 +29,81 @@
 2025-12-30 13:44:56,055 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2025-12-30 13:45:14,243 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
 2025-12-30 13:48:30,992 [INFO] storybook_api - /coverback/generate called. Genre=Adventure, Title=Into New Light
+2026-01-06 11:51:01,797 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 11:51:17,566 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 11:52:13,208 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 11:53:17,574 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-06 11:53:32,326 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 12:20:01,423 [ERROR] storybook_api - RunPod image generation failed: Timeout waiting for RunPod job.
+2026-01-06 12:20:01,469 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-06 12:48:18,681 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Read timed out. (read timeout=30)
+2026-01-06 12:48:18,712 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-06 13:15:00,727 [ERROR] storybook_api - RunPod image generation failed: Timeout waiting for RunPod job.
+2026-01-06 13:15:00,749 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-06 13:41:43,391 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-06 13:41:43,437 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-06 14:08:26,481 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-06 14:08:26,517 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-06 14:35:08,536 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-06 14:35:08,586 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-06 14:37:47,244 [ERROR] storybook_api - RunPod image generation failed: Status check failed: 404 {"error":"request does not exist"}
+2026-01-06 14:37:47,248 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-06 14:39:13,330 [ERROR] storybook_api - RunPod image generation failed: Status check failed: 404 {"error":"request does not exist"}
+2026-01-06 14:39:13,334 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-06 14:39:40,177 [ERROR] storybook_api - RunPod image generation failed: Status check failed: 404 {"error":"request does not exist"}
+2026-01-06 14:39:40,182 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-06 15:10:27,839 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 15:10:41,048 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:29:28,190 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:29:28,974 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:29:29,775 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:54:04,288 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:54:05,017 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-06 16:54:07,346 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 14:41:00,055 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 14:41:01,043 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 14:41:11,237 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 15:05:29,435 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 15:05:30,498 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 15:05:34,292 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 16:05:23,459 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 16:05:24,207 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 16:05:25,012 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:44:48,382 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:45:14,267 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:46:13,652 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:47:34,758 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:47:45,677 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-07 22:50:02,216 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-07 22:51:07,367 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-07 22:51:54,753 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:52:00,487 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:52:05,246 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-07 22:52:11,496 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-07 22:53:12,474 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-07 22:54:25,704 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-07 22:55:25,110 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-07 22:56:30,175 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-07 22:57:39,332 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-07 22:58:43,104 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-07 22:59:47,780 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-07 23:00:50,379 [INFO] storybook_api - Generating image for page=11, orientation=Landscape
+2026-01-08 02:01:47,810 [ERROR] storybook_api - RunPod image generation failed: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+2026-01-08 02:01:48,372 [INFO] storybook_api - Generating image for page=12, orientation=Landscape
+2026-01-08 02:01:48,464 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:48,721 [INFO] storybook_api - Generating image for page=13, orientation=Landscape
+2026-01-08 02:01:48,975 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:49,014 [INFO] storybook_api - Generating image for page=14, orientation=Landscape
+2026-01-08 02:01:49,106 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:49,178 [INFO] storybook_api - Generating image for page=15, orientation=Landscape
+2026-01-08 02:01:49,239 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:49,332 [INFO] storybook_api - Generating image for page=16, orientation=Landscape
+2026-01-08 02:01:49,632 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:49,692 [INFO] storybook_api - Generating image for page=17, orientation=Landscape
+2026-01-08 02:01:49,818 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:49,874 [INFO] storybook_api - Generating image for page=18, orientation=Landscape
+2026-01-08 02:01:50,036 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))
+2026-01-08 02:01:50,138 [INFO] storybook_api - Generating image for page=19, orientation=Landscape
+2026-01-08 11:03:12,536 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-08 11:03:13,798 [INFO] storybook_api - Generating image for page=20, orientation=Landscape
+2026-01-08 11:03:14,183 [ERROR] storybook_api - RunPod image generation failed: HTTPSConnectionPool(host='api.runpod.ai', port=443): Max retries exceeded with url: /v2/13qcrvhdetvkgx/run (Caused by NameResolutionError("HTTPSConnection(host='api.runpod.ai', port=443): Failed to resolve 'api.runpod.ai' ([Errno 11001] getaddrinfo failed)"))

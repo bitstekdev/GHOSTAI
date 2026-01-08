@@ -54,11 +54,11 @@ exports.generateStory = async (
 };
 
 // Image generation--------------------------------------------------
-exports.generateImages = async (pages, orientation) => {
-  const response = await fastApiClient.post('/images/generate', {
-    pages,
-    orientation
-  });
+exports.generateImages = async (pages, orientation, genre) => {
+  const payload = { pages, orientation };
+  if (genre) payload.genre = genre;
+
+  const response = await fastApiClient.post('/images/generate', payload);
   return response.data;
 };
 

@@ -63,7 +63,9 @@ exports.generateCharacterImages = async (req, res, next) => {
     }));
 
     // Call FastAPI to generate images
-    const result = await fastApiService.generateImages(pageData, story.orientation);
+    // Pass genre string if available
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+    const result = await fastApiService.generateImages(pageData, story.orientation, storyGenreString);
 
     // Upload images to S3 and create Image documents
     const imagePromises = result.pages.map(async (pageResult) => {
@@ -272,9 +274,10 @@ exports.generateCover = async (req, res, next) => {
     const qr_url = process.env.BACK_QR_URL || 'https://talescraftco.com/';
 
     // Call FastAPI coverback/generate endpoint
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
     const result = await fastApiService.generateCoverAndBack(
       pageData,
-      story.genre,
+      storyGenreString,
       story.orientation,
       story.title,
       qr_url

@@ -54,7 +54,7 @@ const TemplateSelection = () => {
       // 2) Generate story; backend reads gist from DB
       const response = await api.post("/api/v1/story/create", {
         storyId: storyIdParam,
-        genre: storyData?.genre,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : []),
         numCharacters: storyData?.numCharacters,
         characterDetails: storyData?.characterDetails,
         numPages: storyData?.numOfPages,
@@ -76,11 +76,8 @@ const TemplateSelection = () => {
       {/* <button className="bg-red-700" onClick={fetchdata}>test btn</button> */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6">
         <div className="p-4 md:p-6">
-          <h1 className="text-xl md:text-2xl font-bold text-purple-400 mb-2">Story Title</h1>
-          <p className="text-white text-sm md:text-base">{storyData?.title}</p>
-
-          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Genre</h2>
-          <p className="text-white text-sm md:text-base">{storyData?.genre}</p>
+          <h1 className="text-lg md:text-4xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Genre</h1>
+          <p className="text-white text-sm md:text-base">{(Array.isArray(storyData?.genres) && storyData.genres.length) ? storyData.genres.join(', ') : storyData?.genre || '—'}</p>
 
           <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">
             Character
@@ -130,7 +127,7 @@ const TemplateSelection = () => {
         </div>
 
         <div className="p-4 md:p-0">
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Book Templates <small className="text-xs md:text-sm text-white font-light">(select one template)</small></h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 ">Book Templates <small className="text-xs md:text-sm text-white font-light">(select one template)</small></h2>
 
           <div className="relative">
             <div className="overflow-hidden">
