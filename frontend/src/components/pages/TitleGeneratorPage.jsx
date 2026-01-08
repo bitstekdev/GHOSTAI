@@ -44,8 +44,8 @@ const TitleSelection = () => {
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
         selectedTitle,
-        // story: storyData?.gist, 
-        genre: storyData?.genre
+        // story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : [])
       });
 
       // Titles must be an array! 
@@ -69,8 +69,8 @@ const TitleSelection = () => {
 
       const res = await api.post("/api/v1/story/titles/regenerate", {
         storyId,
-        story: storyData?.gist, 
-        genre: storyData?.genre,
+        story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : []),
         previousTitles: aiTitles,
         selectedTitle,
       });

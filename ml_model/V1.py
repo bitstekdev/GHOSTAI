@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException
+from fastapi import Query
 from pydantic import BaseModel
 from typing import List, Tuple
 from openai import OpenAI
@@ -42,9 +43,6 @@ from pydantic import BaseModel
 from openai import OpenAI
 from docx import Document
 from dotenv import load_dotenv
-
-
-
 
 # ----------------------------
 # GLOBAL LOGGING SETUP
@@ -86,7 +84,7 @@ def call_questionnaire_llm(
     for idx, model in enumerate(QUESTIONNAIRE_MODELS):
         try:
             # 🔍 Attempt log
-            logger.info(f"🧠 Questionnaire LLM attempt [{idx+1}/{len(QUESTIONNAIRE_MODELS)}]: {model}")
+            logger.info(f" Questionnaire LLM attempt [{idx+1}/{len(QUESTIONNAIRE_MODELS)}]: {model}")
 
             response = client.chat.completions.create(
                 model=model,
@@ -584,6 +582,38 @@ def extract_text_from_s3(bucket: str, prefix: str, logger):
 
     return books_text, book_ids
 
+def delete_s3_prefix(bucket: str, prefix: str, logger):
+    """
+    Deletes ALL objects under a given S3 prefix safely.
+    """
+    logger.info(f"🧹 Deleting uploaded files from s3://{bucket}/{prefix}")
+
+    paginator = s3_client.get_paginator("list_objects_v2")
+    objects_to_delete = []
+
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            objects_to_delete.append({"Key": obj["Key"]})
+
+            # AWS delete_objects max = 1000
+            if len(objects_to_delete) == 1000:
+                s3_client.delete_objects(
+                    Bucket=bucket,
+                    Delete={"Objects": objects_to_delete}
+                )
+                logger.info(f" Deleted batch of {len(objects_to_delete)} objects")
+                objects_to_delete.clear()
+
+    # delete remaining
+    if objects_to_delete:
+        s3_client.delete_objects(
+            Bucket=bucket,
+            Delete={"Objects": objects_to_delete}
+        )
+        logger.info(f" Deleted final batch of {len(objects_to_delete)} objects")
+
+    logger.info(" Uploaded files cleanup completed")
+
 
 # =========================================================
 # BOOK TYPE CLASSIFIER
@@ -609,7 +639,7 @@ def classify_book_type(text: str, logger) -> str:
     )
 
     book_type = response.choices[0].message.content.strip().lower()
-    logger.info(f"📘 Classified as {book_type}")
+    logger.info(f" Classified as {book_type}")
     return book_type
 
 # =========================================================
@@ -667,7 +697,7 @@ def load_genre_style_map(
     genre_map: Dict[str, Dict[str, str]] = {}
 
     for book in data.get("books", []):
-        genre = (book.get("genre") or "").strip()
+        genre = normalize_genre(book.get("genre") or "")
         writing_style = (book.get("writing_style") or "").strip()
         example = (book.get("example") or "").strip()
 
@@ -1071,8 +1101,6 @@ def extract_page_from_story(story: str, page_tag: str):
 # Core generation function (keeps single-call behavior)
 # -----------------------------
 
-
-
 def genre_visual_style(genre):
     genre_styles = {
         "Family": (
@@ -1123,20 +1151,35 @@ def genre_visual_style(genre):
 
     return genre_styles.get(genre, "")
 
+
+def fallback_writing_style(genre: str) -> str:
+    return (
+        f"Gentle, imaginative storytelling suited for {genre}. "
+        "Simple language, clear emotional beats, and vivid but accessible imagery. "
+        "Warm pacing designed for young readers."
+    )
+
+def normalize_genre(g: str) -> str:
+    return g.lower().strip()
+
 def parse_genres(genre: str) -> list[str]:
-    """
-    Supports:
-    - 'Family + Adventure'
-    - 'Family, Adventure'
-    - 'Family | Adventure'
-    """
     separators = ["+", ",", "|", "/"]
     normalized = genre
 
     for sep in separators:
         normalized = normalized.replace(sep, ",")
 
-    return [g.strip() for g in normalized.split(",") if g.strip()]
+    # normalize + dedupe
+    seen = set()
+    result = []
+    for g in normalized.split(","):
+        g = normalize_genre(g)
+        if g and g not in seen:
+            seen.add(g)
+            result.append(g)
+
+    return result
+
 
 
 def genre_writing_style(genre: str) -> str:
@@ -1312,11 +1355,26 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
             if style:
                 writing_styles.append(style)
 
+    unknown_genres = []
+
+    for g in genres:
+        if g in user_genre_map:
+            writing_styles.append(user_genre_map[g]["writing_style"])
+            examples.append(user_genre_map[g]["example"])
+        else:
+            style = genre_writing_style(g)
+            if style:
+                writing_styles.append(style)
+            else:
+                writing_styles.append(fallback_writing_style(g))
+
+# ❌ Only fail if ALL are unknown
     if not writing_styles:
         raise HTTPException(
-        status_code=400,
-        detail=f"Unknown genre combination: {genre}"
+            status_code=400,
+            detail=f"Unknown genres: {', '.join(unknown_genres)}"
         )
+
 
     writing_style = " ".join(writing_styles)
 
@@ -2462,14 +2520,12 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str) -> Tuple[st
 
 RUNPOD_BANANA_ENDPOINT = "https://api.runpod.ai/v2/nano-banana-edit/runsync"
 
-
 def convert_to_format(image_path, desired_format):
     img = Image.open(image_path).convert("RGB")
     base, _ = os.path.splitext(image_path)
     new_path = f"{base}.{desired_format}"
     img.save(new_path, desired_format.upper())
     return new_path
-
 
 def encode_image_to_base64(image_path):
     with open(image_path, "rb") as f:
@@ -2656,8 +2712,8 @@ def gist_preview_images(payload: GistResponse):
 
 @app.post("/upload-books")
 def upload_books(
-    user_id: str,
-    s3_bucket: str = DEFAULT_S3_BUCKET,
+    user_id: str = Query(...),
+    s3_bucket: str = Query(DEFAULT_S3_BUCKET),
     files: list[UploadFile] = File(...)
 ):
     uploaded = []
@@ -2692,7 +2748,7 @@ def upload_books(
 @app.post("/process-books-s3")
 def process_books_s3(payload: ProcessBooksS3Request):
     logger = get_logger(payload.user_id)
-    logger.info("🚀 Processing books from S3")
+    logger.info(" Processing books from S3")
 
     books_text, book_ids = extract_text_from_s3(
         payload.s3_bucket,
@@ -2777,7 +2833,14 @@ def process_books_s3(payload: ProcessBooksS3Request):
         ContentType="application/json",
     )
 
-    logger.info(f"✅ Uploaded s3://{payload.s3_bucket}/{output_key}")
+    logger.info(f" Uploaded s3://{payload.s3_bucket}/{output_key}")
+    # 🧹 Delete uploaded source books after successful processing
+    delete_s3_prefix(
+        bucket=payload.s3_bucket,
+        prefix=payload.s3_prefix,
+        logger=logger
+)
+
 
     return {
         "status": "success",

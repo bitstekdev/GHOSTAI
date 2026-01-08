@@ -173,6 +173,12 @@ const Stories = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const formatGenres = (s) => {
+    if (!s) return 'Unknown Genre';
+    if (Array.isArray(s.genres) && s.genres.length) return s.genres.join(', ');
+    return s.genre || 'Unknown Genre';
+  };
+
   // Use tour context
   const {
     run,
@@ -313,7 +319,7 @@ const Stories = () => {
             >
               <div>
                 <h3 className="text-white font-medium">{story.title}</h3>
-                <p className="text-purple-400 text-sm">{story.genre}</p>
+                <p className="text-purple-400 text-sm">{formatGenres(story)}</p>
                 <p className="text-gray-500 text-xs mt-1">
                   Step {story.step} of 4
                 </p>
@@ -380,7 +386,7 @@ const Stories = () => {
                 <div className="p-4">
                   <h3 className="text-white font-semibold mb-2">{story.title}</h3>
                   <div className="space-y-2">
-                    <p className="text-gray-400 text-sm">Genre : {story.genre}</p>
+                    <p className="text-gray-400 text-sm">Genre : {formatGenres(story)}</p>
                     <p className="text-gray-400 text-sm">
                       Story Length: {story.storyLength || `${story.numOfPages || 0} pages`}
                     </p>

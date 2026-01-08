@@ -631,7 +631,10 @@ useEffect(() => {
     const pages = storyData.pages || [];
 
    
-  const pageTextStyle = getGenreStyle(story.genre, story.orientation);
+  const pageTextStyle = getGenreStyle(
+    Array.isArray(story.genres) && story.genres.length ? story.genres[0] : story.genre,
+    story.orientation
+  );
 
 
     // COVER (SINGLE PAGE)

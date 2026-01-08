@@ -305,7 +305,7 @@ const Dashboard = () => {
                                     {story.title || 'Untitled Story'}
                                 </h3>
                                 <p className="text-purple-400 text-sm">
-                                    {story.genre || 'Unknown Genre'} • {formatDate(story.createdAt)}
+                                    {(Array.isArray(story.genres) && story.genres.length ? story.genres.join(', ') : story.genre || 'Unknown Genre')} • {formatDate(story.createdAt)}
                                 </p>
                                 <p className="text-gray-400 text-sm">
                                     {story.step < 4 ? 'Story in Progress' : 'Story Completed'}

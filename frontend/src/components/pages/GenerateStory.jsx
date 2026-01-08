@@ -7,19 +7,21 @@ import {ProgressStep1} from '../helperComponents/Steps.jsx'
 import { useTourContext } from '../../context/TourContext';
 import { generateStoryTourSteps, tourStyles } from '../../config/tourSteps';
 import BlurText from '../helperComponents/TextType';
+import GenreDropdown from '../helperComponents/GenreDropdown.jsx';
 
 const GenerateStory = () => {
-  const {navigateTo} = useContext(AppContext)
+  const {navigateTo, userData} = useContext(AppContext)
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
   const [triggerUploadFromGenre, setTriggerUploadFromGenre] = useState(false);
+  const [customGenres, setCustomGenres] = useState([]);
+  const [isCustomGenreProcessing, setIsCustomGenreProcessing] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: "",
-    genre: "",
+    genres: [],
     length: "3",
     numCharacters: "2",
     characterDetails: [],
@@ -29,7 +31,8 @@ const GenerateStory = () => {
 
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
-  const [currentStep, setCurrentStep] = useState("title"); // title, genre, length, numCharacters, characterName, characterDetails, confirm, storyDirection, gistInput, edit
+  // const [currentStep, setCurrentStep] = useState("title"); 
+  const [currentStep, setCurrentStep] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [currentCharacter, setCurrentCharacter] = useState(null);
@@ -67,17 +70,39 @@ const GenerateStory = () => {
     inputRef.current?.focus();
   }, [currentStep]);
 
+  // Fetch learned custom genres
+  useEffect(() => {
+    if (!userData) return; 
+
+    const fetchCustomGenres = async () => {
+      try {
+        const res = await api.get("/api/v1/story/custom-genres");
+        setCustomGenres(res.data.data?.genres || []);
+      } catch (e) {
+        console.debug("No custom genres available", e?.message || "");
+      }
+    };
+    fetchCustomGenres();
+  }, [userData]);
+
+  // Auto-open file picker when custom genre is selected
+  useEffect(() => {
+    if (triggerUploadFromGenre) {
+      fileInputRef.current?.click();
+    }
+  }, [triggerUploadFromGenre]);
+
   // Hide intro after 3 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowIntro(false);
       setShowFirstQuestion(true);
-      // Add the first question after intro finishes
       setMessages([{
         type: "bot",
-        text: "👋 Welcome! Let's create your story together. What would you like to title your story? ✍️",
+        text: "👋 Welcome! Let's create your story together. 📖 Select a genre for your story:",
         timestamp: new Date()
       }]);
+      setCurrentStep("genre");
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
@@ -98,6 +123,17 @@ const GenerateStory = () => {
     }]);
   };
 
+  // Central handler to proceed after genres selection
+  const proceedAfterGenreSelection = (updatedGenres) => {
+    if (!updatedGenres || updatedGenres.length === 0) return;
+
+    addBotMessage(
+      `Great choice${updatedGenres.length > 1 ? "s" : ""}! 🎉\nHow many pages would you like your story to be?`
+    );
+
+    setCurrentStep("length");
+  };
+
   const handleSendMessage = () => {
     if (!userInput.trim() || loading) return;
 
@@ -116,14 +152,15 @@ const GenerateStory = () => {
     // Custom Genre selected
     if (value === "__custom__") {
       addUserMessage("Custom Genre");
-      setFormData(prev => ({ ...prev, genre: "Custom" }));
+      setFormData(prev => ({ ...prev, genres: [...(prev.genres || []), "Custom"] }));
       addBotMessage(
         "Awesome 🎨 Upload a reference document to define your custom genre."
       );
 
       setTriggerUploadFromGenre(true);
       setShowUploadMenu(true);
-      setCurrentStep("length");
+      setIsCustomGenreProcessing(true);
+      // DO NOT advance step yet; wait for upload + processing to complete
       return;
     }
 
@@ -134,20 +171,21 @@ const GenerateStory = () => {
 
   const processUserInput = (input) => {
     switch (currentStep) {
-      case "title":
-        setFormData(prev => ({ ...prev, title: input }));
-        addBotMessage(`Great! "${input}" is a wonderful title. 📖 Now, Select a genre for your story?`);
-        // addBotMessage("Choose from: Fantasy, Adventure, Family, Mystery, Housewarming, Corporate Promotion, Marriage, Baby Shower, Birthday, Sci-Fi");
-        setCurrentStep("genre");
-        break;
+      /* title step removed — flow starts at genre */
 
       case "genre":
+        // allow user to type 'continue' to proceed when they have selected at least one genre via UI
+        if (input.toLowerCase() === "continue" && formData.genres && formData.genres.length > 0) {
+          proceedAfterGenreSelection(formData.genres);
+          return;
+        }
+
         const validGenres = ["Fantasy", "Adventure", "Family", "Mystery", "Housewarming", "Corporate Promotion", "Marriage", "Baby Shower", "Birthday", "Sci-Fi"];
         const genre = validGenres.find(g => g.toLowerCase() === input.toLowerCase());
-        
+
         if (genre) {
-          setFormData(prev => ({ ...prev, genre }));
-            addBotMessage(`${genre}? Excellent choice! 🎉 How many pages would you like your story to be? `);
+          setFormData(prev => ({ ...prev, genres: [genre] }));
+          addBotMessage(`${genre}? Excellent choice! 🎉 How many pages would you like your story to be? `);
           setCurrentStep("length");
         } else {
           addBotMessage("Please choose a valid genre from the list above.");
@@ -259,8 +297,8 @@ How would you like to continue?
       case "edit":
         const editChoice = input.toLowerCase();
         if (editChoice.includes("title")) {
-          addBotMessage("What would you like the new title to be?");
-          setCurrentStep("title");
+          addBotMessage("Titles are no longer requested. You can edit the genre, length, or characters instead.");
+          setCurrentStep("genre");
         } else if (editChoice.includes("genre")) {
           addBotMessage("Select the Genre or occasion? ");
           setCurrentStep("genre");
@@ -285,14 +323,13 @@ How would you like to continue?
   const showConfirmation = (dataOverride) => {
     const summaryData = dataOverride ?? formData;
     const summary = `
-📚 **Story Summary:**
-- Title: ${summaryData.title}
-- Genre: ${summaryData.genre}
-- Length: ${summaryData.length} page${summaryData.length > 1 ? 's' : ''}
-- Characters: ${summaryData.numCharacters}
-${summaryData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
+  📚 **Story Summary:**
+  - Genres: ${(summaryData.genres || []).join(', ')}
+  - Length: ${summaryData.length} page${summaryData.length > 1 ? 's' : ''}
+  - Characters: ${summaryData.numCharacters}
+  ${summaryData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
 
-Is this correct? (Type 'yes' to proceed or 'no' to make changes)
+  Is this correct? (Type 'yes' to proceed or 'no' to make changes)
     `;
     addBotMessage(summary);
     setCurrentStep("confirm");
@@ -303,8 +340,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
 
     // Guard: Ensure all required fields are present
     if (
-      !dataToSend.title ||
-      !dataToSend.genre ||
+      !dataToSend.genres || dataToSend.genres.length === 0 ||
       !dataToSend.length ||
       !dataToSend.numCharacters ||
       dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
@@ -358,6 +394,61 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
     }
   };
 
+    // Upload handler for custom genre files
+    const handleCustomGenreUpload = async (files) => {
+      console.log("UPLOAD HANDLER FIRED", files);
+      if (!files || files.length === 0) return;
+      // ensure processing UI state is set when upload starts
+      setIsCustomGenreProcessing(true);
+
+      const fd = new FormData();
+      Array.from(files).forEach((file) => fd.append("files", file));
+
+      try {
+        setLoading(true);
+        addBotMessage("📚 Uploading & training your custom genre...");
+
+        const res = await api.post("/api/v1/story/upload-genre", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        // Give user accurate feedback based on process result
+        if (res.data?.process) {
+          addBotMessage("✅ Custom genre processed successfully!");
+        } else {
+          addBotMessage("⚠️ Upload complete — processing may still be in progress.");
+        }
+
+        // Refresh learned genres list and auto-apply active genre if present
+        try {
+          const refreshed = await api.get("/api/v1/story/custom-genres");
+          const genres = refreshed.data.data?.genres || [];
+          const activeGenre = refreshed.data.data?.activeGenre || (genres.length ? genres[0] : null);
+
+          setCustomGenres(genres);
+
+          // Auto-apply learned style and continue flow
+          if (activeGenre) {
+            setFormData(prev => ({ ...prev, genres: [activeGenre] }));
+            addBotMessage(`🧠 Custom genre trained and selected: ${activeGenre}`);
+            addBotMessage("You can keep this genre or choose one more (max 2). ");
+            addBotMessage("Type 'continue' or select another genre.");
+            setCurrentStep("genre");
+          }
+        } catch (e) {
+          console.debug("Failed to refresh custom genres", e?.message || "");
+        }
+      } catch (err) {
+        addBotMessage("❌ Failed to train custom genre. Check console for details.");
+        console.error("UPLOAD FAILED", err?.response?.data || err);
+      } finally {
+        setLoading(false);
+        // reset processing/trigger state (menu was closed immediately on file select)
+        setIsCustomGenreProcessing(false);
+        setTriggerUploadFromGenre(false);
+      }
+    };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -390,7 +481,7 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
       {/* Chat Interface */}
       <div className="flex-1 flex flex-col items-center justify-center w-full pb-20">
         {/* Messages Container */}
-        <div className="w-full max-w-4xl px-4 flex-1 flex flex-col justify-start overflow-y-auto pt-8 relative">
+        <div className="w-full max-w-4xl px-4 flex-1 flex flex-col justify-start overflow-y-visible pt-8 relative">
           
           {/* Intro Text in Center */}
           {showIntro && (
@@ -441,29 +532,76 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
                 </div>
               ))}
 
-              {currentStep === "genre" && (
-                <div className="flex flex-col gap-2 bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-gray-100 w-fit max-w-xs">
-                  <span className="font-semibold text-white">Select a genre</span>
-                  <select
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 w-56"
-                    onChange={(e) => handleGenreSelect(e.target.value)}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Choose one</option>
-                    <option value="Fantasy">Fantasy</option>
-                    <option value="Adventure">Adventure</option>
-                    <option value="Family">Family</option>
-                    <option value="Mystery">Mystery</option>
-                    <option value="Housewarming">Housewarming</option>
-                    <option value="Corporate Promotion">Corporate Promotion</option>
-                    <option value="Marriage">Marriage</option>
-                    <option value="Baby Shower">Baby Shower</option>
-                    <option value="Birthday">Birthday</option>
-                    <option value="Sci-Fi">Sci-Fi</option>
-                    <option value="__custom__">✨ Customise Genre</option>
-                  </select>
-                </div>
-              )}
+              {currentStep === "genre" && !isCustomGenreProcessing && (
+<div className="
+  inline-block
+  bg-[#0b1220]
+  border border-gray-800
+  rounded-xl
+  px-4 py-3
+  max-w-md
+">
+    <span className="text-sm font-semibold text-gray-200 mb-1 block">Select a genre</span>
+
+    <GenreDropdown
+      value={(formData.genres || []).join(", ")}
+      customGenres={customGenres}
+      onSelect={(genre) => {
+        let nextGenres = [];
+
+        // enforce up to 2 genres and prevent mixing custom + static genres
+        setFormData(prev => {
+          const existing = prev.genres || [];
+          if (existing.includes(genre)) return prev;
+
+          const isCustom = customGenres.includes(genre);
+          const existingHasCustom = existing.some(g => customGenres.includes(g));
+          const existingHasStatic = existing.some(g => !customGenres.includes(g));
+
+          if (existing.length > 0 && ((existingHasCustom && !isCustom) || (existingHasStatic && isCustom))) {
+            addBotMessage("⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres.");
+            return prev;
+          }
+
+          if (existing.length >= 2) {
+            addBotMessage("⚠️ You can select up to 2 genres only.");
+            return prev;
+          }
+
+          nextGenres = [...existing, genre];
+          return { ...prev, genres: nextGenres };
+        });
+
+        addUserMessage(genre);
+
+        // Only auto-proceed when user has selected 2 genres
+        setTimeout(() => {
+          if (nextGenres.length === 2) {
+            proceedAfterGenreSelection(nextGenres);
+          }
+        }, 0);
+      }}
+      onNewCustomGenre={() => {
+        addUserMessage("Custom Genre");
+        // prevent mixing when existing selection contains static genres
+        setFormData(prev => {
+          const existing = prev.genres || [];
+          const existingHasStatic = existing.some(g => !customGenres.includes(g));
+          if (existing.length > 0 && existingHasStatic) {
+            addBotMessage("⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres.");
+            return prev;
+          }
+          return { ...prev, genres: [...existing, "Custom"] };
+        });
+        addBotMessage("Awesome 🎨 Upload a reference document to define your custom genre.");
+        setShowUploadMenu(true);
+        setTriggerUploadFromGenre(true);
+        setIsCustomGenreProcessing(true);
+      }}
+    />
+  </div>
+)}
+
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -479,9 +617,9 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-                console.log("Image selected:", e.target.files);
                 setShowUploadMenu(false);
-                setTriggerUploadFromGenre(false);
+                setIsCustomGenreProcessing(true);
+                handleCustomGenreUpload(e.target.files);
                 e.target.value = null;
               }}
             />
@@ -490,11 +628,12 @@ Is this correct? (Type 'yes' to proceed or 'no' to make changes)
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               className="hidden"
               onChange={(e) => {
-                console.log("File selected:", e.target.files);
                 setShowUploadMenu(false);
-                setTriggerUploadFromGenre(false);
+                setIsCustomGenreProcessing(true);
+                handleCustomGenreUpload(e.target.files);
                 e.target.value = null;
               }}
             />

@@ -12,6 +12,7 @@ const storyRoutes = require('./routes/story');
 const imageRoutes = require('./routes/image');
 const coverRoutes = require('./routes/cover');
 const addressRoutes = require('./routes/address');
+const pdfRoutes = require('./routes/pdf');
 
 const app = express();
 
@@ -59,6 +60,12 @@ app.use('/api/v1/story', storyRoutes);
 app.use('/api/v1/images', imageRoutes);
 app.use('/api/v1/cover', coverRoutes);
 app.use('/api/address', addressRoutes);
+// Ensure PDF route responses are not compressed or altered
+app.use('/api/pdf', (req, res, next) => {
+  res.setHeader('Content-Encoding', 'identity');
+  next();
+});
+app.use('/api/pdf', pdfRoutes);
   
 // 404 handler
 app.use('*', (req, res) => {

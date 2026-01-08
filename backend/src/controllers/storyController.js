@@ -7,11 +7,17 @@ const fastApiService = require('../services/fastApiService');
 // @desc    Start story (hybrid: questionnaire or direct gist)
 // @route   POST /api/story/start
 // @access  Private
+const STATIC_GENRES = [
+  'Fantasy','Adventure','Family','Mystery','Housewarming',
+  'Corporate Promotion','Marriage','Baby Shower','Birthday','Sci-Fi'
+];
+
 exports.startStory = async (req, res, next) => {
   try {
     const {
       title,
-      genre,
+      genre, // legacy single-string
+      genres, // preferred array
       length,
       characterDetails,
       numCharacters,
@@ -19,11 +25,25 @@ exports.startStory = async (req, res, next) => {
       gist
     } = req.body;
 
-    if (!genre || !length || !numCharacters) {
+    const inputGenres = Array.isArray(genres) ? genres : (genre ? [genre] : []);
+
+    if (!inputGenres || inputGenres.length === 0 || !length || !numCharacters) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
       });
+    }
+
+    // Validate max 2 genres
+    if (inputGenres.length > 2) {
+      return res.status(400).json({ success: false, message: 'Maximum 2 genres allowed' });
+    }
+
+    // Prevent mixing static and custom genres
+    const hasStatic = inputGenres.some(g => STATIC_GENRES.includes(g));
+    const hasCustom = inputGenres.some(g => !STATIC_GENRES.includes(g));
+    if (hasStatic && hasCustom) {
+      return res.status(400).json({ success: false, message: 'Cannot mix static and custom genres' });
     }
 
     if (entryMode === 'gist') {
@@ -38,7 +58,7 @@ exports.startStory = async (req, res, next) => {
     const story = await Story.create({
       user: req.user.id,
       title,
-      genre,
+      genres: inputGenres,
       numOfPages: length,
       numCharacters,
       characterDetails,
@@ -132,7 +152,9 @@ exports.generateGist = async (req, res, next) => {
       });
     }
 
-    const result = await fastApiService.generateGist(conversation, story.genre);
+    // Pass genres as comma-separated string to FastAPI
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+    const result = await fastApiService.generateGist(conversation, storyGenreString);
     
     if (result) {
       // Update story gist and step
@@ -161,7 +183,8 @@ exports.createStory = async (req, res, next) => {
   try {
     const {
       storyId,
-      genre,
+      genre, // legacy
+      genres: genresFromBody, // optional
       numCharacters,
       characterDetails,
       numPages,
@@ -178,7 +201,8 @@ exports.createStory = async (req, res, next) => {
     }
 
     const gist = story.gist;
-    const storyGenre = genre || story.genre;
+    const storyGenresArray = Array.isArray(genresFromBody) ? genresFromBody : (genre ? (Array.isArray(genre) ? genre : [genre]) : (story.genres || []));
+    const storyGenre = Array.isArray(storyGenresArray) ? storyGenresArray.join(', ') : storyGenresArray;
     
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
     // console.log("Fixed Character Details:", fixedCharacterDetails);
@@ -188,17 +212,24 @@ exports.createStory = async (req, res, next) => {
     
     
     // Generate story pages from FastAPI
+    const staticGenres = [
+      'Fantasy','Adventure','Family','Mystery','Housewarming',
+      'Corporate Promotion','Marriage','Baby Shower','Birthday','Sci-Fi'
+    ];
+
+    const useCustomGenre = Array.isArray(storyGenresArray) && storyGenresArray.every(g => !staticGenres.includes(g));
+
     const storyResult = await fastApiService.generateStory(
-  gist,
-  numCharacters,
-  fixedCharacterDetails,
-  storyGenre,
-  numPages,
-  {
-    user_id: story.user.toString(),
-    use_custom_genre: storyGenre === "Custom"
-  }
-);
+      gist,
+      numCharacters,
+      fixedCharacterDetails,
+      storyGenre,
+      numPages,
+      {
+        user_id: story.user.toString(),
+        use_custom_genre: useCustomGenre
+      }
+    );
 
 
     story.orientation = orientation || story.orientation || 'Portrait';
@@ -370,7 +401,7 @@ exports.getStory = async (req, res, next) => {
 // @access  Private
 exports.generateTitles = async (req, res, next) => {
   try {
-    const { storyId, selectedTitle, genre } = req.body;
+    const { storyId, selectedTitle, genre, genres } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
@@ -379,7 +410,8 @@ exports.generateTitles = async (req, res, next) => {
     
     await updatedStory.save();
 
-    const result = await fastApiService.generateTitles(fullText, genre);
+    const genreString = Array.isArray(genres) ? genres.join(', ') : (Array.isArray(genre) ? genre.join(', ') : genre);
+    const result = await fastApiService.generateTitles(fullText, genreString);
 
     res.status(200).json({
       success: true,
@@ -395,7 +427,7 @@ exports.generateTitles = async (req, res, next) => {
 // @access  Private
 exports.regenerateTitles = async (req, res, next) => {
   try {
-    const { storyId, story, genre, previousTitles, selectedTitle } = req.body;
+    const { storyId, story, genre, genres, previousTitles, selectedTitle } = req.body;
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
@@ -407,7 +439,8 @@ exports.regenerateTitles = async (req, res, next) => {
     }
     await updatedStory.save();
 
-    const result = await fastApiService.regenerateTitles(story, genre, previousTitles);
+    const genreString = Array.isArray(genres) ? genres.join(', ') : (Array.isArray(genre) ? genre.join(', ') : genre);
+    const result = await fastApiService.regenerateTitles(story, genreString, previousTitles);
 
     res.status(200).json({
       success: true,
@@ -454,37 +487,52 @@ exports.deleteStory = async (req, res, next) => {
 // @access  Private
 exports.customGenre = async (req, res) => {
   try {
-    // 🔒 Idempotency guard
-    if (req.user.customGenreProcessed) {
-      return res.status(200).json({
-        success: true,
-        message: "Custom genre already processed"
-      });
-    }
+    console.log("UPLOAD-GENRE HIT");
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
     }
 
-    // Upload
-    const uploadResult = await fastApiService.uploadBooks(
-      req.files,
-      req.user.id
-    );
+    // 1️⃣ Always upload files
+    const uploadResult = await fastApiService.uploadBooks(req.files, req.user.id);
 
-    // Process
-    const processResult = await fastApiService.processBooksFromS3(
-      req.user.id
-    );
+    // 2️⃣ Decide whether to process (allow retrain after interval)
+    const retrainMs = parseInt(process.env.CUSTOM_GENRE_RETRAIN_MS || String(5 * 60 * 1000), 10); // default 5 minutes
+    const lastProcessedAt = req.user.customGenreProcessedAt ? new Date(req.user.customGenreProcessedAt).getTime() : null;
+    const shouldProcess = !lastProcessedAt || (Date.now() - lastProcessedAt) > retrainMs;
 
-    // ✅ Mark as processed
-    req.user.customGenreProcessed = true;
-    await req.user.save();
+    let processResult = null;
+    if (shouldProcess) {
+      // Process: retry/poll to handle S3 eventual consistency.
+      const maxAttempts = parseInt(process.env.PROCESS_RETRY_ATTEMPTS || '6', 10);
+      const baseDelayMs = parseInt(process.env.PROCESS_RETRY_DELAY_MS || '2000', 10);
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          processResult = await fastApiService.processBooksFromS3(req.user.id);
+          break; // success
+        } catch (err) {
+          // If last attempt, rethrow
+          if (attempt === maxAttempts) {
+            throw err;
+          }
+
+          // Otherwise wait and retry (exponential backoff)
+          const waitMs = baseDelayMs * attempt;
+          await new Promise((r) => setTimeout(r, waitMs));
+        }
+      }
+
+      // mark processed timestamp
+      req.user.customGenreProcessedAt = new Date();
+      await req.user.save();
+    }
 
     res.status(200).json({
       success: true,
       upload: uploadResult,
-      process: processResult
+      process: processResult,
+      retrained: shouldProcess
     });
 
   } catch (err) {
