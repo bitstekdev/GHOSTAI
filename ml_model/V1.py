@@ -173,6 +173,7 @@ class AnswerInput(BaseModel):
     answer: str
 
 class GistInput(BaseModel):
+    user_id: str
     conversation: List[QA]
     genre: str = "Family"
 
@@ -185,6 +186,7 @@ class NextResponse(BaseModel):
     conversation: List[QA]
 
 class GistResponse(BaseModel):
+    user_id: str
     genre: str
     gist: str
 
@@ -221,7 +223,7 @@ def generate_next_question(conversation):
     )
 
 
-def generate_gist(conversation, genre="Family", model="meta-llama/llama-3.3-70b-instruct:free"):
+def generate_gist(conversation, genre="Family",user_id: str | None = None, model="meta-llama/llama-3.3-70b-instruct:free"):
     logger.info("Calling LLM for story gist")
 
     """Generate cinematic story gist from questionnaire."""
@@ -229,21 +231,64 @@ def generate_gist(conversation, genre="Family", model="meta-llama/llama-3.3-70b-
     context = "\n".join(
         [f"Q{i+1}: {c.question}\nA{i+1}: {c.answer}" for i, c in enumerate(conversation)]
     )
+    
+    user_style_text = ""
+    style_example = ""
+
+    if user_id:
+        user_genre_map = load_genre_style_map(
+        bucket=DEFAULT_S3_BUCKET,
+        user_id=user_id
+        )
+
+    genres = parse_genres(genre)
+    styles = []
+    examples = []
+
+    for g in genres:
+        if g in user_genre_map:
+            styles.append(user_genre_map[g]["writing_style"])
+            examples.append(user_genre_map[g]["example"])
+        else:
+            fallback = genre_writing_style(g)
+            if fallback:
+                styles.append(fallback)
+
+    if styles:
+        user_style_text = " ".join(styles)
+
+    if examples:
+        style_example = max(examples, key=len)
 
     gist_prompt = f"""
-You are a skilled story writer.
+    You are a skilled story writer.
+
+    Your writing MUST strictly follow this WRITING STYLE:
+    {user_style_text or "Gentle, cinematic children's storytelling."}
+
+STYLE RULES:
+- Short, purposeful sentences
+- Cinematic and emotional
+- Poetic but simple
+- No modern language
+- No explanations or commentary
+
+STYLE EXAMPLE (tone reference only):
+{style_example}
+
+TASK:
 Turn the following structured Q&A into a short cinematic story gist.
 
-Rules:
-- Use ONLY the answers, ignore question wording.
-- Maintain emotional tone from answers.
+RULES:
+- Use ONLY the answers
 - Genre: {genre}
 - Length ≤150 words
 - Third person only
-- Start with a visual or emotional scene
-- Natural storytelling, no lists, no bullets, no dialogues
-- Sound like a children’s storybook introduction
+- Start with a strong visual or emotional moment
+- Natural storybook introduction
+- No lists, no dialogue
 """
+
 
     messages = [
         {"role": "system", "content": gist_prompt},
@@ -398,10 +443,51 @@ def extract_base64_image(resp: dict) -> str:
 
 def generate_gist_image(prompt: str, width: int, height: int, seed: int) -> str:
     payload = build_hidream_workflow(prompt, width, height, seed)
-    r = requests.post(RUNPOD_HIDREAM_URL, headers=HEADERS, json=payload, timeout=300)
-    if r.status_code != 200:
-        raise RuntimeError(r.text)
-    return extract_base64_image(r.json())
+
+    # 1️⃣ Start job
+    r = requests.post(
+        RUNPOD_HIDREAM_URL,
+        headers=HEADERS,
+        json=payload,
+        timeout=30
+    )
+
+    if r.status_code not in (200, 201):
+        raise RuntimeError(f"RunPod start failed: {r.text}")
+
+    job = r.json()
+    job_id = job.get("id")
+    if not job_id:
+        raise RuntimeError("RunPod did not return job id")
+
+    # 2️⃣ Poll status
+    deadline = time.time() + 300
+    while time.time() < deadline:
+        status = requests.get(
+            RUNPOD_HIDREAM_STATUS.format(job_id),
+            headers=HEADERS,
+            timeout=30
+        )
+
+        if status.status_code != 200:
+            raise RuntimeError("RunPod status check failed")
+
+        data = status.json()
+        state = data.get("status", "").upper()
+
+        if state == "COMPLETED":
+            images = data.get("output", {}).get("images", [])
+            if not images:
+                raise RuntimeError("RunPod completed but returned no images")
+            return images[0]["data"]
+
+        if state == "FAILED":
+            raise RuntimeError("RunPod job failed")
+
+        time.sleep(2)
+
+    raise RuntimeError("RunPod image generation timed out")
+
 
 def generate_preview_images_from_gist(gist: str) -> Dict:
     prompt = generate_image_prompt_from_gist(gist)
@@ -410,11 +496,19 @@ def generate_preview_images_from_gist(gist: str) -> Dict:
     images = {}
     for o in ("landscape", "portrait", "square"):
         w, h = get_gist_dimensions(o)
-        images[o] = {
+        try:
+           images[o] = {
             "width": w,
             "height": h,
             "base64": generate_gist_image(prompt, w, h, seed),
         }
+        except Exception as e:
+            images[o] = {
+            "width": w,
+            "height": h,
+            "error": str(e),
+        }
+
     return images
 # ============================================================
 # writing_style_story_generator_api.py
@@ -2688,26 +2782,6 @@ def next_question(data: AnswerInput):
         "message": "Next AI question added."
     }
 
-
-@app.post("/gist", response_model=GistResponse)
-def gist(data: GistInput):
-    logger.info("Generating gist for genre: %s", data.genre)
-    """Generate cinematic story gist."""
-    conversation = data.conversation
-    gist_text = generate_gist(conversation, genre=data.genre)
-    return {"genre": data.genre, "gist": gist_text}
-
-@app.post("/gist/preview-images")
-def gist_preview_images(payload: GistResponse):
-    try:
-        images = generate_preview_images_from_gist(payload.gist)
-        return {
-            "genre": payload.genre,
-            "images": images
-        }
-    except Exception as e:
-        logger.exception("Gist image generation failed")
-        raise HTTPException(status_code=500, detail=str(e))
 # ============================
 
 @app.post("/upload-books")
@@ -2858,7 +2932,41 @@ def get_genres(user_id: str):
     return {
         "genres": sorted(genre_map.keys())
     }
+# ============================
+@app.post("/gist", response_model=GistResponse)
+def gist(data: GistInput):
+    logger.info(
+        "Generating gist | user=%s | genre=%s",
+        data.user_id,
+        data.genre
+    )
 
+    gist_text = generate_gist(
+        conversation=data.conversation,
+        genre=data.genre,
+        user_id=data.user_id
+    )
+
+    return {
+        "user_id": data.user_id,
+        "genre": data.genre,
+        "gist": gist_text
+    }
+
+# ============================
+
+@app.post("/gist/preview-images")
+def gist_preview_images(payload: GistResponse):
+    try:
+        images = generate_preview_images_from_gist(payload.gist)
+        return {
+            "user_id": payload.user_id,
+            "genre": payload.genre,
+            "images": images
+        }
+    except Exception as e:
+        logger.exception("Gist image generation failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # -----------------------------
 # FastAPI endpoint
