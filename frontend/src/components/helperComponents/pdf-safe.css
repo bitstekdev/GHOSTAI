@@ -1,9 +1,0 @@
-/* Disable unsupported modern color functions for html2canvas */
-#pdf-root * {
-  color: #000 !important;
-  background-color: transparent !important;
-  border-color: #000 !important;
-
-  /* kill modern color spaces */
-  color-scheme: light;
-}
