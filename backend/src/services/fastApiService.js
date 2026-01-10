@@ -6,7 +6,7 @@ const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000'
 
 const fastApiClient = axios.create({
   baseURL: FASTAPI_BASE_URL,
-  timeout: 600000 // 10 minutes for long-running operations
+  timeout: 1800000 // 30 minutes for long-running operations
 });
 
 // Questionnaire endpoints--------------------------------------------------
@@ -25,11 +25,15 @@ exports.nextQuestion = async (conversation, answer) => {
 };
 
 // Gist generation--------------------------------------------------
-exports.generateGist = async (conversation, genre) => {
-  const response = await fastApiClient.post('/gist', {
+exports.generateGist = async (conversation, genre, userId) => {
+  const payload = {
+    user_id: userId,
     conversation,
-    genre
-  });
+    genre,
+    use_custom_genre: false
+  };
+
+  const response = await fastApiClient.post('/gist', payload);
   return response.data;
 };
 
@@ -144,7 +148,7 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
       `${FASTAPI_BASE_URL}/faceswap`,
       form,
       {
-        timeout: 600000, // 10 minutes - explicit timeout for long RunPod operations
+        timeout: 1800000, // 30 minutes - explicit timeout for long RunPod operations
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
         headers: form.getHeaders(), // REQUIRED for `form-data`
@@ -216,7 +220,7 @@ exports.uploadBooks = async (files, userId) => {
       `${FASTAPI_BASE_URL}/upload-books`,
       form,
       {
-        timeout: 600000,
+        timeout: 1800000,
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
         headers: form.getHeaders(),
