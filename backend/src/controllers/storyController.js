@@ -137,6 +137,23 @@ exports.generateGist = async (req, res, next) => {
   try {
     const { storyId, conversation } = req.body;
 
+    // Sanitize conversation: remove malformed entries
+    const sanitizedConversation = Array.isArray(conversation)
+      ? conversation.filter(q => q && q.question && q.answer)
+      : [];
+
+    // Log sanitization for diagnostic purposes
+    try {
+      console.log(
+        'Sanitized conversation:',
+        Array.isArray(conversation) ? conversation.length : 0,
+        '→',
+        sanitizedConversation.length
+      );
+    } catch (e) {
+      // ignore logging errors
+    }
+
     const story = await Story.findById(storyId);
 
     if (!story) {
@@ -154,7 +171,7 @@ exports.generateGist = async (req, res, next) => {
 
     // Pass genres as comma-separated string to FastAPI
     const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
-    const result = await fastApiService.generateGist(conversation, storyGenreString);
+    const result = await fastApiService.generateGist(sanitizedConversation, storyGenreString, story.user.toString());
     
     if (result) {
       // Update story gist and step

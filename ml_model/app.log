@@ -183,3 +183,39 @@
 2026-01-09 15:21:33,534 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-01-09 15:21:33,898 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
 2026-01-09 15:22:45,279 [INFO] storybook_api - Next question request received. Answer: Now the ai story telling platform is the go to platform for any brand related storytelling whether they are books or they are branding materials like borchues etc, everything goes throught this platform. it serves as the memory gate of ai apps
+2026-01-10 02:45:53,853 [INFO] storybook_api - Generating gist | user=693f9d52cef2f9280426fa5f | genre=children's coloring book, adventure, children's coloring book, animal story
+2026-01-10 02:45:53,879 [INFO] storybook_api - Calling LLM for story gist
+2026-01-10 11:29:32,166 [INFO] storybook_api - Generating gist | user=693f9d52cef2f9280426fa5f | genre=children's coloring book, adventure, children's coloring book, animal story
+2026-01-10 11:29:32,192 [INFO] storybook_api - Calling LLM for story gist
+2026-01-10 11:37:48,327 [INFO] storybook_api - Generating gist | user=693f9d52cef2f9280426fa5f | genre=children's coloring book, adventure, children's coloring book, animal story
+2026-01-10 11:37:48,328 [INFO] storybook_api - Calling LLM for story gist
+2026-01-10 11:37:58,690 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 11:38:25,210 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 11:38:36,986 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 11:38:50,446 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 11:39:30,126 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 11:39:41,596 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-10 11:42:25,374 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-10 11:43:25,083 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-10 11:48:06,070 [INFO] storybook_api - /coverback/generate called. Genre=children's coloring book, adventure, children's coloring book, animal story, Title=Dreams Take Flight
+2026-01-10 12:01:59,373 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 12:02:06,504 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 12:02:11,568 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-10 12:03:17,895 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 12:08:15,629 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 12:08:20,588 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 12:08:24,741 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-10 12:09:41,432 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 13:40:36,778 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 13:40:57,760 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 13:41:26,278 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-10 13:42:39,621 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-10 13:44:46,129 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-10 13:45:49,417 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-10 13:46:54,848 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-10 13:47:56,240 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-10 13:49:03,624 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-10 13:50:05,171 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-10 13:51:05,938 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-10 13:52:07,402 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-10 13:53:11,042 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
