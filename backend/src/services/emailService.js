@@ -1,4 +1,6 @@
 const transporter = require('../config/email');
+const Story = require('../models/Story');
+const Book = require('../models/Story'); 
 require('dotenv').config();
 
 const sendEmail = async (options) => {
@@ -96,6 +98,51 @@ exports.sendWelcomeEmail = async (user) => {
   await sendEmail({
     email: user.email,
     subject: 'Welcome to Ghostverse!',
+    html
+  });
+};
+
+exports.sendStoryGeneratedEmail = async ({ user, story, pages }) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">Your Story Is Ready! 📖✨</h2>
+
+      <p>Hi <strong>${user.name}</strong>,</p>
+
+      <p>
+        We’re excited to let you know that your story has been successfully generated!
+      </p>
+
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
+        <p><strong>Story Title:</strong> ${story.title || 'Untitled Story'}</p>
+        <p><strong>Total Pages:</strong> ${pages.length}</p>
+        <p><strong>Email:</strong> ${user.email}</p>
+      </div>
+
+      <p style="margin-top: 20px;">
+        You can now explore your story page by page and bring it to life.
+      </p>
+
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${process.env.FRONTEND_URL}/stories/${story._id}"
+           style="background-color: #9C27B0; color: white; padding: 12px 30px;
+                  text-decoration: none; border-radius: 5px; display: inline-block;">
+          View Your Story
+        </a>
+      </div>
+
+      <hr style="border: 1px solid #eee; margin: 30px 0;" />
+
+      <p style="color: #999; font-size: 12px;">
+        This email was sent to <strong>${user.email}</strong><br />
+        Ghostverse Team
+      </p>
+    </div>
+  `;
+
+  await sendEmail({
+    email: user.email,
+    subject: `Your story "${story.title || 'Untitled'}" is ready! 📚`,
     html
   });
 };

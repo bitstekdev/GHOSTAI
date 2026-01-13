@@ -16,7 +16,7 @@ const { protect } = require('../middleware/auth');
 router.post('/start', protect, startQuestionnaire);
 router.post('/next', protect, nextQuestion);
 router.post('/gist', protect, generateGist);
-router.post('/create', protect, createStory);
+router.post('/create',  createStory);
 router.get('/my-stories', protect, getMyStories);
 router.get('/:id', protect, getStory);
 
