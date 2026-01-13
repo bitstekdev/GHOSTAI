@@ -469,6 +469,7 @@ exports.logout = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('_id name email phone role isEmailVerified createdAt');
+    console.log("Current user:", user);
 
     res.status(200).json({
       success: true,

@@ -103,16 +103,6 @@ exports.generateCharacterImages = async (req, res, next) => {
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
 
-      // Generate background images and cover images
-    // try {
-    // const backgroundImages = await generateBackgroundImages(storyId);
-    // console.log("Background Images Generated:", backgroundImages);
-    // const coverImages = await generateCover(storyId);
-    // console.log("Cover Images Generated:", coverImages);
-    // } catch (coverBgError) {
-    //   console.error("Error generating cover/background images:", coverBgError);
-    // }
-
     res.status(200).json({
       success: true,
       message: 'Character images generated successfully',
@@ -461,6 +451,7 @@ exports.faceSwap = async (req, res) => {
 exports.editImage = async (req, res) => {
   try {
     const { characterImageId, prompt } = req.body;
+    console.log("Edit Image Request:", req.body);
 
     if (!characterImageId || !prompt) {
       return res.status(400).json({
