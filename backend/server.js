@@ -1,6 +1,11 @@
+// Load environment variables before importing app code
+require('dotenv').config();
+
+// Ensure Firebase Admin is initialized once at server startup
+require('./src/config/firebaseAdmin');
+
 const app = require('./src/app');
 const connectDB = require('./src/config/database');
-require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
 

@@ -15,8 +15,10 @@ const {
   editImage,
   regenerateCharacterImage,
   revertImage,
-  getPageImages, 
+  getPageImages,
   testRoute,
+  gistPreviewImages,
+  promotePreviewImage,
 } = require('../controllers/imageController');
 const { protect } = require('../middleware/auth');
 
@@ -33,5 +35,9 @@ router.post('/revert', protect, revertImage);
 
 
 router.get('/test', testRoute);
+
+// Preview generation (no storage) and promotion
+router.post('/gist/preview-images', protect, gistPreviewImages);
+router.post('/promote-preview', protect, promotePreviewImage);
 
 module.exports = router;

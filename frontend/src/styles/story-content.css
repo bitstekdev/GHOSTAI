@@ -1,47 +1,102 @@
 /* Story HTML Content Styling matching FastAPI output */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+/* Story HTML Content Styling tuned to match printed book feel */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Alegreya:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Playfair+Display:wght@400;700&display=swap');
 
 .story-html-content {
-  font-family: 'Poppins', 'Montserrat', sans-serif;
+  font-family: 'Alegreya', serif;
+  /* font-size: 1px; */
+  line-height: 1.7;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   color: #111827;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.story-html-content {
+  font-size: inherit;
+}
+
+.story-html-content {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+
+
+
+/* Prevent any inner scrolling and clamp height to the paper container */
+/* .story-html-content {
+  height: 100%;
+  max-height: 100%;
+} */
+
+/* Hide browser scrollbars globally (non-invasive) */
+* {
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .story-html-content .container {
   max-width: 720px;
   margin: auto;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding-left: 48px;
+  padding-right: 48px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  box-shadow: none; /* remove UI card feel */
+  border-radius: 0;
 }
 
+.story-html-content p,
 .story-html-content .adventure-text {
-  font-size: inherit;
-  line-height: 1.6;
-  letter-spacing: 0.02em;
-  margin: 0;
+  margin: 0 0 1em 0;
+  text-indent: 22px; /* paragraph indentation */
+  text-align: left; /* do not justify */
 }
 
 .story-html-content .highlight-place {
-  color: #0369a1;
-  font-weight: 600;
+  font-style: italic;
+  font-weight: 400;
+  color: #3b6ea5; /* muted ink blue */
 }
 
 .story-html-content .highlight-action {
-  color: #090909;
-  background: #fef3c7;
-  padding: 2px 6px;
-  border-radius: 6px;
   font-weight: 500;
+  color: #111827;
+  background: none; /* remove UI badge */
+  padding: 0;
+  border-radius: 0;
 }
 
 .story-html-content .highlight-emotion {
-  color: #166534;
   font-style: italic;
-  font-weight: 500;
+  font-weight: 400;
+  color: #3f6b4f; /* muted green ink */
 }
 
 .story-html-content .highlight-emphasis {
-  font-size: 1.15em;
-  font-weight: 600;
-  color: #2b4393;
-  letter-spacing: 0.04em;
+  font-weight: 600; /* NOT 700 */
+  font-style: italic;
+  font-size: inherit; /* IMPORTANT */
+  color: #1f2937;
+}
+
+/* Column and responsive padding */
+.story-html-content .container {
+  padding-left: 48px;
+  padding-right: 48px;
+}
+
+@media (max-width: 640px) {
+  .story-html-content .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }

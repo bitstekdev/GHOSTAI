@@ -99,7 +99,7 @@ const GenerateStory = () => {
       setShowFirstQuestion(true);
       setMessages([{
         type: "bot",
-        text: "👋 Welcome! Let's create your story together. 📖 Select a genre for your story:",
+        text: "👋 Welcome! Let's create your story together. 📖\n\nSelect **1 or 2 genres** for your story (maximum 2).",
         timestamp: new Date()
       }]);
       setCurrentStep("genre");
@@ -128,7 +128,7 @@ const GenerateStory = () => {
     if (!updatedGenres || updatedGenres.length === 0) return;
 
     addBotMessage(
-      `Great choice${updatedGenres.length > 1 ? "s" : ""}! 🎉\nHow many pages would you like your story to be?`
+      `Great choice${updatedGenres.length > 1 ? "s" : ""}! 🎉\nHow many pages would you like your story to be(1-20)?`
     );
 
     setCurrentStep("length");
@@ -377,11 +377,23 @@ How would you like to continue?
       }
 
       addBotMessage("Redirecting you now... 🎉");
-      setTimeout(() => {
+      setTimeout(async () => {
         if (dataToSend.entryMode === "questionnaire") {
           navigateTo(`/questioner/${storyId}`);
         } else {
-          navigateTo(`/templateselection/${storyId}`);
+          // For gist users: generate previews before navigating so TemplateSelection can display them
+          try {
+            const previewRes = await api.post('/api/v1/images/gist/preview-images', {
+              gist: dataToSend.gist
+            });
+
+            const previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
+            navigateTo(`/templateselection/${storyId}`, { state: { previews } });
+          } catch (previewErr) {
+            console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
+            // fallback: navigate without previews
+            navigateTo(`/templateselection/${storyId}`);
+          }
         }
       }, 1200);
     } catch (error) {
@@ -574,8 +586,12 @@ How would you like to continue?
 
         addUserMessage(genre);
 
-        // Only auto-proceed when user has selected 2 genres
+        // UX guidance: prompt when 1 genre selected, auto-proceed when 2
         setTimeout(() => {
+          if (nextGenres.length === 1) {
+            addBotMessage("👍 You can select **one more genre**, or type **'continue'** to proceed.");
+          }
+
           if (nextGenres.length === 2) {
             proceedAfterGenreSelection(nextGenres);
           }
@@ -601,6 +617,23 @@ How would you like to continue?
     />
   </div>
 )}
+
+              {currentStep === "genre" && (formData.genres || []).length === 1 && (
+                <div className="mt-3 max-w-md">
+                  <button
+                    onClick={() => proceedAfterGenreSelection(formData.genres)}
+                    className="
+                      mt-3 w-full
+                      bg-purple-600 hover:bg-purple-700
+                      text-white
+                      py-2 rounded-lg
+                      transition
+                    "
+                  >
+                    Continue with 1 genre
+                  </button>
+                </div>
+              )}
 
               <div ref={messagesEndRef} />
             </div>

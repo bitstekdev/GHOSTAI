@@ -1,13 +1,14 @@
 import { useState, useContext } from "react";
 import api from "../../services/axiosInstance";
-import { FaGhost, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGhost, FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from '../../context/AppContext'
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { backendUrl } = useContext(AppContext);
+  const { backendUrl, googleSignin } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -107,6 +108,15 @@ const handleSubmit = async (e) => {
 
   return (
     <section className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-[#1E1E1E] to-black text-white px-6">
+      {/* Back to Home */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-300 hover:text-white transition z-20"
+      >
+        <FaArrowLeft />
+        <span className="text-sm font-medium">Home</span>
+      </button>
+
       {/* Background Ghost AI text */}
       <h1 className="absolute text-4xl font-bold text-white/20 select-none top-15 md:top-0">
         GHOSTVERSE AI
@@ -129,10 +139,24 @@ const handleSubmit = async (e) => {
         <h2 className="text-3xl font-bold text-center mb-6">
           Create Your Account
         </h2>
-        <p className="text-gray-400 text-center mb-6 text-sm">
-          Join the <span className="text-white">GHOSTVERSE AI</span> community and
-          start your journey today.
-        </p>
+        {/* Google sign-up button */}
+        <button
+          type="button"
+          onClick={async () => {
+            setLoading(true);
+            try {
+              await googleSignin();
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className="w-full bg-white text-black py-3 rounded-lg font-semibold flex items-center justify-center gap-3 mb-4"
+        >
+          <FcGoogle size={22} />
+          Sign up with Google
+        </button>
+
+        <div className="text-center text-gray-400 text-sm mb-4">or sign up with email</div>
 
         {/* Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>

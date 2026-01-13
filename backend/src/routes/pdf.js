@@ -54,6 +54,7 @@ router.post('/generate-pdf', async (req, res) => {
     await generateStorybookPdf({
       outputPath: pdfPath,
       orientation,
+      genre: storyData.story?.genre || 'Family',
       coverImageUrl: storyData.story?.coverImage?.s3Url,
       coverTitle: storyData.story?.title || '',
       backCoverImageUrl: storyData.story?.backCoverImage?.s3Url,

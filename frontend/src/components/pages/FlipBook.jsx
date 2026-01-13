@@ -14,6 +14,7 @@ import "../../styles/story-content.css";
 // import Image2 from "../../assets/images/square.png";
 // //landscape images------------------------------------
 import Image from "../../assets/images/landscape.png";
+import { BOOK_GENRE_STYLES } from '../../utils/bookTypography';
 import Image3 from "../../assets/images/landscape.png";
 import Image2 from "../../assets/images/landscape.png";
 // // //portrait images------------------------------------
@@ -305,7 +306,7 @@ const openEdit = () => {
         case "Portrait":
           return "text-4xl md:text-4xl";
         case "Landscape":
-          return "text-7xl md:text-7xl";
+          return "text-6xl md:text-7xl";
         case "Square":
           return "text-4xl md:text-4xl";
         default:
@@ -346,82 +347,82 @@ const openEdit = () => {
     const genreStyles = {
       Fantasy: {
         fontFamily: '"Cinzel", "Playfair Display", serif',
-        fontWeight: 600,
+        // fontWeight: 600,
         letterSpacing: "0.04em",
         lineHeight: 1.7,
-        color: "#1a1a1a",
+        // color: "#1a1a1a",
       },
 
       Adventure: {
         fontFamily: '"Poppins", "Montserrat", sans-serif',
-        fontWeight: 500,
+        // fontWeight: 500,
         letterSpacing: "0.02em",
         lineHeight: 1.6,
-        color: "#111827",
+        // color: "#111827",
       },
 
       Family: {
         fontFamily: '"Comic Neue", "Nunito", cursive',
-        fontWeight: 400,
+        // fontWeight: 400,
         letterSpacing: "0.01em",
         lineHeight: 1.8,
-        color: "#2d2d2d",
+        // color: "#2d2d2d",
       },
 
       Mystery: {
         fontFamily: '"Special Elite", "Courier Prime", monospace',
-        fontWeight: 400,
+        // fontWeight: 400,
         letterSpacing: "0.06em",
         lineHeight: 1.75,
-        color: "#0f172a",
+        // color: "#0f172a",
       },
 
       "Sci-Fi": {
         fontFamily: '"Orbitron", "Inter", sans-serif',
-        fontWeight: 500,
+        // fontWeight: 500,
         letterSpacing: "0.08em",
         lineHeight: 1.6,
-        color: "#020617",
+        // color: "#020617",
       },
 
       Marriage: {
         fontFamily: '"Great Vibes", "Playfair Display", cursive',
-        fontWeight: 400,
+        // fontWeight: 400,
         letterSpacing: "0.05em",
         lineHeight: 1.9,
-        color: "#3f1d38",
+        // color: "#3f1d38",
       },
 
       Birthday: {
         fontFamily: '"Poppins", "Baloo 2", sans-serif',
-        fontWeight: 500,
+        // fontWeight: 500,
         letterSpacing: "0.03em",
         lineHeight: 1.6,
-        color: "#1f2937",
+        // color: "#1f2937",
       },
 
       Housewarming: {
         fontFamily: '"Poppins", "Montserrat", sans-serif',
-        fontWeight: 500,
+        // fontWeight: 500,
         letterSpacing: "0.02em",
         lineHeight: 1.6,
-        color: "#111827",
+        // color: "#111827",
       },
 
       "Corporate Promotion": {
         fontFamily: '"Poppins", "Inter", sans-serif',
-        fontWeight: 600,
+        // fontWeight: 600,
         letterSpacing: "0.03em",
         lineHeight: 1.6,
-        color: "#0f172a",
+        // color: "#0f172a",
       },
 
       Default: {
         fontFamily: '"Georgia", "Merriweather", serif',
-        fontWeight: 400,
+        // fontWeight: 400,
         letterSpacing: "0.02em",
         lineHeight: 1.75,
-        color: "#333333",
+        // color: "#333333",
       },
     };
 
@@ -474,7 +475,28 @@ const openEdit = () => {
     const pages = storyData.pages || [];
 
    
-  const pageTextStyle = getGenreStyle(story.genre, story.orientation);
+  // Use book typography mapping so on-screen text matches PDF rules
+  const genreStyle = BOOK_GENRE_STYLES[story.genre] || BOOK_GENRE_STYLES.Default;
+
+  // Normalize font size (accepts "16px" or 16)
+  const baseFontSize = parseInt(genreStyle.fontSize, 10) || 14;
+
+  // Orientation scale multipliers (tweak these numbers to taste)
+  const orientationScale = {
+    Portrait: 0.85,
+    Landscape: 0.9,
+    Square: 0.88,
+  };
+
+  const scale = orientationScale[story.orientation] || 1;
+
+  const pageTextStyle = {
+    fontFamily: genreStyle.fontFamily,
+    fontSize: `${Math.round(baseFontSize * scale)}px`,
+    lineHeight: genreStyle.lineHeight,
+    letterSpacing: genreStyle.letterSpacing,
+    color: '#111827',
+  };
 
 
     // COVER (SINGLE PAGE)
@@ -511,29 +533,64 @@ pages.forEach((page, index) => {
   );
 
   const TextBlock = (
-    <div className="relative" style={{ width: "50%", height: "100%" }}>
+      <div className="relative" style={{ width: "50%", height: "100%" }}>
       <img
         src={page.backgroundImage?.s3Url}
         className="absolute inset-0 w-full h-full object-cover"
       />
+        <div className="absolute inset-0 flex items-center justify-center px-6 py-6">
+        {/* <div
+          className="rounded-2xl"
+          style={{
+            backgroundColor: '#fbfbf821',
+            padding:
+              story.orientation === "Portrait"
+                ? "20px 22px"
+                : story.orientation === "Square"
+                ? "24px 26px"
+                : "28px 32px",
+            width: story.orientation === "Portrait" ? '92%' : '88%',
+            height: story.orientation === "Portrait" ? '86%' : '88%',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        > */}.
+        <div
+  className="rounded-2xl"
+  style={{
+    backgroundColor: 'transparent',
+    padding:
+      story.orientation === "Portrait"
+        ? "20px 22px"
+        : story.orientation === "Square"
+        ? "24px 26px"
+        : "28px 32px",
+    width: story.orientation === "Portrait" ? '92%' : '88%',
+    minHeight: "70%",
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+  }}
+>
 
-      <div className="absolute inset-0 mt-2 sm:mt-6 px-2 sm:px-10 py-2 sm:py-6 overflow-y-auto">
-        {/* <div className="bg-white/35 p-0.5 sm:p-1 rounded-lg"> */}
-                <div className=" p-0.5 sm:p-1 rounded-lg">
-          {page.html ? (
-            <div
-              className="story-html-content text-black leading-relaxed"
-              style={pageTextStyle}
-              dangerouslySetInnerHTML={{ __html: page.html }}
-            />
-          ) : (
-            <p
-              className="text-black leading-relaxed"
-              style={pageTextStyle}
-            >
-              {page.text}
-            </p>
-          )}
+          {/* <div className=" p-0.5 sm:p-1 rounded-lg" style={{ width: '100%', height: '100%' }}> */}
+          <div className=" p-0.5 sm:p-1 rounded-lg">
+            {page.html ? (
+              <div
+                className="story-html-content text-black leading-relaxed"
+                style={pageTextStyle}
+                dangerouslySetInnerHTML={{ __html: page.html }}
+              />
+            ) : (
+              <p
+                className="text-black leading-relaxed"
+                style={pageTextStyle}
+              >
+                {page.text}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -562,10 +619,20 @@ pages.forEach((page, index) => {
             style={{ objectPosition: "center" }}
             alt="Back cover"
           />
-          <div className="absolute inset-0 mt-10 sm:mt-20 px-4 sm:px-10 py-4 sm:py-6 overflow-y-auto">
-            {/* <div className="bg-white/55 p-1.5 sm:p-2 rounded-lg"> */}
-                        <div className=" p-1.5 sm:p-2 rounded-lg">
-              <p className="text-black-800 text-xs sm:text-sm leading-relaxed font-bold">
+          <div className="absolute inset-0 flex items-center justify-center px-6 py-6">
+            <div
+              className="rounded-2xl p-1.5 sm:p-2"
+              style={{
+                backgroundColor: '#fbfbf822',
+                padding: '24px 32px',
+                width: '70%',
+                boxSizing: 'border-box',
+              }}
+            >
+              <p
+                className="text-black-800 text-xs sm:text-sm leading-relaxed font-normal"
+                style={{ textAlign: 'center', margin: '0 auto' }}
+              >
                 {story.backCoverBlurb}
               </p>
             </div>
@@ -660,6 +727,13 @@ pages.forEach((page, index) => {
       setTimeout(() => setIsFlipping(false), 500);
     }
   };
+
+  const wrapTextWithSpans = (text) =>
+  text
+    .split(" ")
+    .map(word => `<span>${word} </span>`)
+    .join("");
+
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-black to-gray-900 py-4 sm:py-8 px-2 sm:px-4">

@@ -170,6 +170,12 @@ export default function QuestionerPage() {
   const [loading, setLoading] = useState(false);
 
   const chatEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const [pendingAnswer, setPendingAnswer] = useState(null);
+
+  // Questionnaire limits
+  const MIN_QUESTIONS = 5;
+  const MAX_QUESTIONS = 15;
 
   /* -------------------- Load from localStorage -------------------- */
   useEffect(() => {
@@ -184,6 +190,13 @@ export default function QuestionerPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
+  // Keep focus on the input when conversation updates or loading changes
+  useEffect(() => {
+    if (!loading) {
+      inputRef.current?.focus();
+    }
+  }, [conversation, loading]);
+
   const updateLocalStorage = (updatedConv) => {
     localStorage.setItem(
       "conversationData",
@@ -193,21 +206,16 @@ export default function QuestionerPage() {
 
   /* -------------------- Next Question -------------------- */
   const handleSend = async () => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || loading) return;
 
-    const userAnswer = answer;
-    const lastQuestion = conversation[conversation.length - 1];
-    const updatedConvWithAnswer = [
-      ...conversation.slice(0, -1),
-      { ...lastQuestion, answer: userAnswer }
-    ];
-    
-    setConversation(updatedConvWithAnswer);
+    const userAnswer = answer.trim();
+    // optimistic UI: show pending answer while waiting for backend
+    setPendingAnswer(userAnswer);
     setAnswer("");
     setLoading(true);
 
     try {
-      const cleanedConversation = updatedConvWithAnswer.filter((msg) => msg && msg.question);
+      const cleanedConversation = conversation.filter((msg) => msg && msg.question);
       const response = await api.post("/api/v1/story/next", {
         storyId: storyIdParam,
         conversation: cleanedConversation,
@@ -215,10 +223,14 @@ export default function QuestionerPage() {
       });
 
       const result = response.data.data;
+
+      // Backend is the single source of truth for conversation state
       setConversation(result.conversation);
       updateLocalStorage(result.conversation);
+      setPendingAnswer(null);
     } catch (err) {
       console.error("Next Question Error:", err?.response?.data || err);
+      setPendingAnswer(null);
     } finally {
       setLoading(false);
     }
@@ -226,7 +238,8 @@ export default function QuestionerPage() {
 
   /* -------------------- Finish -------------------- */
   const answeredCount = conversation.filter((msg) => msg && msg.question && msg.answer).length;
-  const isFinished = answeredCount >= 15;
+  const canFinishEarly = answeredCount >= MIN_QUESTIONS;
+  const isMaxReached = answeredCount >= MAX_QUESTIONS;
 
   const handleGetPrompt = async () => {
     try {
@@ -236,8 +249,19 @@ export default function QuestionerPage() {
         conversation
       });
 
-      setStoryId(response.data.storyId);
-      navigateTo(`/templateselection/${response.data.storyId}`);
+      const { storyId, gist } = response.data;
+
+      // Generate previews via FastAPI through backend (no storage)
+      let previews = null;
+      try {
+        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist });
+        previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
+      } catch (previewErr) {
+        console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
+      }
+
+      setStoryId(storyId);
+      navigateTo(`/templateselection/${storyId}`, { state: { previews } });
     } catch (err) {
       console.error("Gist API Error", err);
     } finally {
@@ -290,6 +314,16 @@ export default function QuestionerPage() {
             </div>
           ))}
 
+          {/* Optimistic pending answer (UI-only) */}
+          {pendingAnswer && (
+            <div className="flex justify-end mb-4">
+              <div className="bg-gray-800 rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%] opacity-80">
+                <p className="text-sm font-semibold text-gray-400 mb-1">You</p>
+                <p className="text-white">{pendingAnswer}</p>
+              </div>
+            </div>
+          )}
+
           {loading && (
             <div className="flex justify-start">
               <div className="bg-purple-900/30 border border-purple-600/30 rounded-2xl px-5 py-3">
@@ -315,10 +349,19 @@ export default function QuestionerPage() {
      { /* Input Area */}
         <div className="px-6 py-6 bg-black ">
           <div className="max-w-3xl mx-auto">
-            {!isFinished ? (
-          <div className="relative">
-            {/* Textarea */}
+            {!isMaxReached ? (
+          <>
+            {/* Helpful hint */}
+            {conversation.length > 0 && (
+              <div className="text-sm text-gray-400 mb-3">
+                You can answer up to {MAX_QUESTIONS} questions. After at least {MIN_QUESTIONS} answers, you may finish anytime.
+              </div>
+            )}
+
+            <div className="relative">
+              {/* Textarea */}
               <textarea
+                ref={inputRef}
                 autoFocus
                 rows={1}
                 className="
@@ -373,6 +416,20 @@ export default function QuestionerPage() {
                 <Send size={22} />
               </button>
             </div>
+
+
+
+            {/* Finish Early Button */}
+            {canFinishEarly && (
+              <button
+                onClick={handleGetPrompt}
+                disabled={loading}
+                className="mt-4 w-full bg-purple-700/40 hover:bg-purple-700 py-2 rounded-lg text-sm font-semibold transition"
+              >
+                Finish & Generate Story Now
+              </button>
+            )}
+          </>
           ) : (
             <button
               onClick={handleGetPrompt}
