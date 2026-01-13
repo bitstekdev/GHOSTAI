@@ -2,6 +2,8 @@ import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api, { setupAxiosInterceptors } from "../services/axiosInstance";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebase";
 
 export const AppContext = createContext();
 
@@ -54,8 +56,47 @@ function AppContextProvider(props) {
     }
   };
 
-const navigateTo = (path) => {
-  nav(path);
+  // ------------------- Google Sign-in (frontend-only for now) -------------------
+  const googleSignin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Send idToken to backend to create/verify session and set cookies
+      const res = await api.post(
+        '/api/auth/google',
+        { idToken },
+        { withCredentials: true }
+      );
+
+      if (res?.data?.success) {
+        setIsAuthenticated(true);
+        setUserData(res.data.user);
+        nav('/generatestory');
+        return { success: true };
+      }
+      return { success: false, message: res?.data?.message };
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const navigateTo = (path, opts) => {
+  try {
+    if (opts && opts.state) {
+      nav(path, { state: opts.state });
+    } else {
+      nav(path);
+    }
+  } catch (e) {
+    // fallback
+    nav(path);
+  }
+
   window.scrollTo({
     top: 10,
     behavior: "smooth",
@@ -222,6 +263,7 @@ const createAddress = async (addressData) => {
     backendUrl,
     navigateTo,
     signin,
+    googleSignin,
     getProfile,
     updateProfile,
     changePassword,

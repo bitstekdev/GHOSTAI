@@ -136,6 +136,8 @@ exports.generateCharacterImages = async (req, res, next) => {
     //   console.error("Error generating cover/background images:", coverBgError);
     // }
 
+    // send email notification of completion
+
     res.status(200).json({
       success: true,
       message: 'Character images generated successfully',
@@ -859,5 +861,108 @@ exports.testRoute = async (req, res, next) => {
   }
   catch (error) {
     next(error);
+  }
+};
+
+// @desc    Generate gist preview images (no storage)
+// @route   POST /api/images/gist/preview-images
+// @access  Private
+exports.gistPreviewImages = async (req, res, next) => {
+  try {
+    const { gist, genre } = req.body;
+
+    if (!gist) {
+      return res.status(400).json({
+        success: false,
+        message: 'gist is required'
+      });
+    }
+
+    const previews = await fastApiService.generateGistPreviewImages({
+      userId: req.user.id,
+      genre: genre || 'Family',
+      gist
+    });
+
+    return res.json({
+      success: true,
+      previews
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Promote a selected preview image: upload to S3 and create Image doc
+// @route   POST /api/images/promote-preview
+// @access  Private
+exports.promotePreviewImage = async (req, res, next) => {
+  try {
+    const {
+      storyId,
+      imageType,
+      orientation,
+      base64,
+      prompt
+    } = req.body;
+
+    if (!storyId || !imageType || !base64) {
+      return res.status(400).json({
+        success: false,
+        message: 'storyId, imageType, and base64 are required'
+      });
+    }
+
+    const buffer = Buffer.from(base64, 'base64');
+
+    // Upload to S3
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${storyId}/${imageType}`,
+      `${imageType}-${Date.now()}.png`,
+      'image/png'
+    );
+
+    // If replacing cover, update existing document safely
+    if (imageType === 'cover') {
+      const existingCover = await Image.findOne({ story: storyId, imageType: 'cover' });
+      if (existingCover) {
+        pushCurrentToHistory(existingCover, 'replace-cover');
+        existingCover.s3Key = s3Result.key;
+        existingCover.s3Url = s3Result.url;
+        existingCover.s3Bucket = s3Result.bucket;
+        existingCover.size = buffer.length;
+        existingCover.prompt = prompt || existingCover.prompt;
+        existingCover.mimeType = 'image/png';
+        existingCover.metadata = Object.assign({}, existingCover.metadata, { orientation, model: 'hidream' });
+        await existingCover.save();
+        return res.json({ success: true, image: existingCover });
+      }
+    }
+
+    // Create canonical Image
+    const image = await Image.create({
+      story: storyId,
+      imageType,
+      s3Key: s3Result.key,
+      s3Url: s3Result.url,
+      s3Bucket: s3Result.bucket,
+      prompt,
+      mimeType: 'image/png',
+      size: buffer.length,
+      metadata: {
+        model: 'hidream',
+        orientation
+      }
+    });
+
+    return res.json({
+      success: true,
+      image
+    });
+
+  } catch (err) {
+    next(err);
   }
 };

@@ -1,12 +1,13 @@
 import { useState, useContext } from "react";
 import { FaGhost, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
 import { AppContext } from "../../context/AppContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { signin } = useContext(AppContext);
+  const { signin, googleSignin } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,7 @@ const SignIn = () => {
     <section className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-[#1E1E1E] to-black text-white px-6">
 
       {/* Background Ghost AI Text */}
-      <h1 className="absolute text-5xl font-bold text-white/20 select-none top-34 md:top-20">
+      <h1 className="absolute text-5xl font-bold text-white/20 select-none top-34 md:top-10">
         GHOSTVERSE AI
       </h1>
 
@@ -64,6 +65,24 @@ const SignIn = () => {
 
         {/* Message */}
         {msg && <p className="text-red-500 text-sm mb-4">{msg}</p>}
+
+        {/* Google sign-in button */}
+        <button
+          onClick={async () => {
+            setLoading(true);
+            try {
+              await googleSignin();
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className="w-full bg-white text-black py-3 rounded-lg font-semibold flex items-center justify-center gap-3 mb-4"
+        >
+          <FcGoogle size={22} />
+          Continue with Google
+        </button>
+
+        <div className="text-center text-gray-400 text-sm mb-4">or sign in with email</div>
 
         {/* Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>

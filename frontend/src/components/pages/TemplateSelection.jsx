@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import api from "../../services/axiosInstance";
 import { AppContext } from "../../context/AppContext";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import { ProgressStep3 } from '../helperComponents/Steps.jsx'
 import storyImage from "../../assets/images/story-image-1.jpg";
@@ -13,6 +13,9 @@ const TemplateSelection = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const incomingPreviews = location.state?.previews || null;
+  const [previewImages, setPreviewImages] = useState(incomingPreviews);
 
   const templates = [
     { name: "Landscape", size: "1536x1024", aspect: "landscape" },
@@ -35,6 +38,7 @@ const TemplateSelection = () => {
     };
 
     fetchStoryData();
+    if (incomingPreviews) setPreviewImages(incomingPreviews);
   }, []);
 
   
@@ -153,11 +157,19 @@ const TemplateSelection = () => {
                         bg-gray-800 flex items-center justify-center mx-auto
                         max-h-[50vh] md:max-h-[70vh] w-auto relative`}
                       style={{ height: "auto" }}>
-                      <img 
-                        src={storyImage} 
-                        alt={template.name}
-                        className="w-full h-full object-cover absolute inset-0"
-                      />
+                      {previewImages && previewImages[template.aspect] ? (
+                        <img
+                          src={`data:image/png;base64,${previewImages[template.aspect].base64 || previewImages[template.aspect]}`}
+                          alt={template.name}
+                          className="w-full h-full object-cover absolute inset-0"
+                        />
+                      ) : (
+                        <img
+                          src={storyImage}
+                          alt={template.name}
+                          className="w-full h-full object-cover absolute inset-0"
+                        />
+                      )}
                       <div className="text-center relative z-10 bg-black/60 px-4 py-3 rounded-lg backdrop-blur-sm">
                      <div className="flex items-center justify-center gap-2">
                           <p className="text-white font-bold text-sm md:text-base">{template.name}</p>

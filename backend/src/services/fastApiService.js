@@ -57,6 +57,27 @@ exports.generateStory = async (
   return response.data;
 };
 
+// Generate temporary preview images from a gist (no storage)
+// FastAPI: POST /gist/preview-images
+exports.generateGistPreviewImages = async ({ userId, genre, gist }) => {
+  try {
+    const response = await fastApiClient.post('/gist/preview-images', {
+      user_id: userId,
+      genre,
+      gist
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error(
+      'FastAPI gist preview error:',
+      err.response?.data || err.message
+    );
+    throw new Error('Failed to generate gist preview images');
+  }
+};
+
 // Image generation--------------------------------------------------
 exports.generateImages = async (pages, orientation, genre) => {
   const payload = { pages, orientation };
@@ -214,10 +235,9 @@ exports.uploadBooks = async (files, userId) => {
       });
     });
 
-    form.append("user_id", userId);
-
+    // Note: FastAPI expects `user_id` as a query param (Query(...)), not in the multipart form
     const response = await axios.post(
-      `${FASTAPI_BASE_URL}/upload-books`,
+      `${FASTAPI_BASE_URL}/upload-books?user_id=${encodeURIComponent(userId)}`,
       form,
       {
         timeout: 1800000,
@@ -234,18 +254,12 @@ exports.uploadBooks = async (files, userId) => {
   }
 };
 
-// Process uploaded books from S3 ------------------------------------------
+// Trigger FastAPI to process uploaded books for a user
+// FastAPI expects user_id as a query parameter on /process-books
 exports.processBooksFromS3 = async (userId) => {
   try {
-    const payload = {
-      user_id: userId,
-      s3_prefix: `uploads/${userId}/books`,
-      s3_bucket: "writing-style", // optional if FastAPI has default
-    };
-
     const response = await fastApiClient.post(
-      "/process-books-s3",
-      payload
+      `/process-books?user_id=${encodeURIComponent(userId)}`
     );
 
     return response.data;

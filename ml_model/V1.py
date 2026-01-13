@@ -1,49 +1,134 @@
 # ============================================================
 # 🎨 Storybook Generator API (FastAPI + OpenRouter)
 # ============================================================
-from dotenv import load_dotenv
-import os
-
-# Always load .env from the SAME folder as this file
-env_path = os.path.join(os.path.dirname(__file__), ".env")
-load_dotenv(env_path)
-print("API KEY =>", os.getenv("OPENROUTER_API_KEY"))
-
-from dotenv import load_dotenv
-load_dotenv()
-
-from fastapi import FastAPI, HTTPException
-from fastapi import Query
-from pydantic import BaseModel
-from typing import List, Tuple
-from openai import OpenAI
-import os
-from fastapi import UploadFile, File, Form
-import base64
-import logging
-from logging.handlers import RotatingFileHandler
-from fastapi_utilities import ttl_lru_cache
-import sys
-sys.stdout.reconfigure(encoding="utf-8")
-
-import boto3
-from pathlib import Path
+# 🔧 Standard Library
+# ============================================================
 import os
 import re
-import uuid
+import sys
 import json
+import uuid
+import time
+import base64
+import random
+import hashlib
+import tempfile
+import textwrap
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from io import BytesIO
+from typing import List, Dict, Tuple, Optional
 
-import pdfplumber
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from openai import OpenAI
-from docx import Document
+# ============================================================
+# 🌱 Environment
+# ============================================================
 from dotenv import load_dotenv
 
+load_dotenv()
+sys.stdout.reconfigure(encoding="utf-8")
+
+# ============================================================
+# 🚀 FastAPI & Pydantic
+# ============================================================
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    Query
+)
+from pydantic import BaseModel, Field
+
+# ============================================================
+# 🧠 Database (MongoDB)
+# ============================================================
+from pymongo import MongoClient
+MONGO_URI = os.getenv("MONGO_URI")
+mongo_client = MongoClient(MONGO_URI)
+
+db = mongo_client["storybook"]
+styles_collection = db["user_writing_styles"]
+import tempfile
+SESSION_UPLOADS = {}
+
+# ============================================================
+# 🤖 LLM Client
+# ============================================================
+from openai import OpenAI
+
+# ============================================================
+# 📄 Document Processing
+# ============================================================
+import pdfplumber
+from docx import Document
+
+# ============================================================
+# 🌐 Networking
+# ============================================================
+import requests
+
+# ============================================================
+# 🖼 Image Processing
+# ============================================================
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+# ============================================================
+# 🧾 Logging
+# ============================================================
+from logging.handlers import RotatingFileHandler
+
+# ============================================================
+# 📦 Utilities
+# ============================================================
+import qrcode
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
+
+if not OPENROUTER_API_KEY:
+    raise RuntimeError("OPENROUTER_API_KEY missing")
+
+client = OpenAI(
+    base_url=OPENROUTER_BASE_URL,
+    api_key=OPENROUTER_API_KEY,
+    default_headers={
+        "HTTP-Referer": "https://your-site.com",
+        "X-Title": "Storybook Generator API"
+    }
+)
+
+# ============================================================
+# 🔧 GLOBAL RUNTIME CONFIG (SINGLE SOURCE OF TRUTH)
+# ============================================================
+
+RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
+RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS")
+RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
+
+RUNPOD_SDXL_URL = os.getenv("RUNPOD_SDXL_URL")
+RUNPOD_SDXL_STATUS = os.getenv("RUNPOD_SDXL_STATUS")
+
+DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "1600"))
+POLL_INTERVAL = float(os.getenv("IMAGE_GEN_POLL_INTERVAL_S", "3.0"))
+JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT_S", "600"))
+
+NEGATIVE_PROMPT_TEXT = (
+    "multiple legs, deformed fingers, blurry, low quality, low resolution, "
+    "deformed eyes, distorted face, deformed mouth, extra limbs, fused fingers, "
+    "mutated hands, missing fingers, disfigured, mutated, bad anatomy, bad proportions, "
+    "poorly drawn, bad hands, bad face, watermark, signature, text, logo, nsfw, nude, "
+    "sexual, worst quality, ugly, jpeg artifacts, pixelated, censored, error, duplicate, "
+    "out of frame, cropped, cloned face, grainy, overexposed, underexposed, "
+    "blurry, lowres, inconsistent face, inconsistent facial expressions, long neck, "
+    "cartoon, overlapping bodies, fused people, duplicate heads, malformed body, "
+    "overlapping bodies, crowd, close overlap,distorted legs,nude,cartoon, anime, drawing, painting, artistic, abstract, concept art, "
+    "cel-shaded, flat lighting, sketch, unrealistic, inconsistent tone"
+)
+
+# ============================================================
 # ----------------------------
 # GLOBAL LOGGING SETUP
 # ----------------------------
@@ -69,9 +154,6 @@ QUESTIONNAIRE_MODELS = [
     "mistralai/mistral-7b-instruct:free",
     "xiaomi/mimo-v2-flash:free",
 ]
-
-import time
-from fastapi import HTTPException
 
 def call_questionnaire_llm(
     messages,
@@ -132,20 +214,6 @@ def call_questionnaire_llm(
 # 🧠 Setup (Production Safe)
 # ============================================================
 
-API_KEY = os.getenv("OPENROUTER_API_KEY")
-BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-
-if not API_KEY:
-    raise Exception("❌ OPENROUTER_API_KEY missing in .env")
-
-client = OpenAI(
-    base_url=BASE_URL,
-    api_key=API_KEY,
-    default_headers={
-        "HTTP-Referer": "https://your-site.com",
-        "X-Title": "Storybook Generator API"
-    }
-)
 
 SECOND_QUESTION = (
     "What happened? List the key incidents in order, and also mention every important person."
@@ -236,10 +304,7 @@ def generate_gist(conversation, genre="Family",user_id: str | None = None, model
     style_example = ""
 
     if user_id:
-        user_genre_map = load_genre_style_map(
-        bucket=DEFAULT_S3_BUCKET,
-        user_id=user_id
-        )
+        user_genre_map = load_genre_style_map(user_id)
 
     genres = parse_genres(genre)
     styles = []
@@ -307,20 +372,11 @@ RULES:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gist generation failed: {str(e)}")
 # hidream_preview_api_base64.py
-
-import requests
-import random
-import uuid
-from typing import Dict
-
 # -------------------------------------------------
 # HiDream / RunPod CONFIG (Gist Images)
 # -------------------------------------------------
-RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
-RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY")
-
 HEADERS = {
-    "Authorization": f"Bearer {RUNPOD_API_KEY}",
+    "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
     "Content-Type": "application/json",
 }
 
@@ -519,83 +575,19 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
-OPENROUTER_API_KEY = require_env("OPENROUTER_API_KEY")
-AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
-
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-
-DEFAULT_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
-
-
+RUNPOD_AUTH_BEARER = require_env("RUNPOD_AUTH_BEARER")
+RUNPOD_HIDREAM_URL = require_env("RUNPOD_HIDREAM_URL")
+RUNPOD_HIDREAM_STATUS = require_env("RUNPOD_HIDREAM_STATUS")
+RUNPOD_SDXL_URL = require_env("RUNPOD_SDXL_URL")
+RUNPOD_SDXL_STATUS = require_env("RUNPOD_SDXL_STATUS")
+RUNPOD_FACESWAP_URL = require_env("RUNPOD_FACESWAP_URL")
+RUNPOD_BANANA_ENDPOINT = require_env("RUNPOD_BANANA_ENDPOINT")
+MONGO_URI = require_env("MONGO_URI")
 # =========================================================
 # LOGGING
 # =========================================================
 BASE_LOG_DIR = "logs"
 os.makedirs(BASE_LOG_DIR, exist_ok=True)
-
-# =========================================================
-# AWS S3 CLIENT
-# =========================================================
-s3_client = boto3.client(
-    "s3",
-    region_name=AWS_REGION,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-)
-
-# =========================================================
-# OPENROUTER CLIENT
-# =========================================================
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-)
-
-# =========================================================
-# FASTAPI APP
-# =========================================================
-app = FastAPI(
-    title="Book Metadata Extraction API (AWS S3)",
-    version="1.0.0",
-)
-
-# =========================================================
-# REQUEST MODELS
-# =========================================================
-from typing import Optional
-
-class ProcessBooksS3Request(BaseModel):
-    user_id: str
-    s3_prefix: str
-    s3_bucket: Optional[str] = DEFAULT_S3_BUCKET
- # uploads/<user_id>/books/
-
-# =========================================================
-# LOGGER
-# =========================================================
-def get_logger(user_id: str) -> logging.Logger:
-    logger = logging.getLogger(user_id)
-    logger.setLevel(logging.INFO)
-
-    if logger.handlers:
-        return logger
-
-    formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
-
-    file_handler = logging.FileHandler(
-        os.path.join(BASE_LOG_DIR, f"{user_id}.log"),
-        encoding="utf-8",
-    )
-    file_handler.setFormatter(formatter)
-
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-
-    return logger
 
 # =========================================================
 # TEXT EXTRACTION HELPERS
@@ -619,100 +611,12 @@ def extract_text_from_txt(path: Path) -> str:
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
 
-# =========================================================
-# S3 INGESTION (WITH PAGINATION)
-# =========================================================
-import tempfile
-
-def extract_text_from_s3(bucket: str, prefix: str, logger):
-    logger.info(f"📄 Scanning s3://{bucket}/{prefix}")
-
-    supported_exts = {".pdf", ".docx", ".txt"}
-    books_text = {}
-    book_ids = {}
-
-    paginator = s3_client.get_paginator("list_objects_v2")
-    found = False
-
-    temp_dir = Path(tempfile.gettempdir())
-    temp_dir.mkdir(parents=True, exist_ok=True)
-
-    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
-            ext = Path(key).suffix.lower()
-
-            if ext not in supported_exts:
-                continue
-
-            found = True
-            book_id = f"book_{uuid.uuid4().hex[:8]}"
-            filename = Path(key).name
-            book_ids[filename] = book_id
-
-            logger.info(f"📘 Downloading {key}")
-
-            local_path = temp_dir / f"{uuid.uuid4().hex}{ext}"
-
-            s3_client.download_file(bucket, key, str(local_path))
-
-            try:
-                if ext == ".pdf":
-                    text = extract_text_from_pdf(local_path)
-                elif ext == ".docx":
-                    text = extract_text_from_docx(local_path)
-                else:
-                    text = extract_text_from_txt(local_path)
-
-                books_text[book_id] = text[:12000]
-                logger.info(f"✅ Extracted {len(text)} chars")
-
-            finally:
-                if local_path.exists():
-                    local_path.unlink()
-
-    if not found:
-        raise HTTPException(400, "No supported files found in S3 prefix")
-
-    return books_text, book_ids
-
-def delete_s3_prefix(bucket: str, prefix: str, logger):
-    """
-    Deletes ALL objects under a given S3 prefix safely.
-    """
-    logger.info(f"🧹 Deleting uploaded files from s3://{bucket}/{prefix}")
-
-    paginator = s3_client.get_paginator("list_objects_v2")
-    objects_to_delete = []
-
-    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-        for obj in page.get("Contents", []):
-            objects_to_delete.append({"Key": obj["Key"]})
-
-            # AWS delete_objects max = 1000
-            if len(objects_to_delete) == 1000:
-                s3_client.delete_objects(
-                    Bucket=bucket,
-                    Delete={"Objects": objects_to_delete}
-                )
-                logger.info(f" Deleted batch of {len(objects_to_delete)} objects")
-                objects_to_delete.clear()
-
-    # delete remaining
-    if objects_to_delete:
-        s3_client.delete_objects(
-            Bucket=bucket,
-            Delete={"Objects": objects_to_delete}
-        )
-        logger.info(f" Deleted final batch of {len(objects_to_delete)} objects")
-
-    logger.info(" Uploaded files cleanup completed")
-
 
 # =========================================================
 # BOOK TYPE CLASSIFIER
 # =========================================================
-def classify_book_type(text: str, logger) -> str:
+def classify_book_type(text: str) -> str:
+    logger.info(...)
     prompt = (
         "Classify this book into ONE category:\n"
         "- narrative_story\n"
@@ -759,100 +663,39 @@ def build_prompt(books_text: Dict[str, str]) -> str:
     return prompt
 # =========================================================
 
-
-
-def load_genre_style_map(
-    bucket: str,
-    user_id: str
-) -> Dict[str, Dict[str, str]]:
-    """
-    Loads books_metadata.json from S3 and builds:
-    {
-        genre: {
-            "writing_style": "...",
-            "example": "..."
-        }
-    }
-    One strong example per genre (longest example wins).
-    """
-
-    key = f"outputs/{user_id}/books_metadata.json"
-
-    try:
-        response = s3_client.get_object(Bucket=bucket, Key=key)
-        content = response["Body"].read().decode("utf-8")
-        data = json.loads(content)
-
-    except Exception:
-    # User has no books yet — return empty map
+def load_genre_style_map(user_id: str) -> dict:
+    doc = styles_collection.find_one({"user_id": user_id})
+    if not doc:
         return {}
 
+    genre_map = {}
 
-    genre_map: Dict[str, Dict[str, str]] = {}
-
-    for book in data.get("books", []):
-        genre = normalize_genre(book.get("genre") or "")
-        writing_style = (book.get("writing_style") or "").strip()
-        example = (book.get("example") or "").strip()
+    for book in doc.get("books", []):
+        genre = normalize_genre(book.get("genre", ""))
+        example = book.get("example", "").strip()
+        style = book.get("writing_style", "").strip()
 
         if not genre or not example:
             continue
 
-        # choose the strongest example per genre (longest)
-        if genre not in genre_map:
+        if genre not in genre_map or len(example) > len(genre_map[genre]["example"]):
             genre_map[genre] = {
-                "writing_style": writing_style,
+                "writing_style": style,
                 "example": example
             }
-        else:
-            if len(example) > len(genre_map[genre]["example"]):
-                genre_map[genre] = {
-                    "writing_style": writing_style,
-                    "example": example
-                }
-
-    if not genre_map:
-        raise HTTPException(
-            status_code=400,
-            detail="No valid genres found in books_metadata.json"
-        )
 
     return genre_map
 
-
-
 # ============================================================
-
-
-
 # story_generator_api.py
 # FastAPI Story Page + Prompt Generator
 # Single-call API: generates exactly N pages and one cinematic image prompt per page
-
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
-import os
-import re
-import json
-from openai import OpenAI
-
 # -----------------------------
 # Config / Client
 # -----------------------------
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API_KEY:
-    raise Exception("Missing OPENROUTER_API_KEY environment variable")
-
-BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+BASE_URL = os.getenv("OPENROUTER_BASE_URL")
 STORY_MODEL = os.getenv("STORY_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
 PROMPT_MODEL = os.getenv("PROMPT_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
-
-client = OpenAI(base_url=BASE_URL, api_key=OPENROUTER_API_KEY,
-                default_headers={"HTTP-Referer": "https://your-site.com", "X-Title": "Story Generator API"})
-
-#app = FastAPI(title="Story Page + Prompt Generator", version="1.0")
-
 # -----------------------------
 # Pydantic models
 # -----------------------------
@@ -862,7 +705,8 @@ class StoryRequest(BaseModel):
     character_details: str = Field(..., description="Character details, one per line, format: Name: description")
     genre: str = Field("Family", description="Genre name")
     num_pages: int = Field(5, description="Exact number of pages to generate")
-    user_id:str = Field(..., description="User ID for S3 access")
+    user_id: str = Field(..., description="User ID for MongoDB style lookup")
+
 
 class PageOutput(BaseModel):
     page: int
@@ -1430,10 +1274,8 @@ Return ONLY the JSON object.
 
 def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,user_id:str):
     
-    user_genre_map = load_genre_style_map(
-    bucket=DEFAULT_S3_BUCKET,
-    user_id=user_id
-    )
+    user_genre_map = load_genre_style_map(user_id)
+
 
     genres = parse_genres(genre)
 
@@ -1493,7 +1335,7 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
 
     # --- Story system prompt
-    story_system_prompt = story_system_prompt = f"""
+    story_system_prompt = f"""
 You are a masterful storyteller who writes with cinematic restraint, poetic compression, and emotional economy.
 
 WRITING STYLE DEFINITION:
@@ -1714,58 +1556,18 @@ CRITICAL:
     return pages_out
 
 # images_api_hidream.py
-import os
-import re
-import time
-import uuid
-import json
-import hashlib
-import base64
-import tempfile
-import requests
-from io import BytesIO
-from typing import List, Optional
-from PIL import Image
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-
-# ----------------------------
-# Config (use env vars or fallbacks)
-# ----------------------------
-RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
-RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS")
-RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
-
-# Safety / generation defaults
-DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "1600"))  # seconds
-POLL_INTERVAL = float(os.getenv("IMAGE_GEN_POLL_INTERVAL_S", "3.0"))
-
-# Negative prompt text (from your snippet)
-NEGATIVE_PROMPT_TEXT = (
-    "multiple legs, deformed fingers, blurry, low quality, low resolution, "
-    "deformed eyes, distorted face, deformed mouth, extra limbs, fused fingers, "
-    "mutated hands, missing fingers, disfigured, mutated, bad anatomy, bad proportions, "
-    "poorly drawn, bad hands, bad face, watermark, signature, text, logo, nsfw, nude, "
-    "sexual, worst quality, ugly, jpeg artifacts, pixelated, censored, error, duplicate, "
-    "out of frame, cropped, cloned face, grainy, overexposed, underexposed, "
-    "blurry, lowres, inconsistent face, inconsistent facial expressions, long neck, "
-    "cartoon, overlapping bodies, fused people, duplicate heads, malformed body, "
-    "overlapping bodies, crowd, close overlap,distorted legs,nude,cartoon, anime, drawing, painting, artistic, abstract, concept art, "
-    "cel-shaded, flat lighting, sketch, unrealistic, inconsistent tone"
-)
-
 # ----------------------------
 # FastAPI app + models
 # ----------------------------
-#app = FastAPI(title="Image Generator (HiDreamXL Serverless)")
 
-class PageIn(BaseModel):
+
+class HiDreamPageIn(BaseModel):
     page: int
     text: str   # SDXL prompt placeholder (not used for hidream now)
     prompt: str # HiDreamXL prompt (detailed)
 
 class ImageRequest(BaseModel):
-    pages: List[PageIn]
+    pages: List[HiDreamPageIn]
     orientation: Optional[str] = Field("Landscape", description="Landscape | Portrait | Square")
 
 class HiDreamPageOut(BaseModel):
@@ -1927,34 +1729,9 @@ SDXL Background Generator API
 - Left-side fade effect applied to each background (ready for text overlay)
 - Outputs base64 PNG per page with same structure as HiDream API
 """
-
-import os
-import re
-import time
-import json
-import base64
-import uuid
-import requests
-import hashlib
-from io import BytesIO
-from typing import List, Optional, Dict
-from PIL import Image, ImageDraw, ImageFilter
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-
 # ----------------------------
 # Configuration (env-overrides)
 # ----------------------------
-OPENROUTER_API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API_KEY:
-    raise Exception("Missing OPENROUTER_API_KEY environment variable")
-
-RUNPOD_SDXL_URL = os.getenv("RUNPOD_SDXL_URL", "https://api.runpod.ai/v2/2epfnuazhyb2mm/run")
-RUNPOD_SDXL_STATUS = os.getenv("RUNPOD_SDXL_STATUS", "https://api.runpod.ai/v2/2epfnuazhyb2mm/status/{}")
-RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY")
-if not RUNPOD_API_KEY:
-    raise Exception("Missing RUNPOD_API_KEY environment variable")
 
 # Tunables
 LLM_MODEL = os.getenv("SDXL_LLM_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
@@ -1973,12 +1750,12 @@ NEGATIVE_PROMPT = os.getenv("SDXL_NEGATIVE_PROMPT", (
 # ----------------------------
 #app = FastAPI(title="SDXL Background Generator (Single LLM call)")
 
-class PageIn(BaseModel):
+class SDXLPageIn(BaseModel):
     page: int
     text: str  # story page text (used by LLM to create prompt)
 
 class SDXLRequest(BaseModel):
-    pages: List[PageIn]
+    pages: List[SDXLPageIn]
     orientation: Optional[str] = Field("Landscape", description="Landscape | Portrait | Square")
 
 class SDXLPageOut(BaseModel):
@@ -1994,24 +1771,6 @@ class SDXLResponse(BaseModel):
 # ----------------------------
 # Helpers
 # ----------------------------
-def is_nsfw_prompt(prompt: str) -> bool:
-    banned = {
-        "nude", "naked", "nsfw", "porn", "sex", "erotic", "boobs", "cleavage",
-        "topless", "sexy", "underboob", "lingerie", "ass", "dick"
-    }
-    tokens = re.findall(r'\b\w+\b', (prompt or "").lower())
-    return any(t in banned for t in tokens)
-
-def get_dimensions(orientation: str):
-    if not orientation:
-        orientation = "Landscape"
-    o = orientation.strip().lower()
-    if o == "portrait":
-        return 1024, 1536
-    if o == "square":
-        return 1024, 1024
-    return 1536, 1024
-
 def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
                          blur_strength: int = 6, opacity_boost: float = 0.65) -> Image.Image:
     """
@@ -2046,7 +1805,7 @@ def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
 # ----------------------------
 # LLM: single-call multi-page to generate final SDXL prompts
 # ----------------------------
-def build_multi_page_llm_payload(pages: List[PageIn]) -> Dict:
+def build_multi_page_llm_payload(pages: List[SDXLPageIn]) -> Dict:
     """
     Build a user content containing JSON mapping Page -> text to send to the LLM.
     We ask the LLM to return a JSON object mapping Page N -> {"sdxl_prompt": "..."}
@@ -2054,29 +1813,59 @@ def build_multi_page_llm_payload(pages: List[PageIn]) -> Dict:
     """
     pages_dict = {f"Page {p.page}": p.text for p in pages}
     user_content = (
-        "You are a pro prompt engineer for Stable Diffusion XL (SDXL). "
-        "You will receive a JSON object mapping Page numbers to short story texts. "
-        "For each page produce a single final SDXL prompt optimized for landscape/storybook background images only.\n\n"
-        "REQUIREMENTS FOR EVERY PROMPT:\n"
-        "- Pastel, watercolor, soft brushwork, dreamy storybook lighting.\n"
-        "- NO HUMANS, NO SILHOUETTES, NO HUMAN SHAPES, NO FACES. Strictly scenic elements only.\n"
-        "- No text, no watermark, no logos.\n"
-        "- Include atmosphere, lighting, color palette, composition, and 3-6 visual objects/elements.\n"
-        "- Keep prompts concise (one sentence) but descriptive enough for SDXL.\n"
-        "- Return ONLY a valid JSON object, with keys exactly 'Page 1', 'Page 2', etc. Each value must be an object with a single key 'sdxl_prompt'.\n"
-        "- Example output structure:\n"
-        '{ \"Page 1\": { \"sdxl_prompt\": \"...\" }, \"Page 2\": { \"sdxl_prompt\": \"...\" } }\n\n'
-        "Now the input JSON (do not add explanation):\n"
-        f"{json.dumps(pages_dict, ensure_ascii=False)}\n\n"
-        "Return only the JSON object, nothing else."
-    )
+    "You are a professional SDXL prompt engineer specialized in STORY-GROUNDED illustration.\n\n"
+
+    "You will receive a JSON object mapping Page numbers to short STORY PAGE TEXTS.\n"
+    "Each page text describes a specific moment in the story.\n\n"
+
+    "YOUR TASK:\n"
+    "For EACH page, generate ONE final SDXL prompt that visually represents THAT PAGE ONLY.\n"
+    "The prompt MUST be derived STRICTLY from the page text.\n\n"
+
+    "CRITICAL STORY-GROUNDING RULES (NON-NEGOTIABLE):\n"
+    "- Extract ONLY concrete, visual elements explicitly mentioned or strongly implied in the page text.\n"
+    "- Do NOT invent locations, objects, scenery, or atmosphere that are not supported by the text.\n"
+    "- If the page mentions a room, house, table, window, road, garden, or time of day — use THAT.\n"
+    "- If something is NOT in the page text, it MUST NOT appear in the image prompt.\n"
+    "- The image should look like a frozen visual frame from THAT story page.\n\n"
+
+    "CHARACTER SAFETY RULES:\n"
+    "- NO humans, NO people, NO faces, NO silhouettes, NO human shapes.\n"
+    "- If characters are present in the story text, represent them ONLY through environmental traces\n"
+    "  (e.g. empty chair, open door, plates on a table, footprints, toys, books, lamps, curtains).\n\n"
+
+    "STYLE RULES (SECONDARY TO STORY):\n"
+    "- Pastel watercolor storybook style.\n"
+    "- Soft brushwork, gentle lighting.\n"
+    "- Cinematic but grounded realism.\n\n"
+
+    "PROMPT CONSTRUCTION RULES:\n"
+    "- Exactly ONE sentence per prompt.\n"
+    "- Include: location + lighting + atmosphere + 2–5 story-specific visual objects.\n"
+    "- Do NOT reuse generic scenery across pages unless the story text repeats it.\n\n"
+
+    "OUTPUT FORMAT (STRICT):\n"
+    "- Return ONLY a valid JSON object.\n"
+    "- Keys MUST be exactly: 'Page 1', 'Page 2', etc.\n"
+    "- Each value MUST be: { \"sdxl_prompt\": \"...\" }\n"
+    "- No explanations. No markdown. No extra text.\n\n"
+
+    "EXAMPLE (ILLUSTRATIVE ONLY — DO NOT COPY CONTENT):\n"
+    "{ \"Page 1\": { \"sdxl_prompt\": \"pastel watercolor interior of a quiet kitchen, sunlight through a window, wooden table with two empty plates, folded chairs nearby, warm morning light, soft storybook atmosphere\" } }\n\n"
+
+    "NOW PROCESS THIS INPUT JSON:\n"
+    f"{json.dumps(pages_dict, ensure_ascii=False)}\n\n"
+
+    "Return only the JSON object."
+)
+
     return {
         "model": LLM_MODEL,
         "messages": [{"role": "user", "content": user_content}],
         "temperature": LLM_TEMPERATURE
     }
 
-def call_llm_get_prompts(pages: List[PageIn]) -> Optional[Dict[str, Dict[str, str]]]:
+def call_llm_get_prompts(pages: List[SDXLPageIn]) -> Optional[Dict[str, Dict[str, str]]]:
     """
     Call OpenRouter (LLM) once, parse JSON and return mapping Page -> {"sdxl_prompt": "..."}
     """
@@ -2141,7 +1930,7 @@ def run_runpod_sdxl(prompt: str, width: int, height: int, seed: int = None):
         }
     }
 
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_API_KEY}"}
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"}
     resp = requests.post(RUNPOD_SDXL_URL, headers=headers, json=payload, timeout=30)
     if resp.status_code not in (200, 201):
         raise RuntimeError(f"RunPod SDXL start failed: {resp.status_code} {resp.text}")
@@ -2269,37 +2058,9 @@ Standalone Cover + BackCover Generator (No characters on cover)
 - Input: pages[], genre, orientation, story_title (optional), qr_url (optional)
 - Output: base64 cover image + base64 back image + prompts + blurb
 """
-
-import os
-import time
-import uuid
-import json
-import base64
-import textwrap
-import random
-import requests
-from io import BytesIO
-from typing import List, Optional
-from pydantic import BaseModel, Field
-from fastapi import FastAPI, HTTPException
-from PIL import Image, ImageDraw, ImageFont
-import qrcode
-
 # ----------------------------
 # Configuration (env or defaults)
 # ----------------------------
-OPENROUTER_API_URL = os.getenv("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API_KEY:
-    raise Exception("OPENROUTER_API_KEY environment variable is required")
-
-RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL", "https://api.runpod.ai/v2/13qcrvhdetvkgx/run")
-RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS", "https://api.runpod.ai/v2/13qcrvhdetvkgx/status/{}")
-RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
-
-if not RUNPOD_AUTH_BEARER:
-    raise Exception("RUNPOD_AUTH_BEARER environment variable is required")
-
 # Tunables
 POLL_INTERVAL = float(os.getenv("COVER_POLL_INTERVAL_S", "3.0"))
 JOB_TIMEOUT = int(os.getenv("COVER_JOB_TIMEOUT_S", "600"))
@@ -2316,13 +2077,13 @@ NEGATIVE_PROMPT_TEXT = (
 # ----------------------------
 #app = FastAPI(title="Cover & BackCover Generator (Simple, No Characters on Cover)")
 
-class PageIn(BaseModel):
+class CoverPageIn(BaseModel):
     page: int
     text: str
     prompt: Optional[str] = None
 
 class CoverBackRequest(BaseModel):
-    pages: List[PageIn]
+    pages: List[CoverPageIn]
     genre: Optional[str] = Field("Family")
     orientation: Optional[str] = Field("Portrait")
     story_title: Optional[str] = None
@@ -2629,7 +2390,7 @@ def encode_image_to_base64(image_path):
 def run_banana_edit(prompt, image_b64, output_format):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {RUNPOD_API_KEY}"
+        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"
     }
 
     data = {
@@ -2685,7 +2446,7 @@ def call_runpod_faceswap(
     }
 
     headers = {
-        "Authorization": f"Bearer {RUNPOD_API_KEY}",
+        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
         "Content-Type": "application/json"
     }
 
@@ -2711,8 +2472,6 @@ def start_questionnaire():
 
     return {"chat": chat, "conversation": [first]}
 
-
-import os
 
 QUESTION_LIMIT = int(os.getenv("QUESTION_LIMIT", 15))
 
@@ -2785,56 +2544,58 @@ def next_question(data: AnswerInput):
 # ============================
 
 @app.post("/upload-books")
-def upload_books(
+async def upload_books(
     user_id: str = Query(...),
-    s3_bucket: str = Query(DEFAULT_S3_BUCKET),
     files: list[UploadFile] = File(...)
 ):
-    uploaded = []
+    if user_id not in SESSION_UPLOADS:
+        SESSION_UPLOADS[user_id] = []
 
     for file in files:
         ext = Path(file.filename).suffix.lower()
         if ext not in {".pdf", ".docx", ".txt"}:
             continue
 
-        s3_key = f"uploads/{user_id}/books/{file.filename}"
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
+        tmp.write(await file.read())
+        tmp.close()
 
-        s3_client.upload_fileobj(
-            file.file,
-            Bucket=s3_bucket,
-            Key=s3_key,
-        )
+        SESSION_UPLOADS[user_id].append(tmp.name)
 
-        uploaded.append(s3_key)
-
-    if not uploaded:
+    if not SESSION_UPLOADS[user_id]:
         raise HTTPException(400, "No valid files uploaded")
 
     return {
         "status": "uploaded",
-        "files": uploaded,
-        "next_step": "Call /process-books-s3",
+        "files_uploaded": len(SESSION_UPLOADS[user_id]),
+        "next_step": "Call /process-books"
     }
 
 # =========================================================
 # PROCESS ENDPOINT (STEP 2)
 # =========================================================
-@app.post("/process-books-s3")
-def process_books_s3(payload: ProcessBooksS3Request):
-    logger = get_logger(payload.user_id)
-    logger.info(" Processing books from S3")
+@app.post("/process-books")
+def process_books(user_id: str):
+    if user_id not in SESSION_UPLOADS:
+        raise HTTPException(400, "No uploaded files found for this user")
 
-    books_text, book_ids = extract_text_from_s3(
-        payload.s3_bucket,
-        payload.s3_prefix,
-        logger,
-    )
+    books_text = {}
+    books_meta = []
 
-    book_types = {
-        bid: classify_book_type(text, logger)
-        for bid, text in books_text.items()
-    }
+    for path in SESSION_UPLOADS[user_id]:
+        ext = Path(path).suffix.lower()
+        book_id = f"book_{uuid.uuid4().hex[:8]}"
 
+        if ext == ".pdf":
+            text = extract_text_from_pdf(Path(path))
+        elif ext == ".docx":
+            text = extract_text_from_docx(Path(path))
+        else:
+            text = extract_text_from_txt(Path(path))
+
+        books_text[book_id] = text[:12000]
+
+    # ---- LLM METADATA EXTRACTION (same logic as before) ----
     prompt = build_prompt(books_text)
 
     completion = client.chat.completions.create(
@@ -2865,73 +2626,48 @@ def process_books_s3(payload: ProcessBooksS3Request):
         temperature=0.3,
     )
 
-    response_text = completion.choices[0].message.content
-    match = re.search(r"\{.*\}", response_text, re.DOTALL)
-
+    match = re.search(r"\{.*\}", completion.choices[0].message.content, re.DOTALL)
     if not match:
         raise HTTPException(500, "Invalid JSON from LLM")
 
     parsed = json.loads(match.group())
 
-    books_output = []
-
-    for source_file, book_id in book_ids.items():
-        if book_id not in parsed:
-            continue
-
-        data = parsed[book_id]
-
-        books_output.append({
+    for book_id, data in parsed.items():
+        books_meta.append({
             "book_id": book_id,
-            "source_file": source_file,
-            "book_type": book_types.get(book_id),
             "title": data.get("title", ""),
+            "genre": normalize_genre(data.get("genre", "")),
             "writing_style": data.get("writing_style", ""),
-            "genre": data.get("genre", ""),
-            "example": data.get("example", ""),
+            "example": data.get("example", "")
         })
 
-    final_output = {
-        "user_id": payload.user_id,
-        "generated_at": datetime.utcnow().isoformat(),
-        "total_books": len(books_output),
-        "books": books_output,
-    }
-
-    output_key = f"outputs/{payload.user_id}/books_metadata.json"
-
-    s3_client.put_object(
-        Bucket=payload.s3_bucket,
-        Key=output_key,
-        Body=json.dumps(final_output, ensure_ascii=False, indent=2),
-        ContentType="application/json",
+    # ---- SAVE TO MONGODB ----
+    styles_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "generated_at": datetime.utcnow(),
+            "books": books_meta
+        }},
+        upsert=True
     )
 
-    logger.info(f" Uploaded s3://{payload.s3_bucket}/{output_key}")
-    # 🧹 Delete uploaded source books after successful processing
-    delete_s3_prefix(
-        bucket=payload.s3_bucket,
-        prefix=payload.s3_prefix,
-        logger=logger
-)
-
+    # ---- CLEAN TEMP FILES ----
+    for p in SESSION_UPLOADS[user_id]:
+        os.unlink(p)
+    del SESSION_UPLOADS[user_id]
 
     return {
         "status": "success",
-        "books_processed": len(books_output),
-        "s3_output": f"s3://{payload.s3_bucket}/{output_key}",
+        "books_processed": len(books_meta)
     }
+
 
 @app.get("/genres")
 def get_genres(user_id: str):
-    genre_map = load_genre_style_map(
-        bucket=DEFAULT_S3_BUCKET,
-        user_id=user_id
-    )
+    genre_map = load_genre_style_map(user_id)
+    return {"genres": sorted(genre_map.keys())}
 
-    return {
-        "genres": sorted(genre_map.keys())
-    }
 # ============================
 @app.post("/gist", response_model=GistResponse)
 def gist(data: GistInput):

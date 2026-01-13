@@ -219,3 +219,103 @@
 2026-01-10 13:51:05,938 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
 2026-01-10 13:52:07,402 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
 2026-01-10 13:53:11,042 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-10 13:57:12,569 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-10 13:58:18,427 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-10 13:59:19,590 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-10 14:00:21,582 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-10 14:01:22,747 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-10 14:02:24,549 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-10 14:03:25,651 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-10 14:04:27,342 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-10 14:05:28,649 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-10 14:06:29,907 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-10 14:14:39,160 [INFO] storybook_api - /coverback/generate called. Genre=Family, Fantasy, Title=Urusa
+2026-01-11 22:45:21,549 [INFO] storybook_api - Next question request received. Answer: a story of a aspirant
+2026-01-11 22:45:21,596 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:45:21,601 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:45:28,551 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:45:29,133 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:49:50,334 [INFO] storybook_api - Next question request received. Answer: a story of a aspirant
+2026-01-11 22:49:50,350 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:49:50,350 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:49:51,464 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:49:51,804 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:50:08,311 [INFO] storybook_api - Next question request received. Answer: mbbs
+2026-01-11 22:50:08,312 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:50:08,312 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:50:11,452 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:50:15,273 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:50:41,577 [INFO] storybook_api - Next question request received. Answer: sleepless nights
+2026-01-11 22:50:41,577 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:50:41,577 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:50:43,342 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:50:43,585 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:51:07,516 [INFO] storybook_api - Next question request received. Answer: 4months
+2026-01-11 22:51:07,517 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:51:07,517 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:51:09,510 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:51:09,769 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:51:30,610 [INFO] storybook_api - Next question request received. Answer: success
+2026-01-11 22:51:30,610 [INFO] storybook_api - LLM generating next question
+2026-01-11 22:51:30,611 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 22:51:31,628 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 22:51:32,868 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:00:09,860 [INFO] storybook_api - Next question request received. Answer: hulk
+2026-01-11 23:00:09,877 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:00:09,879 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:00:11,025 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:00:15,837 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:02:48,930 [INFO] storybook_api - Next question request received. Answer: khali
+2026-01-11 23:02:48,942 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:02:48,943 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:02:50,539 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:02:51,373 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:03:02,162 [INFO] storybook_api - Generating gist | user=693f9d52cef2f9280426fa5f | genre=
+2026-01-11 23:03:02,164 [INFO] storybook_api - Calling LLM for story gist
+2026-01-11 23:03:05,103 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:29:36,142 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:32:41,678 [INFO] storybook_api - Start questionnaire called
+2026-01-11 23:32:59,901 [INFO] storybook_api - Next question request received. Answer: for gifting
+2026-01-11 23:33:19,956 [INFO] storybook_api - Next question request received. Answer: sallu was a actor
+2026-01-11 23:33:19,957 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:33:19,958 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:33:21,623 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:33:22,659 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:33:43,003 [INFO] storybook_api - Next question request received. Answer: critisiame
+2026-01-11 23:33:43,003 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:33:43,004 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:33:44,297 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:33:44,788 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:33:57,017 [INFO] storybook_api - Next question request received. Answer: ignoring
+2026-01-11 23:33:57,017 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:33:57,017 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:33:58,425 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:33:58,618 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:34:05,934 [INFO] storybook_api - Next question request received. Answer: yes
+2026-01-11 23:34:05,934 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:34:05,934 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:34:06,872 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:34:07,762 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:34:32,897 [INFO] storybook_api - Next question request received. Answer: farm
+2026-01-11 23:34:32,898 [INFO] storybook_api - LLM generating next question
+2026-01-11 23:34:32,898 [INFO] storybook_api -  Questionnaire LLM attempt [1/3]: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:34:34,303 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:34:34,675 [INFO] storybook_api - [OK] Questionnaire LLM success: meta-llama/llama-3.3-70b-instruct:free
+2026-01-11 23:34:36,716 [INFO] storybook_api - Generating gist | user=693f9d52cef2f9280426fa5f | genre=family drama / slice of life
+2026-01-11 23:34:36,725 [INFO] storybook_api - Calling LLM for story gist
+2026-01-11 23:34:37,387 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:34:51,728 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:35:01,332 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:35:18,278 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:35:37,726 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:35:49,472 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-11 23:36:27,429 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-11 23:39:42,817 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-11 23:40:19,057 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-11 23:44:55,699 [INFO] storybook_api - /coverback/generate called. Genre=family drama / slice of life, Title=Seeds Of Hope Grow
+2026-01-11 23:53:00,510 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:53:05,252 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-11 23:53:14,696 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-11 23:53:52,229 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-12 13:12:42,819 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-12 16:56:03,525 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
