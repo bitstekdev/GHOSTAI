@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw, History } from "lucide-react";
 import api from "../../services/axiosInstance";
-import { useParams, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
 import ImageHistoryModal from "../helperComponents/ImageHistoryModal.jsx";
@@ -78,8 +77,6 @@ const StoryFlipbook = () => {
   const hideToolbarTimer = useRef(null);
 
   const { storyId } = useParams();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   // console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
@@ -900,25 +897,10 @@ pages.forEach((page, index) => {
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-4">
-          <button
-            onClick={() => {
-              if (!storyData || !storyData.story) return;
-              addToCart({
-                storyId: storyId,
-                title: storyData.story.title,
-                cover: storyData.story.coverImage?.s3Url,
-                price: 29.99,
-              });
-            }}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
-          >
+          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Add to Cart
           </button>
-
-          <button
-            onClick={() => navigate("/order")}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
-          >
+          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Order Now
           </button>
         </div>
