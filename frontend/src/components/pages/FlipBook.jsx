@@ -478,21 +478,23 @@ const openEdit = () => {
   // Use book typography mapping so on-screen text matches PDF rules
   const genreStyle = BOOK_GENRE_STYLES[story.genre] || BOOK_GENRE_STYLES.Default;
 
-  // Normalize font size (accepts "16px" or 16)
-  const baseFontSize = parseInt(genreStyle.fontSize, 10) || 14;
-
-  // Orientation scale multipliers (tweak these numbers to taste)
-  const orientationScale = {
-    Portrait: 0.85,
-    Landscape: 0.9,
-    Square: 0.88,
+  // Master page font-size helper — single source of truth
+  const getPageFontSize = (orientation) => {
+    switch (orientation) {
+      case "Portrait":
+        return "13px";
+      case "Landscape":
+        return "15.5px";
+      case "Square":
+        return "14.5px";
+      default:
+        return "14px";
+    }
   };
-
-  const scale = orientationScale[story.orientation] || 1;
 
   const pageTextStyle = {
     fontFamily: genreStyle.fontFamily,
-    fontSize: `${Math.round(baseFontSize * scale)}px`,
+    fontSize: getPageFontSize(story.orientation),
     lineHeight: genreStyle.lineHeight,
     letterSpacing: genreStyle.letterSpacing,
     color: '#111827',
@@ -585,9 +587,22 @@ pages.forEach((page, index) => {
             ) : (
               <p
                 className="text-black leading-relaxed"
-                style={pageTextStyle}
+                style={{
+    ...pageTextStyle,
+    textAlign: "justify",
+    textJustify: "inter-word"
+  }}
               >
+                <span
+    style={{
+      background: "rgba(255, 255, 255, 0.88)",
+      padding: "0.15em 0.35em",
+      boxDecorationBreak: "clone",
+      WebkitBoxDecorationBreak: "clone",
+    }}
+  >
                 {page.text}
+                </span>
               </p>
             )}
           </div>
@@ -795,11 +810,11 @@ pages.forEach((page, index) => {
                 Revert
               </button>
 
-              <button className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition relative">
+              {/* <button className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
                 <Scissors size={20} />
                 Erase
                 <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">V2</span>
-              </button>
+              </button> */}
 
               <button
                 onClick={downloadPDF}

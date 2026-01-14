@@ -38,6 +38,7 @@ router.get('/test', testRoute);
 
 // Preview generation (no storage) and promotion
 router.post('/gist/preview-images', protect, gistPreviewImages);
+// router.post('/gist/preview-images',  gistPreviewImages);
 router.post('/promote-preview', protect, promotePreviewImage);
 
 module.exports = router;

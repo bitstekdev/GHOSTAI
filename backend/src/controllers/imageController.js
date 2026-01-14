@@ -77,32 +77,32 @@ exports.generateCharacterImages = async (req, res, next) => {
       // Convert base64 to buffer
       const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
 
-        // Upload to S3
-        const s3Result = await s3Service.uploadToS3(
-          imageBuffer,
-          `stories/${storyId}/characters`,
-          `page-${pageResult.page}.png`,
-          'image/png'
-        );
+      // Upload to S3
+      const s3Result = await s3Service.uploadToS3(
+        imageBuffer,
+        `stories/${storyId}/characters`,
+        `page-${pageResult.page}.png`,
+        'image/png'
+      );
 
-        // Create Image document
-        const image = await Image.create({
-          story: storyId,
-          storyPage: pages[pageResult.page - 1]._id,
-          imageType: 'character',
-          // base64Data: pageResult.hidream_image_base64,
-          s3Key: s3Result.key,
-          s3Url: s3Result.url,
-          s3Bucket: s3Result.bucket,
-          prompt: pages[pageResult.page - 1].prompt,
-          mimeType: 'image/png',
-          size: imageBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-        
+      // Create Image document
+      const image = await Image.create({
+        story: storyId,
+        storyPage: pages[pageResult.page - 1]._id,
+        imageType: 'character',
+        // base64Data: pageResult.hidream_image_base64,
+        s3Key: s3Result.key,
+        s3Url: s3Result.url,
+        s3Bucket: s3Result.bucket,
+        prompt: pages[pageResult.page - 1].prompt,
+        mimeType: 'image/png',
+        size: imageBuffer.length,
+        metadata: {
+          orientation: story.orientation,
+          model: 'hidream'
+        }
+      });
+
       try {
         // Update StoryPage with image reference
         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
@@ -114,7 +114,7 @@ exports.generateCharacterImages = async (req, res, next) => {
 
         return image;
       } catch (error) {
-         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
+        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
           characterImage: image._id,
           status: 'failed'
         });
@@ -126,7 +126,7 @@ exports.generateCharacterImages = async (req, res, next) => {
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
 
-      // Generate background images and cover images
+    // Generate background images and cover images
     // try {
     // const backgroundImages = await generateBackgroundImages(storyId);
     // console.log("Background Images Generated:", backgroundImages);
@@ -157,7 +157,7 @@ exports.generateCharacterImages = async (req, res, next) => {
 // @route   POST /api/images/generate-backgrounds/
 // @access  Private
 exports.generateBackgroundImages = async (req, res, next) => {
-// const generateBackgroundImages = async (storyId) => {
+  // const generateBackgroundImages = async (storyId) => {
   try {
     const { storyId } = req.body;
 
@@ -228,8 +228,8 @@ exports.generateBackgroundImages = async (req, res, next) => {
 
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
-    
-     res.status(200).json({
+
+    res.status(200).json({
       success: true,
       message: 'Background images generated successfully',
       data: {
@@ -249,10 +249,10 @@ exports.generateBackgroundImages = async (req, res, next) => {
 // @route   POST /api/cover/generate/
 // @access  Private
 exports.generateCover = async (req, res, next) => {
-// const generateCover = async (storyId) => {
+  // const generateCover = async (storyId) => {
   const { storyId } = req.body;
   try {
-    
+
     const story = await Story.findOne({
       _id: storyId,
     });
@@ -359,14 +359,14 @@ exports.generateCover = async (req, res, next) => {
       console.log('Story save result:', response);
 
       console.log('Cover and back cover generated successfully.', story);
-    
+
       res.status(200).json({
-      success: true,
-      message: 'Cover and back cover images generated successfully',
-      data: {
-        totalPages: pages.length,
-      }
-    });
+        success: true,
+        message: 'Cover and back cover images generated successfully',
+        data: {
+          totalPages: pages.length,
+        }
+      });
     } else {
       throw new Error('Failed to generate cover images');
     }
@@ -431,9 +431,9 @@ exports.faceSwap = async (req, res) => {
     );
 
     console.log("✅ FaceSwap FastAPI response keys:", Object.keys(swapResult));
-    
+
     const swappedBase64 = swapResult.image_base64;
-    
+
     console.log("📏 Base64 length:", swappedBase64?.length);
 
     if (!swappedBase64) {
@@ -479,7 +479,7 @@ exports.faceSwap = async (req, res) => {
         imageId: imageDoc._id,
         imageUrl: imageDoc.s3Url
       });
-      
+
     } catch (s3Error) {
       console.error("❌ S3 upload failed:", s3Error);
       throw new Error(`S3 upload failed: ${s3Error.message}`);
@@ -522,7 +522,7 @@ exports.editImage = async (req, res) => {
 
 
 
-    console.log("Edit Image - Target Buffer Length:", targetBuffer.length); 
+    console.log("Edit Image - Target Buffer Length:", targetBuffer.length);
     // 3️⃣ Call FastAPI for swapping
     const editResult = await fastApiService.editImage(
       targetBuffer,
@@ -602,8 +602,8 @@ exports.regenerateCharacterImage = async (req, res) => {
       return res.status(404).json({ success: false, message: "Page not found" });
     }
 
-     const story = page.story;
-     const existingImage = page.characterImage;
+    const story = page.story;
+    const existingImage = page.characterImage;
 
     // fromat character details
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
@@ -852,8 +852,8 @@ exports.revertImage = async (req, res) => {
 exports.testRoute = async (req, res, next) => {
   const storyId = "6935bf795b1ae90ed9afc6a5"
   try {
-   const result = await generateCover(storyId)
-   console.log("Test Route Cover Result:", result);
+    const result = await generateCover(storyId)
+    console.log("Test Route Cover Result:", result);
     res.status(200).json({
       success: true,
       result,
@@ -871,6 +871,8 @@ exports.testRoute = async (req, res, next) => {
 exports.gistPreviewImages = async (req, res, next) => {
   try {
     const { gist, genre } = req.body;
+    console.log("Gist Preview Images Request:", req.body);
+    console.log("User ID:", req.user.id);
 
     if (!gist) {
       return res.status(400).json({

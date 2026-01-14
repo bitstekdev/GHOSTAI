@@ -22,11 +22,11 @@ python-multipart
 fastapi-utilities
 
 # pdfplumber dependencies (important on Windows)
+pdfplumber
 pdfminer.six
 Pillow
 python-docx
 
-boto3
 pymongo
-
+jinja2
 
