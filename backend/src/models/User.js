@@ -5,7 +5,7 @@ const addressSchema = new mongoose.Schema({
   name:String,
   phone:String,
   address: String,
-}, { _id: false });
+});
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -56,6 +56,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  onboardingTourCompleted: {
+    type: Boolean,
+    default: false
+  }
+  ,
+  customGenreProcessedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

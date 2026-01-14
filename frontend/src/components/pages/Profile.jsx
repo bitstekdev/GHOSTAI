@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { User, MapPin, Lock } from "lucide-react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { AppContext } from "../../context/AppContext";
+import api from "../../services/axiosInstance";
 
 
 export default function Profile() {
@@ -36,12 +37,15 @@ const [profileMsg, setProfileMsg] = useState("");
     address: "",
   });
 
-const { getProfile, updateProfile, changePassword } = useContext(AppContext);
+const { getProfile, updateProfile, changePassword, fetchAddresses, createAddress, addresses, loadingAddresses, addressError, backendUrl } = useContext(AppContext);
+console.log("Backend URL in Profile:", addresses);
 
-// ----------- Fetch Profile Data ------------
+// ----------- Fetch Profile Data & Addresses------------
 useEffect(() => {
   const load = async () => {
-    const user = await getProfile();
+    // Fetch profile and addresses in parallel
+    const [user] = await Promise.all([getProfile(), fetchAddresses()]);
+    
     if (user) {
       const [firstName, ...rest] = user.name.split(" ");
       setProfile({
@@ -57,43 +61,43 @@ useEffect(() => {
 }, []);
 
 
-// ------------Address Management------------
+// ------------Address Management----------------------------------------------
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: "Shaad Ali Khan",
-      phone: "+98765 54321",
-      address: "Green Land Colony, Secherale, Hyderabad Telangana, 500018",
-    },
-    {
-      id: 2,
-      name: "Lohith Kumar",
-      phone: "+98765 54321",
-      address: "Green Land Colony, Secherale, Hyderabad Telangana, 500018",
-    },
-  ]);
+  const [editingId, setEditingId] = useState(null);
+  const [editAddress, setEditAddress] = useState({
+    recipientName: "",
+    phone: "",
+    address: "",
+  });
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  const [savingAddress, setSavingAddress] = useState(false);
 
 
     const handleAddAddress = () => {
     setShowAddForm(true);
   };
 
-  const handleSaveAddress = () => {
+  const handleSaveAddress = async () => {
     if (!newAddress.name || !newAddress.phone || !newAddress.address) {
       alert("Please fill all fields");
       return;
     }
-    const addressToAdd = {
-      ...newAddress,
-      id: addresses.length + 1,
-    };
-    setAddresses([...addresses, addressToAdd]);
-    setNewAddress({ name: "", phone: "", address: "" });
-    setShowAddForm(false);
-    console.log("New address added:", addressToAdd);
-    // TODO: Add API call here
-    // await addAddress(addressToAdd);
+    try {
+      setSavingAddress(true);
+      const result = await createAddress(newAddress);
+      console.log(result);
+      if (result.success) {
+        setNewAddress({ name: "", phone: "", address: "" });
+        fetchAddresses();
+        setShowAddForm(false);
+        console.log("New address added:", result.data);
+      } else {
+        alert(result.message);
+      }
+    } finally {
+      setSavingAddress(false);
+    }
   };
 
   const handleCancelAdd = () => {
@@ -101,6 +105,67 @@ useEffect(() => {
     setShowAddForm(false);
   };
 
+  // Update address
+const updateAddress = async (id, payload) => {
+  try {
+    const { data } = await api.put(`${backendUrl}/api/address/${id}`, payload);
+    return data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update address",
+    };
+  }
+};
+
+
+// Delete address
+const deleteAddress = async (id) => {
+  try {
+    const { data } = await api.delete(`${backendUrl}/api/address/${id}`);
+    return data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete address",
+    };
+  }
+};
+
+const handleEditClick = (addr) => {
+  setEditingId(addr._id);
+  setEditAddress({
+    recipientName: addr.name,
+    phone: addr.phone,
+    address: addr.address,
+  });
+};
+
+const handleUpdateAddress = async (id) => {
+  setAddressLoading(true);
+  const res = await updateAddress(id, editAddress);
+  setAddressLoading(false);
+
+  if (res.success) {
+    setEditingId(null);
+    fetchAddresses();
+  } else {
+    alert(res.message);
+  }
+};
+
+const handleDeleteAddress = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this address?")) return;
+
+  const res = await deleteAddress(id);
+  if (res.success) {
+    fetchAddresses();
+  } else {
+    alert(res.message);
+  }
+};
+
+// ---------------------------------------------------------------------------------------------
 
 
 // ----------- Handle Profile Update ------------
@@ -226,7 +291,9 @@ const handlePasswordChange = async () => {
               />
             </div>
           </div>
-          {profileMsg && <p className={`text-${msgColor}-500 text-sm mt-2`}>{profileMsg}</p>}
+          {profileMsg && (
+            <p className={`text-${msgColor}-500 text-sm mt-2`}>{profileMsg}</p>
+          )}
 
           <button
             onClick={handleProfileUpdate}
@@ -250,9 +317,18 @@ const handlePasswordChange = async () => {
           </div>
 
           <div className="space-y-4">
-            {addresses.map((addr, index) => (
+            {loadingAddresses && (
+              <p className="text-gray-400 text-sm">Loading addresses...</p>
+            )}
+            {addressError && (
+              <p className="text-red-500 text-sm">{addressError}</p>
+            )}
+            {addresses.length === 0 && !loadingAddresses && (
+              <p className="text-gray-400 text-sm">No addresses saved yet.</p>
+            )}
+            {/* {addresses.map((addr, index) => (
               <div
-                key={addr.id}
+                key={addr._id}
                 className="border-t border-gray-800 pt-4 first:border-t-0 first:pt-0">
                 <p className="text-sm text-purple-400 font-medium mb-1">
                   Address {index + 1}
@@ -261,7 +337,100 @@ const handlePasswordChange = async () => {
                 <p className="text-sm text-gray-400">{addr.phone}</p>
                 <p className="text-sm text-gray-400 mt-1">{addr.address}</p>
               </div>
-            ))}
+            ))} */}
+
+              {addresses.map((addr, index) => (
+                <div
+                  key={addr._id}
+                  className="border-t border-gray-800 pt-4 first:border-t-0 first:pt-0">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm text-purple-400 font-medium mb-1">
+                        Address {index + 1}
+                      </p>
+
+                      {editingId === addr._id ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editAddress.recipientName}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                recipientName: e.target.value,
+                              })
+                            }
+                            className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm"
+                          />
+
+                          <input
+                            type="text"
+                            value={editAddress.phone}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                phone: e.target.value,
+                              })
+                            }
+                            className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm"
+                          />
+
+                          <textarea
+                            value={editAddress.address}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                address: e.target.value,
+                              })
+                            }
+                            rows={2}
+                            className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm"
+                          />
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleUpdateAddress(addr._id)}
+                              disabled={addressLoading}
+                              className="bg-purple-600 px-3 py-1 text-sm rounded">
+                              {addressLoading ? "Updating..." : "Update"}
+                            </button>
+
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="bg-gray-700 px-3 py-1 text-sm rounded">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-white">{addr.name}</p>
+                          <p className="text-sm text-gray-400">{addr.phone}</p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            {addr.address}
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {/* ACTION BUTTONS */}
+                    {editingId !== addr._id && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditClick(addr)}
+                          className="text-purple-400 text-sm hover:underline">
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAddress(addr._id)}
+                          className="text-red-400 text-sm hover:underline">
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
 
             {showAddForm && (
               <div className="border-t border-gray-800 pt-4 mt-4">
@@ -318,12 +487,14 @@ const handlePasswordChange = async () => {
                   <div className="flex gap-2">
                     <button
                       onClick={handleSaveAddress}
-                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
-                      Save Address
+                      disabled={savingAddress}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      {savingAddress ? "Saving..." : "Save Address"}
                     </button>
                     <button
                       onClick={handleCancelAdd}
-                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors">
+                      disabled={savingAddress}
+                      className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       Cancel
                     </button>
                   </div>
@@ -334,102 +505,100 @@ const handlePasswordChange = async () => {
         </section>
 
         {/* Security Section */}
-       {/* Security Section */}
-          <section className="bg-[#1a1a1a] rounded-lg p-5 mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Lock className="w-4 h-4 text-purple-500" />
-              <h2 className="text-base font-semibold">Security</h2>
+        {/* Security Section */}
+        <section className="bg-[#1a1a1a] rounded-lg p-5 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Lock className="w-4 h-4 text-purple-500" />
+            <h2 className="text-base font-semibold">Security</h2>
+          </div>
+
+          <div className="space-y-4">
+            {/* CURRENT PASSWORD */}
+            <div className="relative">
+              <label className="block text-sm text-gray-400 mb-1.5">
+                Current Password
+              </label>
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={security.currentPassword}
+                onChange={(e) =>
+                  setSecurity({ ...security, currentPassword: e.target.value })
+                }
+                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+              />
+              <span
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-[38px] text-gray-400 cursor-pointer">
+                {showCurrent ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
 
-            <div className="space-y-4">
+            {/* NEW PASSWORD */}
+            <div className="relative">
+              <label className="block text-sm text-gray-400 mb-1.5">
+                New Password
+              </label>
+              <input
+                type={showNew ? "text" : "password"}
+                value={security.newPassword}
+                onChange={(e) => {
+                  setSecurity({ ...security, newPassword: e.target.value });
+                  passwordValidation(e.target.value);
+                }}
+                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+              />
+              <span
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-[38px] text-gray-400 cursor-pointer">
+                {showNew ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+            {newPassError && (
+              <p className="text-red-500 text-sm">{newPassError}</p>
+            )}
 
-              {/* CURRENT PASSWORD */}
-              <div className="relative">
-                <label className="block text-sm text-gray-400 mb-1.5">
-                  Current Password
-                </label>
-                <input
-                  type={showCurrent ? "text" : "password"}
-                  value={security.currentPassword}
-                  onChange={(e) =>
-                    setSecurity({ ...security, currentPassword: e.target.value })
+            {/* CONFIRM NEW PASSWORD */}
+            <div className="relative">
+              <label className="block text-sm text-gray-400 mb-1.5">
+                Confirm New Password
+              </label>
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={security.confirmPassword}
+                onChange={(e) => {
+                  setSecurity({ ...security, confirmPassword: e.target.value });
+
+                  if (e.target.value !== security.newPassword) {
+                    setConfirmPassError("Passwords do not match!");
+                  } else {
+                    setConfirmPassError("");
                   }
-                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
-                />
-                <span
-                  onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
-                >
-                  {showCurrent ? <FaEyeSlash /> : <FaEye />}
-                </span>
-              </div>
-
-              {/* NEW PASSWORD */}
-              <div className="relative">
-                <label className="block text-sm text-gray-400 mb-1.5">
-                  New Password
-                </label>
-                <input
-                  type={showNew ? "text" : "password"}
-                  value={security.newPassword}
-                  onChange={(e) => {
-                    setSecurity({ ...security, newPassword: e.target.value });
-                    passwordValidation(e.target.value);
-                  }}
-                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
-                />
-                <span
-                  onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
-                >
-                  {showNew ? <FaEyeSlash /> : <FaEye />}
-                </span>
-              </div>
-              {newPassError && <p className="text-red-500 text-sm">{newPassError}</p>}
-
-              {/* CONFIRM NEW PASSWORD */}
-              <div className="relative">
-                <label className="block text-sm text-gray-400 mb-1.5">
-                  Confirm New Password
-                </label>
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={security.confirmPassword}
-                  onChange={(e) => {
-                    setSecurity({ ...security, confirmPassword: e.target.value });
-
-                    if (e.target.value !== security.newPassword) {
-                      setConfirmPassError("Passwords do not match!");
-                    } else {
-                      setConfirmPassError("");
-                    }
-                  }}
-                  className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
-                />
-                <span
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-[38px] text-gray-400 cursor-pointer"
-                >
-                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
-                </span>
-              </div>
-              {confirmPassError && (
-                <p className="text-red-500 text-sm">{confirmPassError}</p>
-              )}
+                }}
+                className="w-full bg-[#0a0a0a] border border-gray-800 rounded px-3 py-2 text-sm pr-10 focus:outline-none focus:border-purple-500"
+              />
+              <span
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-[38px] text-gray-400 cursor-pointer">
+                {showConfirm ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
-            {msg && <p className={`text-${msgColor}-500 text-sm`}>{msg}</p>}
+            {confirmPassError && (
+              <p className="text-red-500 text-sm">{confirmPassError}</p>
+            )}
+          </div>
+          {msg && <p className={`text-${msgColor}-500 text-sm`}>{msg}</p>}
 
-            <button
-              onClick={handlePasswordChange}
-              disabled={newPassError || confirmPassError}
-              className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Change Password
-            </button>
-          </section>
-      <p className="text-right text-white text-sm mt-2 hover:text-purple-500 cursor-pointer">- Joined At {new Date(profile.createdAt).toLocaleDateString()} -</p>
+          <button
+            onClick={handlePasswordChange}
+            disabled={newPassError || confirmPassError}
+            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded transition disabled:opacity-50 disabled:cursor-not-allowed">
+            Change Password
+          </button>
+        </section>
+        <p className="text-right text-white text-sm mt-2 hover:text-purple-500 cursor-pointer">
+          - Joined At {new Date(profile.createdAt).toLocaleDateString()} -
+        </p>
       </div>
-
     </div>
   );
 }

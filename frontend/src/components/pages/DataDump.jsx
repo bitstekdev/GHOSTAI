@@ -8,7 +8,7 @@ const authorStyles = [
     name: "Chetan Bhagat",
     pen: "Chetan Bhagat",
     genre: "Romance",
-    color: "bg-green-400",
+    color: "bg-purple-400",
   },
   {
     name: "Stephen King",

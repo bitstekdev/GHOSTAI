@@ -28,12 +28,27 @@ const handleApply = async () => {
     setLoading(true);
     setError("");
 
+    // DEBUG: Log values before submission
+    if (import.meta.env.DEV) console.log("🎯 FaceSwapModal - UI values before submit:", {
+      sourceIndex,
+      targetIndex,
+      file: file?.name
+    });
 
     const formData = new FormData();
     formData.append("source", file);
     formData.append("characterImageId", page.characterImage._id);
+    // FIXED: Swap the mappings to align with backend semantics
+    // source_index = uploaded image face
+    // target_index = current character image face
     formData.append("source_index", sourceIndex);
     formData.append("target_index", targetIndex);
+    
+    // DEBUG: Log FormData contents
+    if (import.meta.env.DEV) console.log("🎯 FaceSwapModal - FormData being sent:", {
+      source_index: sourceIndex,
+      target_index: targetIndex
+    });
     formData.append("upscale", 0);
     formData.append("codeformer_fidelity", 0.5);
     formData.append("background_enhance", "true");
@@ -79,11 +94,22 @@ const handleApply = async () => {
         <div className="mb-4">
           <p className="mb-2 text-sm text-gray-300">Current image:</p>
           {currentImageUrl ? (
+            <div className="relative">
             <img
               src={currentImageUrl}
               alt={`Page ${page.pageNumber}`}
               className="w-full max-h-64 object-contain rounded-lg bg-black/40"
             />
+             {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-lg">
+                  <img
+                    src="/src/assets/images/logo.gif"
+                    alt="Loading..."
+                    className="w-25 h-25"
+                  />
+                </div>
+              )}
+              </div>
           ) : (
             <div className="w-full h-48 rounded-lg bg-gray-800 flex items-center justify-center text-gray-500">
               No character image on this page.
@@ -109,7 +135,7 @@ const handleApply = async () => {
         <div className="flex gap-4 mb-4">
           <div className="flex-1">
             <label className="block text-xs mb-1 text-gray-400">
-              Number <small>(Current Image face Number)</small>
+              Uploaded Image Face <small>(face number)</small>
             </label>
             <input
               type="number"
@@ -117,11 +143,12 @@ const handleApply = async () => {
               value={sourceIndex}
               onChange={(e) => setSourceIndex(Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm"
+              placeholder="Enter face number"
             />
           </div>
           <div className="flex-1">
             <label className="block text-xs mb-1 text-gray-400">
-              Number <small>(Uploaded Image face Number)</small>
+              Current Image Face <small>(face number)</small>
             </label>
             <input
               type="number"
@@ -129,6 +156,7 @@ const handleApply = async () => {
               value={targetIndex}
               onChange={(e) => setTargetIndex(Number(e.target.value))}
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm"
+              placeholder="Enter face number"
             />
           </div>
         </div>
@@ -137,10 +165,8 @@ const handleApply = async () => {
 
         <div className="flex justify-between items-center">
           <div className="w-1/2">
-            <p className="text-xs text-red-700">
-              Note: If Image has one Character → Number is -1, If multiple
-              Characters → specify which Character to swap by its Number (0 for
-              first, 1 for second, etc.)
+            <p className="text-xs text-blue-400">
+              💡<strong>FaceSwap:</strong> Use <code className="bg-gray-800 px-1 rounded">0</code> for single face in uploaded image.<br />When images has multiple faces use 0 (first),<br/>1 (second) & follows.
             </p>
           </div>
           <div className="flex justify-end gap-3 mt-4">

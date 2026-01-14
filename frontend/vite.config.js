@@ -10,6 +10,12 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    historyApiFallback: true
+    historyApiFallback: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true
+      }
+    }
   }
 })

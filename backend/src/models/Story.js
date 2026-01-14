@@ -30,12 +30,11 @@ const storySchema = new mongoose.Schema({
     required: false,
     trim: true
   },
-  genre: {
-    type: String,
-    required: true,
-    enum: ['Fantasy', 'Adventure', 'Family', 'Mystery', 'Housewarming', 
-           'Corporate Promotion', 'Marriage', 'Baby Shower', 'Birthday', 'Sci-Fi', 'Friends']
-  },
+ genres: {
+  type: [String],
+  required: true,
+  default: []
+},
   numOfPages: {
     type: Number,
     required: true
@@ -48,6 +47,16 @@ const storySchema = new mongoose.Schema({
   gist: {
     type: String,
     required: false
+  },
+  entryMode: {
+    type: String,
+    enum: ['questionnaire', 'gist'],
+    default: 'questionnaire'
+  },
+  gistSource: {
+    type: String,
+    enum: ['ai', 'user'],
+    default: 'ai'
   },
   conversation: [conversationSchema],
   numCharacters: {

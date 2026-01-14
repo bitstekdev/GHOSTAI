@@ -1,13 +1,13 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import api from "../services/axiosInstance";
-
-
+import api, { setupAxiosInterceptors } from "../services/axiosInstance";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebase";
 
 export const AppContext = createContext();
 
-const AppContextProvider = (props) => {
+function AppContextProvider(props) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const nav = useNavigate();
 
@@ -24,6 +24,15 @@ const AppContextProvider = (props) => {
     // Check if user is logged in on mount
   useEffect(() => {
     checkAuthStatus();
+    
+    // Setup axios interceptors for token refresh
+    const cleanup = setupAxiosInterceptors(() => {
+      setIsAuthenticated(false);
+      setUserData(null);
+      nav('/signin');
+    });
+    
+    return cleanup;
   }, []);
 
   const checkAuthStatus = async () => {
@@ -47,8 +56,47 @@ const AppContextProvider = (props) => {
     }
   };
 
-const navigateTo = (path) => {
-  nav(path);
+  // ------------------- Google Sign-in (frontend-only for now) -------------------
+  const googleSignin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Send idToken to backend to create/verify session and set cookies
+      const res = await api.post(
+        '/api/auth/google',
+        { idToken },
+        { withCredentials: true }
+      );
+
+      if (res?.data?.success) {
+        setIsAuthenticated(true);
+        setUserData(res.data.user);
+        nav('/generatestory');
+        return { success: true };
+      }
+      return { success: false, message: res?.data?.message };
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const navigateTo = (path, opts) => {
+  try {
+    if (opts && opts.state) {
+      nav(path, { state: opts.state });
+    } else {
+      nav(path);
+    }
+  } catch (e) {
+    // fallback
+    nav(path);
+  }
+
   window.scrollTo({
     top: 10,
     behavior: "smooth",
@@ -57,45 +105,39 @@ const navigateTo = (path) => {
 
 
 
-//------FUNCTIONS--------
-//   -------------------Signup-------------------
-// const signup = async (data) => {
-//   try {
-//     // setLoading(true);
-//     const response = await api.post(`${backendUrl}/api/auth/signup`, data);
-//     return { success: true, message: response.data.message };
-//   } catch (error) {
-//     return {
-//       success: false,
-//       message: error.response?.data?.message || "Something went wrong!",
-//     };
-//   } finally {
-//     // setLoading(false);
-//   }
-// };
 
 //   -------------------Signin-------------------
 
-const signin = async (data) => {
-  try {
-    setLoading(true);
-    const response = await api.post(`${backendUrl}/api/auth/login`, data);
+// const signin = async (data) => {
+//   try {
+//     setLoading(true);
+//     const response = await api.post(`/api/auth/login`, data);
 
-    setIsAuthenticated(true);
-    setUserData(response.data.data.user);
+//     setIsAuthenticated(true);
+//     setUserData(response.data.data.user);
 
-    return { success: true, message: response.data.message };
-  } catch (error) {
-    console.log("Signin error:", error);
-    setIsAuthenticated(false);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Something went wrong!",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+//     return { success: true, message: response.data.message };
+//   } catch (error) {
+//     setIsAuthenticated(false);
+//     const status = error.response?.status;
+//     const payload = error.response?.data;
+//     if (status === 403 && payload?.requiresEmailVerification) {
+//       return {
+//         success: false,
+//         requiresEmailVerification: true,
+//         message: payload.message || "Please verify your email before logging in.",
+//       };
+//     }
+//     const errors = payload?.errors;
+//     const message =
+//       (Array.isArray(errors) && errors[0]?.msg) ||
+//       payload?.message ||
+//       "Something went wrong!";
+//     return { success: false, message };
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
 
 
@@ -147,21 +189,63 @@ const changePassword = async (security) => {
   }
 };
 
+//----------------ADDRESS MANAGEMENT---------------------
+const [addresses, setAddresses] = useState([]);
+const [loadingAddresses, setLoadingAddresses] = useState(false);
+const [addressError, setAddressError] = useState("");
 
+const fetchAddresses = async () => {
+  try {
+    setLoadingAddresses(true);
+    setAddressError("");
+    const { data } = await api.get(`${backendUrl}/api/address`);
+    if (data.success) {
+      // console.log("Fetched addresses:", data.data);
+      setAddresses(data.data);
+      return { success: true, data: data.data };
+    }
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    const errorMsg = error.response?.data?.message || "Failed to load addresses";
+    setAddressError(errorMsg);
+    return { success: false, message: errorMsg };
+  } finally {
+    setLoadingAddresses(false);
+  }
+};
 
+const createAddress = async (addressData) => {
+  try {
+    const { data } = await api.post(`${backendUrl}/api/address`, {
+      recipientName: addressData.name,
+      phone: addressData.phone,
+      address: addressData.address,
+    });
+    if (data.success) {
+      setAddresses([...addresses, data.data]);
+      return { success: true, data: data.data };
+    }
+  } catch (error) {
+    console.error("Error creating address:", error);
+    const errorMsg = error.response?.data?.message || "Failed to save address";
+    return { success: false, message: errorMsg };
+  }
+};
 
 //--------------logout---------------------
   const logout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/logout`, {});
+      await api.post(`${backendUrl}/api/auth/logout`, {});
       setIsAuthenticated(false);
       setUserData(null);
+      nav('/signin');
       return { success: true };
     } catch (error) {
       console.error("Logout failed:", error);
       // Still clear local state even if API call fails
       setIsAuthenticated(false);
       setUserData(null);
+      nav('/signin');
       return { success: false };
     }
   };
@@ -178,8 +262,7 @@ const changePassword = async (security) => {
   const value = {
     backendUrl,
     navigateTo,
-    // signup,
-    signin,
+    googleSignin,
     getProfile,
     updateProfile,
     changePassword,
@@ -190,12 +273,17 @@ const changePassword = async (security) => {
     isAuthenticated,
     setIsAuthenticated,
     storyId,
-    setStoryId,
+    setStoryId,    
+    fetchAddresses,
+    createAddress,
+    addresses,
+    loadingAddresses,
+    addressError,
   };
 
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
   );
-};
+}
 
 export default AppContextProvider;

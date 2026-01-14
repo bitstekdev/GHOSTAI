@@ -6,10 +6,7 @@ const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000'
 
 const fastApiClient = axios.create({
   baseURL: FASTAPI_BASE_URL,
-  timeout: 600000, // 10 minutes for long-running operations
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 1800000 // 30 minutes for long-running operations
 });
 
 // Questionnaire endpoints--------------------------------------------------
@@ -28,32 +25,65 @@ exports.nextQuestion = async (conversation, answer) => {
 };
 
 // Gist generation--------------------------------------------------
-exports.generateGist = async (conversation, genre) => {
-  const response = await fastApiClient.post('/gist', {
+exports.generateGist = async (conversation, genre, userId) => {
+  const payload = {
+    user_id: userId,
     conversation,
-    genre
-  });
+    genre,
+    use_custom_genre: false
+  };
+
+  const response = await fastApiClient.post('/gist', payload);
   return response.data;
 };
 
 // Story generation--------------------------------------------------
-exports.generateStory = async (gist, numCharacters, fixedCharacterDetails, genre, numPages) => {
+exports.generateStory = async (
+  gist,
+  numCharacters,
+  fixedCharacterDetails,
+  genre,
+  numPages,
+  options = {}
+) => {
   const response = await fastApiClient.post('/story/generate', {
     gist,
     num_characters: numCharacters,
     character_details: fixedCharacterDetails,
     genre,
-    num_pages: numPages
+    num_pages: numPages,
+    ...options
   });
   return response.data;
 };
 
+// Generate temporary preview images from a gist (no storage)
+// FastAPI: POST /gist/preview-images
+exports.generateGistPreviewImages = async ({ userId, genre, gist }) => {
+  try {
+    const response = await fastApiClient.post('/gist/preview-images', {
+      user_id: userId,
+      genre,
+      gist
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error(
+      'FastAPI gist preview error:',
+      err.response?.data || err.message
+    );
+    throw new Error('Failed to generate gist preview images');
+  }
+};
+
 // Image generation--------------------------------------------------
-exports.generateImages = async (pages, orientation) => {
-  const response = await fastApiClient.post('/images/generate', {
-    pages,
-    orientation
-  });
+exports.generateImages = async (pages, orientation, genre) => {
+  const payload = { pages, orientation };
+  if (genre) payload.genre = genre;
+
+  const response = await fastApiClient.post('/images/generate', payload);
   return response.data;
 };
 
@@ -103,6 +133,20 @@ exports.regenerateTitles = async (story, genre, previousTitles) => {
 // Face swap--------------------------------------------------------------
 exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
   try {
+    // Defensive sanitization: ensure index values are valid for model
+    const sanitizeIndex = (v) => {
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 0 ? n : 0;
+    };
+
+    // Sanitize indexes before sending to model
+    if (options.source_index !== undefined) {
+      options.source_index = sanitizeIndex(options.source_index);
+    }
+    if (options.target_index !== undefined) {
+      options.target_index = sanitizeIndex(options.target_index);
+    }
+
     const form = new FormData();
 
     form.append("source", sourceBuffer, {
@@ -115,14 +159,17 @@ exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
       contentType: "image/png"
     });
 
-    Object.entries(options).forEach(([key, value]) => {
-      form.append(key, String(value));
-    });
+    for (const [key, value] of Object.entries(options)) {
+      if (value !== undefined && value !== null) {
+        form.append(key, String(value));
+      }
+    }
 
     const response = await axios.post(
       `${FASTAPI_BASE_URL}/faceswap`,
       form,
       {
+        timeout: 1800000, // 30 minutes - explicit timeout for long RunPod operations
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
         headers: form.getHeaders(), // REQUIRED for `form-data`
@@ -172,6 +219,69 @@ exports.regenerateImages = async (payload) => {
 
   } catch (err) {
     console.error("FastAPI regenerate error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+// Upload genre reference / books ------------------------------------------
+exports.uploadBooks = async (files, userId) => {
+  try {
+    const form = new FormData();
+
+    files.forEach((file) => {
+      form.append("files", file.buffer, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+      });
+    });
+
+    // Note: FastAPI expects `user_id` as a query param (Query(...)), not in the multipart form
+    const response = await axios.post(
+      `${FASTAPI_BASE_URL}/upload-books?user_id=${encodeURIComponent(userId)}`,
+      form,
+      {
+        timeout: 1800000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        headers: form.getHeaders(),
+      }
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error("uploadBooks error:", err.response?.data || err);
+    throw err;
+  }
+};
+
+// Trigger FastAPI to process uploaded books for a user
+// FastAPI expects user_id as a query parameter on /process-books
+exports.processBooksFromS3 = async (userId) => {
+  try {
+    const response = await fastApiClient.post(
+      `/process-books?user_id=${encodeURIComponent(userId)}`
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(
+      "processBooksFromS3 error:",
+      err.response?.data || err
+    );
+    throw err;
+  }
+};
+
+// Get learned genres for a user -------------------------------
+exports.getUserGenres = async (userId) => {
+  try {
+    const response = await fastApiClient.get(
+      "/genres",
+      { params: { user_id: userId } }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("getUserGenres error:", err.response?.data || err);
     throw err;
   }
 };

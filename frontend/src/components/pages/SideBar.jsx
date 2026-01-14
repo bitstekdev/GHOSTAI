@@ -6,6 +6,7 @@ import {
   PenTool,
   BookOpen,
   BookMarked,
+  Lock,
   ChevronDown,
   ChevronRight,
   User,
@@ -13,7 +14,7 @@ import {
   LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logoImg from "../../assets/images/logo.gif";
+import logoImg from "../../assets/images/Ghostlogo1.png";
 import { AppContext } from "../../context/AppContext";
 
 export default function Sidebar({
@@ -47,8 +48,8 @@ export default function Sidebar({
       icon: BookMarked,
       dropdown: true,
       items: [
-        { id: "characterdump", label: "Character", path: "/characterdump" },
-        { id: "datadump", label: "Data Dump", path: "/datadump" },
+        { id: "characterdump", label: "Character", path: "/characterdump", locked: true },
+        { id: "datadump", label: "Data Dump", path: "/datadump", locked: true },
       ]
     },
 
@@ -58,108 +59,132 @@ export default function Sidebar({
   ];
 
   return (
-    <div
-      className={`fixed left-0 top-0 h-full bg-gray-900 transition-all duration-300 z-50 
-        ${shouldShow ? "w-64" : "w-16"}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        if (!isOpen) setIsHovered(false);
-      }}
-      onClick={() => {
-        // Clicking anywhere toggles only if closed
-        if (!isOpen) setIsOpen(true);
-      }}
-    >
+    <>
+      <div
+        className={`fixed left-0 top-0 h-full bg-gray-900 transition-all duration-300 z-50 flex flex-col
+          ${shouldShow ? "w-64" : "w-16"}`}
+        onMouseEnter={() => {
+          if (window.innerWidth >= 768) setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          if (!isOpen && window.innerWidth >= 768) setIsHovered(false);
+        }}
+      >
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
 
         <div className="flex items-center gap-2">
           {!shouldShow && (
-            <button onClick={() => setIsOpen(true)} className="text-white">
+            <button onClick={() => setIsOpen(true)} className="sidebar-menu-button text-white">
               <Menu size={24} />
             </button>
           )}
 
           {shouldShow && (
             <div className="flex items-center gap-2">
-              <img src={logoImg} alt="GHOST.ai Logo" className="h-10 w-auto object-contain" />
-              <span className="text-white text-2xl font-bold ml-[-14px]">GHOST.ai</span>
+              <img src={logoImg} alt="Ghostverse.ai Logo" className="h-6 w-auto object-contain" />
+              <span className="text-white text-2xl font-bold ml-[-10px]">hostverse.ai</span>
             </div>
           )}
         </div>
 
         {isOpen && (
-          <button onClick={() => setIsOpen(false)} className="text-white">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            className="text-white"
+          >
             <X size={22} />
           </button>
         )}
       </div>
 
-      {/* MENU */}
-      <nav className="mt-8">
-        {menuItems.map((item) => {
-          // Handle dropdown section
-          if (item.dropdown) {
+        {/* MENU */}
+        <nav className="mt-8 flex-1 overflow-y-auto">
+          {menuItems.map((item) => {
+            // Handle dropdown section
+            if (item.dropdown) {
+              return (
+                <div key={item.id}>
+                  {/* MAIN DROPDOWN BUTTON */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setKnowledgeOpen(!knowledgeOpen);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-5 text-gray-300 hover:bg-gray-800"
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon size={20} />
+                      {shouldShow && <span>{item.label}</span>}
+                    </div>
+
+                    {shouldShow &&
+                      (knowledgeOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
+                  </button>
+
+                  {/* SUB ITEMS */}
+                  {knowledgeOpen && shouldShow && (
+                    <div className="ml-10 mt-1 flex flex-col gap-1">
+                      {item.items.map((sub) => (
+                        <button
+                          key={sub.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (sub.locked) return;
+                            navigate(sub.path);
+                            if (window.innerWidth < 768) setIsOpen(false);
+                          }}
+                          className={`text-gray-400 hover:text-white hover:bg-gray-800 px-2 py-1 text-left flex items-center justify-between ${
+                            sub.locked ? "cursor-not-allowed opacity-70" : ""
+                          }`}
+                        >
+                          <span>{sub.label}</span>
+                          {sub.locked && <Lock size={14} className="text-gray-500" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Normal menu items
             return (
-              <div key={item.id}>
-                {/* MAIN DROPDOWN BUTTON */}
-                <button
-                  onClick={() => setKnowledgeOpen(!knowledgeOpen)}
-                  className="w-full flex items-center justify-between px-4 py-5 text-gray-300 hover:bg-gray-800"
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon size={20} />
-                    {shouldShow && <span>{item.label}</span>}
-                  </div>
-
-                  {shouldShow &&
-                    (knowledgeOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
-                </button>
-
-                {/* SUB ITEMS */}
-                {knowledgeOpen && shouldShow && (
-                  <div className="ml-10 mt-1 flex flex-col gap-1">
-                    {item.items.map((sub) => (
-                      <button
-                        key={sub.id}
-                        onClick={() => navigate(sub.path)}
-                        className="text-gray-400 hover:text-white hover:bg-gray-800 px-2 py-1 text-left"
-                      >
-                        {sub.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                key={item.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(item.path);
+                  if (window.innerWidth < 768) setIsOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-5 text-gray-300 hover:bg-gray-800"
+              >
+                <item.icon size={20} />
+                {shouldShow && <span>{item.label}</span>}
+              </button>
             );
-          }
-
-          // Normal menu items
-          return (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className="w-full flex items-center gap-3 px-4 py-5 text-gray-300 hover:bg-gray-800"
-            >
-              <item.icon size={20} />
-              {shouldShow && <span>{item.label}</span>}
-            </button>
-          );
-        })}
-      </nav>
+          })}
+        </nav>
 
 
-{/* LOGOUT BUTTON - FIXED AT BOTTOM */}
-<div className="absolute bottom-6 w-full">
-  <button
-    onClick={logout}
-    className="w-full flex items-center gap-3 px-4 py-4 text-red-400 hover:bg-red-900/40 hover:text-red-300 transition"
-  >
-    <LogOut size={20} />
-    {shouldShow && <span>Logout</span>}
-  </button>
-</div>
+        {/* LOGOUT BUTTON - ANCHORED AT BOTTOM */}
+        <div className="mt-auto w-full pb-6">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              logout();
+            }}
+            className="w-full flex items-center gap-3 px-4 py-4 text-red-400 hover:bg-red-900/40 hover:text-red-300 transition"
+          >
+            <LogOut size={20} />
+            {shouldShow && <span>Logout</span>}
+          </button>
+        </div>
 
-    </div>
+      </div>
+    </>
   );
 }

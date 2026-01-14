@@ -4,6 +4,27 @@ const Image = require('../models/Image');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
 
+// Remove outer HTML/doctype wrappers returned by the generator
+const stripHtmlWrapper = (html) => {
+  if (!html) return '';
+  return html
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\/?html[^>]*>/gi, '')
+    .replace(/<head[^>]*>[\s\S]*?<\/?head>/gi, '')
+    .replace(/<\/?body[^>]*>/gi, '')
+    .trim();
+};
+
+// Helper: push the current image state into history with a descriptive label
+const pushCurrentToHistory = (imageDoc, label = 'update') => {
+  if (!imageDoc) return;
+  imageDoc.oldImages.push({
+    s3Key: imageDoc.s3Key,
+    s3Url: imageDoc.s3Url,
+    version: `${label}-${Date.now()}`
+  });
+};
+
 // @desc    Generate character images for story pages
 // @route   POST /api/images/generate-characters/:storyId
 // @access  Private
@@ -42,7 +63,9 @@ exports.generateCharacterImages = async (req, res, next) => {
     }));
 
     // Call FastAPI to generate images
-    const result = await fastApiService.generateImages(pageData, story.orientation);
+    // Pass genre string if available
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+    const result = await fastApiService.generateImages(pageData, story.orientation, storyGenreString);
 
     // Upload images to S3 and create Image documents
     const imagePromises = result.pages.map(async (pageResult) => {
@@ -102,6 +125,18 @@ exports.generateCharacterImages = async (req, res, next) => {
 
     const images = await Promise.all(imagePromises);
     const successfulImages = images.filter(img => img !== null);
+
+      // Generate background images and cover images
+    // try {
+    // const backgroundImages = await generateBackgroundImages(storyId);
+    // console.log("Background Images Generated:", backgroundImages);
+    // const coverImages = await generateCover(storyId);
+    // console.log("Cover Images Generated:", coverImages);
+    // } catch (coverBgError) {
+    //   console.error("Error generating cover/background images:", coverBgError);
+    // }
+
+    // send email notification of completion
 
     res.status(200).json({
       success: true,
@@ -241,9 +276,10 @@ exports.generateCover = async (req, res, next) => {
     const qr_url = process.env.BACK_QR_URL || 'https://talescraftco.com/';
 
     // Call FastAPI coverback/generate endpoint
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
     const result = await fastApiService.generateCoverAndBack(
       pageData,
-      story.genre,
+      storyGenreString,
       story.orientation,
       story.title,
       qr_url
@@ -368,10 +404,17 @@ exports.faceSwap = async (req, res) => {
     console.log("FaceSwap - Target Buffer Length:", targetBuffer.length);
 
 
+    // Normalize index values: UI sends -1, "", undefined, NaN → all become 0 (model semantics)
+    const normalizeIndex = (val) => {
+      const n = Number(val);
+      if (Number.isInteger(n) && n >= 0) return n;
+      return 0; // fallback for -1, NaN, undefined, empty strings
+    };
+
     // Prepare options
     const options = {
-      source_index: parseInt(req.body.source_index),
-      target_index: parseInt(req.body.target_index),
+      source_index: normalizeIndex(req.body.source_index),
+      target_index: normalizeIndex(req.body.target_index),
       upscale: parseInt(req.body.upscale || 0),
       codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
       background_enhance: req.body.background_enhance !== "false",
@@ -387,59 +430,66 @@ exports.faceSwap = async (req, res) => {
       options
     );
 
-    const swappedBase64 = swapResult.swapped_image;
+    console.log("✅ FaceSwap FastAPI response keys:", Object.keys(swapResult));
+    
+    const swappedBase64 = swapResult.image_base64;
+    
+    console.log("📏 Base64 length:", swappedBase64?.length);
 
     if (!swappedBase64) {
+      console.error("❌ FastAPI returned no image_base64");
       return res.status(500).json({
         success: false,
-        message: "Failed to generate swapped image"
+        message: "FastAPI returned no image_base64"
       });
     }
 
-    // Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'faceswap');
 
     // Upload new swapped image to S3
     const buffer = Buffer.from(swappedBase64, "base64");
 
-    const s3Result = await s3Service.uploadToS3(
-      buffer,
-      `stories/${imageDoc.story}/faceswap`,
-      `faceswap-${Date.now()}.png`,
-      "image/png"
-    );
+    try {
+      const s3Result = await s3Service.uploadToS3(
+        buffer,
+        `stories/${imageDoc.story}/faceswap`,
+        `faceswap-${Date.now()}.png`,
+        "image/png"
+      );
 
-    // Update DB with new image data
-    // imageDoc.base64Data = swappedBase64;
-    imageDoc.s3Key = s3Result.key;
-    imageDoc.s3Url = s3Result.url;
-    imageDoc.s3Bucket = s3Result.bucket;
-    imageDoc.size = buffer.length;
-    imageDoc.metadata = {
-      ...imageDoc.metadata,
-      model: "faceswap",
-      generationTime: Date.now(),
-    };
+      // Update DB with new image data
+      // imageDoc.base64Data = swappedBase64;
+      imageDoc.s3Key = s3Result.key;
+      imageDoc.s3Url = s3Result.url;
+      imageDoc.s3Bucket = s3Result.bucket;
+      imageDoc.size = buffer.length;
+      imageDoc.metadata = {
+        ...imageDoc.metadata,
+        model: "faceswap",
+        generationTime: Date.now(),
+      };
 
-    await imageDoc.save();
+      await imageDoc.save();
 
-    return res.json({
-      success: true,
-      message: "Face swap updated successfully",
-      data: imageDoc
-    });
+      // Return ONLY metadata, not full imageDoc
+      return res.json({
+        success: true,
+        message: "Face swap updated successfully",
+        imageId: imageDoc._id,
+        imageUrl: imageDoc.s3Url
+      });
+      
+    } catch (s3Error) {
+      console.error("❌ S3 upload failed:", s3Error);
+      throw new Error(`S3 upload failed: ${s3Error.message}`);
+    }
 
   } catch (err) {
-    console.error("FaceSwap Error:", err);
+    console.error("🔥 FaceSwap controller error:", err);
     return res.status(500).json({
       success: false,
-      message: "Server error",
-      error: err.toString(),
+      message: err.message || "Server error"
     });
   }
 };
@@ -488,13 +538,8 @@ exports.editImage = async (req, res) => {
       });
     }
 
-    // 4️⃣ Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // 4️⃣ Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'edit');
 
     // 5️⃣ Upload new swapped image to S3
     const buffer = Buffer.from(editedBase64, "base64");
@@ -514,7 +559,7 @@ exports.editImage = async (req, res) => {
     imageDoc.size = buffer.length;
     imageDoc.metadata = {
       ...imageDoc.metadata,
-      model: "faceswap",
+      model: "edit",
       generationTime: Date.now(),
     };
 
@@ -583,14 +628,21 @@ exports.regenerateCharacterImage = async (req, res) => {
     //-------------------------------------------------------------
     const regenResult = await fastApiService.regenerateImages(apiPayload);
 
-    // console.log("Regenerate Result from FastAPI:", regenResult);
+    console.log("Regenerate Result from FastAPI:", regenResult);
 
-    const newStory = regenResult?.pages?.[0]?.new_story;
-    const newPrompt = regenResult?.pages?.[0]?.new_prompt;
-    const base64 = regenResult?.pages?.[0]?.image_path;
+    const pageResp = regenResult?.pages?.[0] || {};
+    const base64 =
+      pageResp.image_path ||
+      pageResp.image_base64 ||
+      pageResp.hidream_image_base64;
+
+    // Extract regenerated story, HTML, and prompt (keep wrappers intact)
+    const newStory = pageResp.new_story || pageResp.text || page.text;
+    const newHtml = pageResp.new_html || pageResp.html || page.html || newStory;
+    const newPrompt = pageResp.new_prompt || pageResp.prompt || page.prompt;
 
     if (!base64) {
-      return res.status(500).json({ success: false, message: "No image returned from FastAPI" });
+      return res.status(502).json({ success: false, message: "FastAPI returned no image data" });
     }
 
     // ------------------------------------------------------------------------------------
@@ -603,20 +655,17 @@ exports.regenerateCharacterImage = async (req, res) => {
       version: `regen-${page.oldStory.length + 1}`
     });
 
-    // Update page story + prompt
+    // Update page story, HTML, and prompt
     page.text = newStory;
+    page.html = newHtml;
     page.prompt = newPrompt;
     await page.save();
 
     // ------------------------------------------------------------------------------------
-    //  SAVE OLD IMAGE DATA IN image.oldImages[]
+    //  SAVE CURRENT IMAGE INTO HISTORY BEFORE UPDATING
     // ------------------------------------------------------------------------------------
     if (existingImage) {
-      existingImage.oldImages.push({
-        s3Key: existingImage.s3Key,
-        s3Url: existingImage.s3Url,
-        version: `regen-${existingImage.oldImages.length + 1}`
-      });
+      pushCurrentToHistory(existingImage, 'regenerate');
     }
 
     // ------------------------------------------------------------------------------------
@@ -720,6 +769,85 @@ exports.getPageImages = async (req, res, next) => {
 };
 
 
+// @desc    Revert image to a previous version
+// @route   POST /api/images/revert
+// @access  Private
+exports.revertImage = async (req, res) => {
+  try {
+    const { imageId, versionIndex } = req.body;
+
+    if (!imageId || versionIndex === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "imageId and versionIndex are required"
+      });
+    }
+
+    const image = await Image.findById(imageId);
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: "Image not found"
+      });
+    }
+
+    const old = image.oldImages[versionIndex];
+
+    if (!old) {
+      return res.status(404).json({
+        success: false,
+        message: "Requested version does not exist"
+      });
+    }
+
+    // If already at this version, do nothing
+    if (old.s3Key === image.s3Key) {
+      return res.json({
+        success: true,
+        message: "Image already at requested version",
+        image
+      });
+    }
+
+    // Preserve current image before swapping so it can be reverted again
+    image.oldImages.push({
+      s3Key: image.s3Key,
+      s3Url: image.s3Url,
+      version: `revert-from-${old.version}`
+    });
+
+    // Swap to selected old image
+    image.s3Key = old.s3Key;
+    image.s3Url = old.s3Url;
+
+    // Remove the restored version from history to avoid duplication
+    image.oldImages.splice(versionIndex, 1);
+
+    image.metadata = {
+      ...image.metadata,
+      model: "revert",
+      revertedFromVersion: old.version,
+      revertedAt: Date.now()
+    };
+
+    await image.save();
+
+    return res.json({
+      success: true,
+      message: "Image reverted successfully",
+      image
+    });
+
+  } catch (err) {
+    console.error("Revert Image Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
 // test route 
 exports.testRoute = async (req, res, next) => {
   const storyId = "6935bf795b1ae90ed9afc6a5"
@@ -734,5 +862,108 @@ exports.testRoute = async (req, res, next) => {
   }
   catch (error) {
     next(error);
+  }
+};
+
+// @desc    Generate gist preview images (no storage)
+// @route   POST /api/images/gist/preview-images
+// @access  Private
+exports.gistPreviewImages = async (req, res, next) => {
+  try {
+    const { gist, genre } = req.body;
+
+    if (!gist) {
+      return res.status(400).json({
+        success: false,
+        message: 'gist is required'
+      });
+    }
+
+    const previews = await fastApiService.generateGistPreviewImages({
+      userId: req.user.id,
+      genre: genre || 'Family',
+      gist
+    });
+
+    return res.json({
+      success: true,
+      previews
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Promote a selected preview image: upload to S3 and create Image doc
+// @route   POST /api/images/promote-preview
+// @access  Private
+exports.promotePreviewImage = async (req, res, next) => {
+  try {
+    const {
+      storyId,
+      imageType,
+      orientation,
+      base64,
+      prompt
+    } = req.body;
+
+    if (!storyId || !imageType || !base64) {
+      return res.status(400).json({
+        success: false,
+        message: 'storyId, imageType, and base64 are required'
+      });
+    }
+
+    const buffer = Buffer.from(base64, 'base64');
+
+    // Upload to S3
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${storyId}/${imageType}`,
+      `${imageType}-${Date.now()}.png`,
+      'image/png'
+    );
+
+    // If replacing cover, update existing document safely
+    if (imageType === 'cover') {
+      const existingCover = await Image.findOne({ story: storyId, imageType: 'cover' });
+      if (existingCover) {
+        pushCurrentToHistory(existingCover, 'replace-cover');
+        existingCover.s3Key = s3Result.key;
+        existingCover.s3Url = s3Result.url;
+        existingCover.s3Bucket = s3Result.bucket;
+        existingCover.size = buffer.length;
+        existingCover.prompt = prompt || existingCover.prompt;
+        existingCover.mimeType = 'image/png';
+        existingCover.metadata = Object.assign({}, existingCover.metadata, { orientation, model: 'hidream' });
+        await existingCover.save();
+        return res.json({ success: true, image: existingCover });
+      }
+    }
+
+    // Create canonical Image
+    const image = await Image.create({
+      story: storyId,
+      imageType,
+      s3Key: s3Result.key,
+      s3Url: s3Result.url,
+      s3Bucket: s3Result.bucket,
+      prompt,
+      mimeType: 'image/png',
+      size: buffer.length,
+      metadata: {
+        model: 'hidream',
+        orientation
+      }
+    });
+
+    return res.json({
+      success: true,
+      image
+    });
+
+  } catch (err) {
+    next(err);
   }
 };

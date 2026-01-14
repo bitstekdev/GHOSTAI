@@ -19,7 +19,7 @@ const TitleSelection = () => {
 
   useEffect(() => {
     fetchStoryData();
-    console.log("Story ID:", storyData);
+    if (import.meta.env.DEV) console.log("Story ID:", storyId);
   }, []);
 
   const fetchStoryData = async () => {
@@ -36,7 +36,7 @@ const TitleSelection = () => {
 
   // Generate AI Titles
   const handleGenerateTitles = async () => {
-    console.log("Generating titles for story ID:", storyId);
+    if (import.meta.env.DEV) console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -44,8 +44,8 @@ const TitleSelection = () => {
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
         selectedTitle,
-        // story: storyData?.gist, 
-        genre: storyData?.genre
+        // story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : [])
       });
 
       // Titles must be an array! 
@@ -69,8 +69,8 @@ const TitleSelection = () => {
 
       const res = await api.post("/api/v1/story/titles/regenerate", {
         storyId,
-        story: storyData?.gist, 
-        genre: storyData?.genre,
+        story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : []),
         previousTitles: aiTitles,
         selectedTitle,
       });
@@ -98,7 +98,7 @@ const TitleSelection = () => {
         title: selectedTitle,
       });
 
-      console.log("Book creation response:", res.data);
+      if (import.meta.env.DEV) console.log("Book creation succeeded");
       navigateTo(`/backgroundgenerator/${res.data.storyId}`);
 
     } catch (err) {
@@ -215,12 +215,12 @@ const TitleSelection = () => {
 
       {/* Final Submit Button */}
       <button
-        className="w-full mt-6 bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold"
+        className="w-full mt-6 bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold"
         onClick={handleCreateBook}
         disabled={creatingBook}
       >
         {creatingBook ? (
-         <p>loading</p>
+         <p>loading.....</p>
         ) : (
           "Create My Book"
         )}
