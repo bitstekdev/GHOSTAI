@@ -23,6 +23,10 @@ import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
 import BackgroundGenerator from "./components/pages/BackgroundGenerator";
 import GenerateCovers from "./components/pages/GenerateCovers";
+import CartPage from "./components/pages/CartPage";
+import OrderPage from "./components/pages/OrderPage";
+import PaymentPage from "./components/pages/PaymentPage";
+import OrderSuccess from "./components/pages/OrderSuccess";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -92,6 +96,11 @@ const App = () => {
           <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
           <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} />
           <Route path="/generatecovers/:storyId" element={<GenerateCovers />} />
+
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/order" element={<OrderPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
 
           <Route path="*" element={<Navigate to="/generatestory" replace />} />
         </Route>

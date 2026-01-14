@@ -19,6 +19,10 @@ from datetime import datetime
 from pathlib import Path
 from io import BytesIO
 from typing import List, Dict, Tuple, Optional
+from fastapi import Request
+from contextvars import ContextVar
+request_id_ctx = ContextVar("request_id", default="unknown")
+
 
 # ============================================================
 # 🌱 Environment
@@ -50,8 +54,83 @@ mongo_client = MongoClient(MONGO_URI)
 
 db = mongo_client["storybook"]
 styles_collection = db["user_writing_styles"]
-import tempfile
+
+# ============================================================
+# 🧠 Prompt Registry (MongoDB-backed)
+# ============================================================
+
+from functools import lru_cache
+from jinja2 import Template
+
+prompts_collection = db["prompts"]
+
+@lru_cache(maxsize=256)
+def get_prompt(key: str) -> str:
+    doc = prompts_collection.find_one(
+        {"key": key, "active": True},
+        sort=[("version", -1)]
+    )
+    if not doc:
+        raise RuntimeError(f"Prompt not found: {key}")
+    return doc["content"]
+
+def render_prompt(key: str, **kwargs) -> str:
+    template = Template(get_prompt(key))
+    return template.render(**kwargs)
+
+
+GIST_PROMPT = "gist_prompt"
+GIST_IMAGE_SYSTEM = "gist_image_system_prompt"
+STORY_SYSTEM = "story_system_prompt"
+HTML_FORMATTER = "html_formatter_system"
+IMAGE_PROMPT_SYSTEM = "image_prompt_system"
+REGEN_STORY_SYSTEM = "regen_story_system"
+REGEN_PROMPT_SYSTEM = "regen_prompt_system"
+REGEN_REWRITE_PROMPT = "regen_rewrite_prompt"
+SDXL_BACKGROUND_USER = "sdxl_background_user_prompt"
+TITLE_GENERATOR = "title_generator_prompt"
+TAGLINE_GENERATOR = "tagline_generator_prompt"
+BACK_BLURB_SYSTEM = "back_blurb_system"
+BACK_VISUAL_SYSTEM = "back_visual_system"
+COVER_VISUAL_SYSTEM = "cover_visual_system"
+STORY_REWRITE_PROMPT = "story_rewrite_prompt"
+
+# ============================================================
+styles_collection.create_index(
+    "generated_at",
+    expireAfterSeconds=60 * 60 * 24 * 90  # 90 days
+)
+# ============================================================
 SESSION_UPLOADS = {}
+SESSION_TTL_SECONDS = 30 * 60  # 30 minutes
+
+def cleanup_expired_sessions():
+    now = time.time()
+    expired = [
+        uid for uid, data in SESSION_UPLOADS.items()
+        if now - data["created_at"] > SESSION_TTL_SECONDS
+    ]
+
+    for uid in expired:
+        for p in SESSION_UPLOADS[uid]["files"]:
+            try:
+                os.unlink(p)
+            except:
+                pass
+        del SESSION_UPLOADS[uid]
+        logger.warning(f"[TTL] Cleared expired upload session user_id={uid}")
+
+import threading
+
+def ttl_worker():
+    while True:
+        try:
+            cleanup_expired_sessions()
+        except Exception as e:
+            logger.error(f"[TTL_WORKER] error={e}")
+        time.sleep(300)  # every 5 minutes
+
+threading.Thread(target=ttl_worker, daemon=True).start()
 
 # ============================================================
 # 🤖 LLM Client
@@ -100,6 +179,43 @@ client = OpenAI(
     }
 )
 
+def call_llm(
+    *,
+    model: str,
+    messages: list,
+    temperature: float,
+    timeout: int,
+    purpose: str
+):
+    start = time.time()
+    try:
+        logger.info(
+    f"[LLM_START] req={request_id_ctx.get()} purpose={purpose} model={model}"
+    )
+
+
+        resp = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            timeout=timeout,
+        )
+
+        logger.info(
+            f"[LLM_OK] purpose={purpose} model={model} "
+            f"duration_s={round(time.time() - start, 2)}"
+        )
+
+        return resp
+
+    except Exception as e:
+        logger.error(
+            f"[LLM_FAIL] purpose={purpose} model={model} "
+            f"duration_s={round(time.time() - start, 2)} error={e}"
+        )
+        raise
+
+
 # ============================================================
 # 🔧 GLOBAL RUNTIME CONFIG (SINGLE SOURCE OF TRUTH)
 # ============================================================
@@ -128,6 +244,7 @@ NEGATIVE_PROMPT_TEXT = (
     "cel-shaded, flat lighting, sketch, unrealistic, inconsistent tone"
 )
 
+
 # ============================================================
 # ----------------------------
 # GLOBAL LOGGING SETUP
@@ -144,6 +261,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("storybook_api")
+
+
 
 # ============================================================
 # 🧠 QUESTIONNAIRE LLM FALLBACK (ONLY)
@@ -224,6 +343,38 @@ app = FastAPI(
     version="1.0",
     description="An API to guide users through a story creation questionnaire and generate cinematic story gists."
 )
+@app.middleware("http")
+async def request_logger(request: Request, call_next):
+    request_id = uuid.uuid4().hex[:12]
+    request_id_ctx.set(request_id)
+    start_time = time.time()
+
+    logger.info(
+        f"[REQ_START] id={request_id} "
+        f"method={request.method} path={request.url.path}"
+    )
+
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        logger.exception(f"[REQ_ERROR] id={request_id} error={e}")
+        raise
+
+    duration = round((time.time() - start_time) * 1000, 2)
+
+    logger.info(
+        f"[REQ_END] id={request_id} "
+        f"status={response.status_code} "
+        f"duration_ms={duration}"
+    )
+
+    response.headers["X-Request-ID"] = request_id
+    return response
+@app.middleware("http")
+async def ttl_cleanup_middleware(request: Request, call_next):
+    cleanup_expired_sessions()
+    return await call_next(request)
+
 
 # ============================================================
 # 📘 Models
@@ -241,7 +392,7 @@ class AnswerInput(BaseModel):
     answer: str
 
 class GistInput(BaseModel):
-    user_id: str
+    user_id: Optional[str] = None
     conversation: List[QA]
     genre: str = "Family"
 
@@ -254,8 +405,8 @@ class NextResponse(BaseModel):
     conversation: List[QA]
 
 class GistResponse(BaseModel):
-    user_id: str
-    genre: str
+    user_id: Optional[str] = None
+    genres: List[str]
     gist: str
 
 
@@ -302,58 +453,49 @@ def generate_gist(conversation, genre="Family",user_id: str | None = None, model
     
     user_style_text = ""
     style_example = ""
-
+    user_genre_map = {}
+    static_genre_map = {}
     if user_id:
         user_genre_map = load_genre_style_map(user_id)
+        static_genre_map = load_static_genre_style_map(user_id)
 
     genres = parse_genres(genre)
     styles = []
     examples = []
 
     for g in genres:
+    # 1️⃣ User-specific genre (highest priority)
         if g in user_genre_map:
             styles.append(user_genre_map[g]["writing_style"])
             examples.append(user_genre_map[g]["example"])
+
+    # 2️⃣ Static narrative genre (Ma’am’s books)
+        elif g in static_genre_map:
+            styles.append(static_genre_map[g]["writing_style"])
+            examples.append(static_genre_map[g]["example"])
+
+    # 3️⃣ Hard fallback (system)
         else:
             fallback = genre_writing_style(g)
             if fallback:
                 styles.append(fallback)
 
-    if styles:
-        user_style_text = " ".join(styles)
+
+    if not styles:
+        styles = [genre_writing_style(g) for g in genres if genre_writing_style(g)]
+
+    user_style_text = " ".join(styles)
+
 
     if examples:
         style_example = max(examples, key=len)
 
-    gist_prompt = f"""
-    You are a skilled story writer.
-
-    Your writing MUST strictly follow this WRITING STYLE:
-    {user_style_text or "Gentle, cinematic children's storytelling."}
-
-STYLE RULES:
-- Short, purposeful sentences
-- Cinematic and emotional
-- Poetic but simple
-- No modern language
-- No explanations or commentary
-
-STYLE EXAMPLE (tone reference only):
-{style_example}
-
-TASK:
-Turn the following structured Q&A into a short cinematic story gist.
-
-RULES:
-- Use ONLY the answers
-- Genre: {genre}
-- Length ≤150 words
-- Third person only
-- Start with a strong visual or emotional moment
-- Natural storybook introduction
-- No lists, no dialogue
-"""
-
+    gist_prompt = render_prompt(
+    GIST_PROMPT,
+    user_style_text=user_style_text or "Gentle, cinematic children's storytelling.",
+    style_example=style_example or "",
+    genre=genre
+)
 
     messages = [
         {"role": "system", "content": gist_prompt},
@@ -361,12 +503,17 @@ RULES:
     ]
 
     try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.6,
-            timeout=60,
+        response = call_llm(
+        model=model,
+        messages=messages,
+        temperature=0.6,
+        timeout=60,
+        purpose="gist_generation"
+)
+        logger.info(
+        f"[ARTIFACT] req={request_id_ctx.get()} type=gist ttl=24h"
         )
+
         return response.choices[0].message.content.strip()
 
     except Exception as e:
@@ -385,53 +532,12 @@ NEGATIVE_PROMPT_GIST = (
     "watercolor, sketch, surreal, abstract, text, watermark"
 )
 
-GIST_IMAGE_SYSTEM_PROMPT = """
-You are a cinematic visual prompt generator for AI images.
-
-Convert a STORY GIST into ONE SDXL/HiDream-ready cinematic image prompt
-that depicts a SINGLE, CLEAR, PHYSICAL SCENE derived directly from the gist.
-
-CRITICAL SCENE RULES:
-- The image MUST depict a concrete, physically plausible scene.
-- The scene must be directly implied by the gist.
-- Do NOT include any humans, characters, faces, bodies, silhouettes, or people of any kind.
-- The scene should communicate the story through environment, objects, setting, lighting, and atmosphere only.
-- Do NOT use abstract, symbolic, metaphorical, or dreamlike imagery.
-- Do NOT invent locations, objects, or events not supported by the gist.
-
-COMPOSITION RULES:
-- Cinematic wide shot or medium-wide shot only.
-- Strong environmental storytelling through space, light, and physical details.
-- Neutral framing that works for landscape, portrait, and square formats.
-- Scene should feel like an empty moment from a film, just before or after human presence.
-
-STYLE RULES (UNIVERSAL):
-- Hyperrealistic cinematic rendering.
-- Physically plausible lighting.
-- Natural materials and textures.
-- Subtle filmic contrast.
-- Unified, restrained color palette.
-- Grounded realism.
-
-STRICT EXCLUSIONS:
-- NO humans, people, characters, or character representations.
-- NO portraits.
-- NO abstract symbolism.
-- NO painterly, illustrative, anime, cartoon, or stylized art.
-- NO text, logos, typography, or watermarks.
-
-OUTPUT RULES:
-- Return ONLY the final SDXL/HiDream prompt text.
-- No explanations.
-- No formatting.
-- No JSON.
-"""
 
 def generate_image_prompt_from_gist(gist: str) -> str:
     response = client.chat.completions.create(
         model="meta-llama/llama-3.3-70b-instruct:free",
         messages=[
-            {"role": "system", "content": GIST_IMAGE_SYSTEM_PROMPT},
+            {"role": "system", "content": get_prompt(GIST_IMAGE_SYSTEM)},
             {"role": "user", "content": gist},
         ],
         temperature=0.3,
@@ -513,6 +619,10 @@ def generate_gist_image(prompt: str, width: int, height: int, seed: int) -> str:
 
     job = r.json()
     job_id = job.get("id")
+    logger.info(
+    f"[IMG_JOB_START] req={request_id_ctx.get()} job_id={job_id}"
+    )
+
     if not job_id:
         raise RuntimeError("RunPod did not return job id")
 
@@ -523,6 +633,9 @@ def generate_gist_image(prompt: str, width: int, height: int, seed: int) -> str:
             RUNPOD_HIDREAM_STATUS.format(job_id),
             headers=HEADERS,
             timeout=30
+        )
+        logger.debug(
+        f"[IMG_JOB_POLL] req={request_id_ctx.get()} job_id={job_id} status={str}"
         )
 
         if status.status_code != 200:
@@ -685,6 +798,81 @@ def load_genre_style_map(user_id: str) -> dict:
             }
 
     return genre_map
+# =========================================================
+# STATIC GENRE STYLE MAP (NARRATIVE BOOKS ONLY)
+# =========================================================
+
+ALLOWED_BOOK_TYPES_FOR_STATIC_STYLE = {
+    "narrative_story",
+    "memoir",
+    "poetry",
+    "keepsake book",
+    "fiction",
+    "travel narrative",
+}
+
+def map_to_core_genre(raw_genre: str) -> str:
+    g = (raw_genre or "").lower()
+
+    if any(x in g for x in ["memoir", "keepsake", "family", "personal", "poetry"]):
+        return "family"
+
+    if any(x in g for x in ["fantasy", "magic"]):
+        return "fantasy"
+
+    if any(x in g for x in ["travel", "journey", "adventure"]):
+        return "adventure"
+
+    if "fiction" in g:
+        return "fiction"
+
+    return "unknown"
+
+
+def build_static_genre_style_map(books: list[dict]) -> dict:
+    genre_map: dict[str, dict] = {}
+
+    for book in books:
+        book_type = (book.get("book_type") or "").lower()
+        if book_type not in ALLOWED_BOOK_TYPES_FOR_STATIC_STYLE:
+            continue
+
+        core_genre = map_to_core_genre(book.get("genre", ""))
+        if core_genre == "unknown":
+            continue
+
+        entry = genre_map.setdefault(
+            core_genre,
+            {"styles": [], "examples": []}
+        )
+
+        style = (book.get("writing_style") or "").strip()
+        example = (book.get("example") or "").strip()
+
+        if style:
+            entry["styles"].append(style)
+        if example:
+            entry["examples"].append(example)
+
+    final = {}
+    for genre, data in genre_map.items():
+        if not data["examples"]:
+            continue
+
+        final[genre] = {
+            "writing_style": " ".join(set(data["styles"])),
+            "example": max(data["examples"], key=len),
+        }
+
+    return final
+
+
+def load_static_genre_style_map(user_id: str) -> dict:
+    doc = styles_collection.find_one({"user_id": user_id})
+    if not doc:
+        return {}
+
+    return build_static_genre_style_map(doc.get("books", []))
 
 # ============================================================
 # story_generator_api.py
@@ -705,7 +893,7 @@ class StoryRequest(BaseModel):
     character_details: str = Field(..., description="Character details, one per line, format: Name: description")
     genre: str = Field("Family", description="Genre name")
     num_pages: int = Field(5, description="Exact number of pages to generate")
-    user_id: str = Field(..., description="User ID for MongoDB style lookup")
+    user_id: Optional[str] = None
 
 
 class PageOutput(BaseModel):
@@ -773,36 +961,21 @@ def regenerate_page(story_text, old_prompt, character_map, page_num, orientation
     # ======================================================
     # 1) REWRITE STORY TEXT
     # ======================================================
-    regen_story_system = """
-You are a skilled cinematic story rewriter.
+    regen_story_system = get_prompt(REGEN_STORY_SYSTEM)
 
-Your task:
-- Rewrite the paragraph using different wording
-- Keep EXACTLY the same meaning, events, actions, and characters
-- Keep 3–5 sentences
-- Maintain cinematic tone suitable for an illustrated storybook
-- Do NOT add new events, props, locations, or characters
-- Do NOT change the sequence of actions
-- Do NOT explain anything
-- Do NOT comment on the rewrite
-- Do NOT add titles, prefixes, or labels
+    story_rewrite_prompt = render_prompt(
+        STORY_REWRITE_PROMPT,
+        story_text=story_text
+    )
 
-STRICT OUTPUT RULES:
-- Output ONLY the rewritten paragraph
-- NO lines like "Here is the rewritten paragraph:"
-- NO commentary
-- NO Markdown
-- NO quotes
-- NO bullet points
-    """
+    regen_prompt_system = get_prompt(REGEN_PROMPT_SYSTEM)
 
-    story_rewrite_prompt = f"""
-Rewrite the following story paragraph with different wording,
-but maintain identical meaning and actions:
+    rewrite_prompt = render_prompt(
+        REGEN_REWRITE_PROMPT,
+        new_story_text=new_story_text,
+        old_prompt=old_prompt
+    )
 
-Original Paragraph:
-{story_text}
-    """
 
     story_resp = client.chat.completions.create(
         model="meta-llama/llama-3.3-70b-instruct:free",
@@ -819,68 +992,7 @@ Original Paragraph:
     # ======================================================
     # 2) REWRITE IMAGE PROMPT
     # ======================================================
-    regen_prompt_system = """
-You are a professional cinematic visual prompt engineer for AI images.
-
-Your job:
-Rewrite the ORIGINAL image prompt into a new cinematic version while keeping:
-- SAME characters
-- SAME actions
-- SAME environment
-- SAME emotional tone
-- SAME story continuity
-
-You must follow the ORIGINAL prompt style rules exactly.
-
-======================
-ORIGINAL CINEMATIC RULES (STRICT)
-======================
-
-START every prompt with this exact prefix:
-
-"ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement,
-dynamic action, looking away from the camera, expressive body language, dramatic lighting,
-depth of field, atmospheric haze, environmental interaction, cinematic perspective of"
-
-REQUIREMENTS:
-- Include ALL character names explicitly (no pronouns)
-- Characters must NOT look at the camera
-- Show clear physical ACTION (walking, pointing, holding, exploring, discovering, turning, lifting)
-- Must show the environment clearly
-- Characters must interact with surroundings
-- If 2 characters are present, show both
-- If 3+ characters appear, show first 3 clearly
-- NO new characters allowed
-- NO new props allowed
-- NO invented outfits
-- No changes to the story content
-- Only the camera angle or composition may change
-
-END every prompt with the exact suffix:
-"consistent faces and outfits as before, cinematic, Hyperrealism, natural lighting."
-
-OUTPUT RULES:
-- Output ONLY the rewritten cinematic prompt
-- NO explanations
-- NO markdown
-- NO quotes
-- NO prefixes like “Here is the prompt:”
-
-"""
-
-    rewrite_prompt = f"""
-Story Page:
-{new_story_text}
-
-Original Prompt:
-{old_prompt}
-
-Rewrite a new cinematic prompt with:
-- SAME characters
-- SAME actions
-- SAME setting  
-But with a slightly different camera angle or composition.
-"""
+    
 
     prompt_resp = client.chat.completions.create(
         model="meta-llama/llama-3.3-70b-instruct:free",
@@ -1041,47 +1153,47 @@ def extract_page_from_story(story: str, page_tag: str):
 
 def genre_visual_style(genre):
     genre_styles = {
-        "Family": (
+        "family": (
             "warm cozy lighting, soft pastel tones, gentle ambience, homely scenery, "
             "emotional warmth, friendly joyful atmosphere"
         ),
-        "Fantasy": (
+        "fantasy": (
             "ethereal glow, magical particles floating, enchanted lighting, warm light rays, "
             "mystical haze, glowing magical accents"
         ),
-        "Adventure": (
+        "adventure": (
             "dramatic shadows, rugged terrain, dust particles, high contrast, "
             "energetic composition, cinematic action mood"
         ),
-        "Sci-Fi": (
+        "sci-fi": (
             "neon holograms, futuristic reflections, cool ambience, metallic textures, "
             "glowing circuitry, high-tech atmosphere"
         ),
-        "Mystery": (
+        "mystery": (
             "moody gradients, noir ambience, soft fog, muted tones, suspense shadows, "
             "silhouetted lighting"
         ),
 
-       "Birthday": (
+       "birthday": (
             "bright colorful decorations, vibrant party ambience, confetti floating, "
             "warm celebratory lighting, joyful expressions, balloons and ribbons, "
             "soft glowing highlights"
         ),
-        "Corporate Promotion": (
+        "corporate promotion": (
             "clean professional ambience, elegant soft lighting, subtle depth-of-field, "
             "modern office environment, confidence-filled atmosphere, muted premium tones, "
             "award-ceremony glow"
         ),
-        "Housewarming": (
+        "housewarming": (
             "warm inviting home interior, soft ambient light, cozy decor, indoor plants, "
             "fresh welcoming atmosphere, gentle shadows, warm wooden textures"
         ),
-        "Marriage": (
+        "marriage": (
             "romantic soft-focus lighting, elegant warm glow, floral decorations, "
             "cinematic highlights, gentle bokeh, pastel romantic tones, "
             "beautiful ceremonial ambience"
         ),
-        "Baby Shower": (
+        "baby shower": (
             "soft pastel colors, gentle warm light, cute decorations, baby toys, "
             "delicate joyful atmosphere, balloons and soft textures, dreamy nursery tones"
         ),
@@ -1098,7 +1210,34 @@ def fallback_writing_style(genre: str) -> str:
     )
 
 def normalize_genre(g: str) -> str:
-    return g.lower().strip()
+    if not g:
+        return ""
+
+    g = g.lower()
+
+    # collapse complex labels into core genres
+    if "family" in g or "keepsake" in g:
+        return "family"
+    if "fantasy" in g:
+        return "fantasy"
+    if "adventure" in g:
+        return "adventure"
+    if "sci-fi" in g or "science" in g:
+        return "sci-fi"
+    if "mystery" in g:
+        return "mystery"
+    if "birthday" in g:
+        return "birthday"
+    if "corporate" in g or "business" in g:
+        return "corporate promotion"
+    if "housewarming" in g:
+        return "housewarming"
+    if "marriage" in g or "wedding" in g:
+        return "marriage"
+    if "baby" in g:
+        return "baby shower"
+
+    return g.strip()
 
 def parse_genres(genre: str) -> list[str]:
     separators = ["+", ",", "|", "/"]
@@ -1122,49 +1261,64 @@ def parse_genres(genre: str) -> list[str]:
 
 def genre_writing_style(genre: str) -> str:
     writing_styles = {
-        "Family": (
-            "Warm, intimate, emotionally grounded prose. "
-            "Focus on relationships, shared moments, and quiet growth. "
-            "Gentle pacing, soft imagery, and comforting emotional beats."
-        ),
-        "Fantasy": (
-            "Lyrical, atmospheric storytelling filled with wonder. "
-            "Evocative imagery, subtle magic, and poetic rhythm. "
-            "Imply enchantment rather than explaining it."
-        ),
-        "Adventure": (
-            "Energetic, forward-moving prose driven by action and discovery. "
-            "Strong verbs, vivid movement, and cinematic pacing."
-        ),
-        "Sci-Fi": (
-            "Clean, precise, imaginative prose with futuristic undertones. "
-            "Blend advanced technology with human emotion and clarity."
-        ),
-        "Mystery": (
-            "Tight, moody prose with controlled tension. "
-            "Short sentences, implication, and restrained suspense."
-        ),
-        "Birthday": (
-            "Bright, joyful, playful storytelling. "
-            "Celebratory tone, light emotions, and happy moments."
-        ),
-        "Corporate Promotion": (
-            "Polished, confident, aspirational narrative. "
-            "Professional warmth with clarity and inspiration."
-        ),
-        "Housewarming": (
-            "Comforting, welcoming prose focused on belonging. "
-            "Soft sensory details and calm emotional warmth."
-        ),
-        "Marriage": (
-            "Romantic, elegant, emotionally rich storytelling. "
-            "Lyrical expressions of connection and intimacy."
-        ),
-        "Baby Shower": (
-            "Tender, gentle, nurturing prose. "
-            "Soft rhythm, affection, and hopeful emotional beats."
-        ),
-    }
+        "family": (
+        "Warm, intimate, emotionally grounded prose. "
+        "Gentle poetic rhythm, soft sensory detail, "
+        "deep focus on relationships, memory, and quiet love. "
+        "Emotion is implied, never explained."
+    ),
+
+    "fantasy": (
+        "Lyrical, restrained, emotionally anchored fantasy prose. "
+        "Magic is subtle and implied. "
+        "Wonder arises through atmosphere and feeling, not spectacle."
+    ),
+
+    "adventure": (
+        "Forward-moving cinematic prose with emotional clarity. "
+        "Action is clean and purposeful, never chaotic. "
+        "Momentum balanced with warmth and reflection."
+    ),
+
+    "sci-fi": (
+        "Elegant, human-centered speculative prose. "
+        "Technology is present but never dominant. "
+        "Emotional truth always outweighs technical explanation."
+    ),
+
+    "mystery": (
+        "Controlled, moody storytelling with restraint. "
+        "Short sentences, implied tension, quiet unease. "
+        "Atmosphere over shock."
+    ),
+
+    "birthday": (
+        "Joyful, celebratory storytelling with emotional softness. "
+        "Light rhythm, playful warmth, family closeness, "
+        "and memory-focused happiness."
+    ),
+
+    "corporate promotion": (
+        "Polished, confident narrative with emotional intelligence. "
+        "Professional tone softened by human warmth and aspiration."
+    ),
+
+    "housewarming": (
+        "Comforting, reflective prose centered on belonging. "
+        "Home as an emotional anchor. "
+        "Soft pacing and sensory calm."
+    ),
+
+    "marriage": (
+        "Romantic, elegant prose with emotional depth. "
+        "Connection expressed through moments, not declarations."
+    ),
+
+    "baby shower": (
+        "Tender, nurturing prose. "
+        "Gentle rhythm, hope, softness, and emotional safety."
+    ),
+}
 
     return writing_styles.get(genre, "")
 
@@ -1176,81 +1330,17 @@ def blend_writing_styles(genres: list[str]) -> str:
             styles.append(style)
     return " ".join(styles)
 
-
-def blend_visual_styles(genres: list[str]) -> str:
-    visuals = []
-    for g in genres:
-        v = genre_visual_style(g)
-        if v:
-            visuals.append(v)
-    return ", ".join(visuals)
-
-
 def generate_html_for_pages(story_pages: Dict[str, str], genre: str) -> Dict[str, str]:
     """
     Generates semantic HTML for ALL pages in a SINGLE LLM call.
     Returns dict: { "Page 1": "<div>...</div>", ... }
     """
 
-    system_prompt = f"""
-You are an expert storybook HTML formatter.
+    system_prompt = render_prompt(
+    HTML_FORMATTER,
+    genre=genre
+    )
 
-TASK:
-You will receive a JSON object mapping Page numbers to story text.
-For EACH page, convert the text into semantic HTML.
-
-GLOBAL RULES:
-- Output ONLY valid JSON
-- Keys must remain exactly the same (Page 1, Page 2, ...)
-- Values must be HTML strings
-
-HTML RULES:
-- NO <html>, <head>, <style>, or <body>
-- Each value MUST be wrapped exactly as:
-
-<div class="container">
-  <p class="adventure-text">
-    ...
-  </p>
-</div>
-
-STRICT RULES:
-- Output ONLY valid HTML (no markdown, no explanations)
-- Use ONLY these classes:
-  highlight-place
-  highlight-action
-  highlight-emotion
-  highlight-emphasis
-- highlight-place → ONLY physical locations (room, house, table, street)
-- highlight-action → verbs or actions,visible physical action only
-- highlight-emotion → feelings or mental states internal state / value / feeling
-- highlight-emphasis → very important story turning points OR final lesson only
-- NEVER highlight time words (morning, evening, night)
-- NEVER highlight objects or people
-- Do NOT overuse highlights
-- If multiple lessons appear, choose ONLY the strongest one for highlight-emphasis
-- highlight-place must be a literal, physical location (not symbolic or metaphorical)
-
-
-HIGHLIGHT RULES (apply intelligently):
-- Places → <span class="highlight-place">
-- Actions → <span class="highlight-action">
-- Emotions → <span class="highlight-emotion">
-- ONE major emphasis per page max → <span class="highlight-emphasis">
-
-QUALITY RULES:
-- Preserve original wording
-- Do NOT over-highlight
-- Do NOT add or remove meaning
-- No explanations
-- No comments
-- No markdown
-- No escaping
-
-GENRE CONTEXT: {genre}
-
-Return ONLY the JSON object.
-"""
 
     user_prompt = json.dumps(story_pages, ensure_ascii=False)
 
@@ -1272,37 +1362,43 @@ Return ONLY the JSON object.
 
     return html_map
 
-def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,user_id:str):
+def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,user_id: Optional[str]):
     
-    user_genre_map = load_genre_style_map(user_id)
+    user_genre_map = {}
+    static_genre_map = {}
+    if user_id:
+        user_genre_map = load_genre_style_map(user_id)
+        static_genre_map = load_static_genre_style_map(user_id)
 
 
     genres = parse_genres(genre)
+# Always apply Ma'am-style base
+    writing_styles = [
+        genre_writing_style(g) for g in genres if genre_writing_style(g)
+    ]
 
     writing_styles = []
     examples = []
 
     for g in genres:
+    # 1️⃣ User uploaded books
         if g in user_genre_map:
             writing_styles.append(user_genre_map[g]["writing_style"])
             examples.append(user_genre_map[g]["example"])
+
+    # 2️⃣ Static narrative genres (Ma’am’s books)
+        elif g in static_genre_map:
+            writing_styles.append(static_genre_map[g]["writing_style"])
+            examples.append(static_genre_map[g]["example"])
+
+    # 3️⃣ System fallback
         else:
             style = genre_writing_style(g)
             if style:
                 writing_styles.append(style)
+
 
     unknown_genres = []
-
-    for g in genres:
-        if g in user_genre_map:
-            writing_styles.append(user_genre_map[g]["writing_style"])
-            examples.append(user_genre_map[g]["example"])
-        else:
-            style = genre_writing_style(g)
-            if style:
-                writing_styles.append(style)
-            else:
-                writing_styles.append(fallback_writing_style(g))
 
 # ❌ Only fail if ALL are unknown
     if not writing_styles:
@@ -1335,63 +1431,13 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
 
     # --- Story system prompt
-    story_system_prompt = f"""
-You are a masterful storyteller who writes with cinematic restraint, poetic compression, and emotional economy.
-
-WRITING STYLE DEFINITION:
-{writing_style}
-
-Your writing style MUST strictly mirror the EXAMPLE below in all of the following ways:
-- Short, purposeful sentences with no filler or explanatory prose
-- Each sentence must carry a narrative or emotional beat
-- Minimalist, cinematic language that implies more than it explains
-- Poetic is mandatory: use metaphor, simile, alliteration, and rhythm
-- Rhythm and flow similar to verse, even when written as sentences
-- No conversational tone, no modern phrasing, no casual narration
-
-The EXAMPLE below is NOT inspiration.
-It is a STYLE CONTRACT.
-Your output must feel as if it could exist beside the EXAMPLE without stylistic contrast.
-
-────────────────────────────────────
-
-STORY RULES (NON-NEGOTIABLE):
-
-- Begin the story with a warm, natural opening such as “One day,” “Long ago,” or “On a quiet morning.”
-- Avoid unnecessary side plots.
-- Build the entire narrative solely from the provided story gist and characters.
-- The story must contain EXACTLY {num_pages} pages.
-- Each page must contain 3–5 sentences only.
-- Each page MUST explicitly include at least one provided character name.
-- Never invent new characters, names, or events.
-- Maintain a consistent emotional tone that matches the genre: {genre}.
-- Genre must strictly match: {genre}.
-- Label sections exactly as: Page 1, Page 2, ...
-
-────────────────────────────────────
-
-STRICT CONSTRAINTS (HARD FAIL IF VIOLATED):
-
-- Do NOT include, paraphrase, reference, or hint at any information from character_details.
-- Do NOT describe physical appearance, clothing, age, or traits unless explicitly stated in the story gist.
-- Character names may be used, but no additional character details are allowed.
-- Do NOT add explanations, summaries, morals, or author commentary.
-- Do NOT modernize language or tone.
-
-────────────────────────────────────
-
-STYLE ENFORCEMENT RULE:
-
-If a sentence does not advance emotion, memory, or consequence, it must be removed.
-If a sentence explains instead of evokes, it must be rewritten.
-If the rhythm feels different from the EXAMPLE, it must be corrected.
-
-────────────────────────────────────
-
-EXAMPLE (STYLE REFERENCE — DO NOT COPY CONTENT):
-{style_example}
-"""
-
+    story_system_prompt = render_prompt(
+    STORY_SYSTEM,
+    writing_style=writing_style,
+    num_pages=num_pages,
+    genre=genre,
+    style_example=style_example
+    )
 
 
     # --- Single LLM call to generate story pages
@@ -1421,40 +1467,8 @@ EXAMPLE (STYLE REFERENCE — DO NOT COPY CONTENT):
 
 
     # --- Build image prompt system
-    image_prompt_system = f"""
-You are a professional cinematic visual prompt engineer for AI images.
-Your job is to create CLEAR, ACTION-BASED, WIDE-SHOT cinematic prompts that match the story.
+    image_prompt_system = get_prompt(IMAGE_PROMPT_SYSTEM)
 
-RULES FOR EVERY PAGE:
-- Characters must NOT look at the camera.
-- You MUST explicitly mention every character name found in the story page.
-- If two or more characters are present, include ALL their names in the prompt text.
-- Characters must NOT pose like a portrait photo.
-- Every page must include at least one clear physical action (e.g., walking, discovering, holding, pointing, exploring, examining, opening, approaching, turning, stepping, lifting, noticing).
-- Use full-body or mid-body composition.
-- Show the environment clearly.
-- Always show characters interacting with their surroundings.
-- If 2 characters are present, both MUST appear in the prompt.
-- If 3+ characters appear, show the first 3 clearly, others implied softly.
-
-ABSOLUTE CHARACTER CONSTRAINT:
-- ONLY the explicitly named characters may appear.
-- NO crowd, NO background people, NO silhouettes, NO partial humans.
-- Public places must be shown EMPTY except for the named characters.
-
-START EVERY PROMPT WITH:
-"ultra HD, 8k, sharp focus, cinematic wide shot, full body characters, natural movement, dynamic action, looking away from the camera, expressive body language, dramatic lighting, depth of field, atmospheric haze, environmental interaction, cinematic perspective"
-- End every prompt with:
-  "consistent faces and outfits as before, cinematic, Hyperrealism, natural lighting."
-
-CRITICAL:
-- You MUST return ONLY a valid JSON object.
-- No text before or after JSON.
-- No explanations.
-- No natural language.
-- No comments.
-- The ONLY valid output format is a JSON object mapping Page X -> prompt string.
-"""
 
     # --- Single LLM call to generate all prompts
     try:
@@ -1497,9 +1511,7 @@ CRITICAL:
             "ultra HD, 8k, floating magical lights, ethereal mist, "
             "dreamlike mystical ambience."
         ),
-    
-        # ⭐ NEW GENRES BELOW ⭐
-    
+            
         "birthday": (
             "ultra HD, 8k, colorful party decorations under bright warm lighting, "
             "balloons, confetti floating, decorated table, joyful festive ambience."
@@ -1552,6 +1564,10 @@ CRITICAL:
         prompt_text = inject_character_descriptions(prompt_text, character_map)
 
         pages_out.append((page_text, prompt_text, page_html))
+        logger.info(
+    f"[ARTIFACT] req={request_id_ctx.get()} "
+    f"type=story pages={num_pages} ttl=24h"
+    )
 
     return pages_out
 
@@ -1710,6 +1726,7 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
                 if not img_data_b64:
                     raise RuntimeError("No image data returned.")
                 img = Image.open(BytesIO(base64.b64decode(img_data_b64)))
+                logger.info(f"[IMG_JOB_DONE] req={request_id_ctx.get()} job_id={job_id}")
                 return img
             if st == "FAILED":
                 raise RuntimeError("RunPod job failed.")
@@ -1748,7 +1765,6 @@ NEGATIVE_PROMPT = os.getenv("SDXL_NEGATIVE_PROMPT", (
 # ----------------------------
 # FastAPI app + models
 # ----------------------------
-#app = FastAPI(title="SDXL Background Generator (Single LLM call)")
 
 class SDXLPageIn(BaseModel):
     page: int
@@ -1771,36 +1787,36 @@ class SDXLResponse(BaseModel):
 # ----------------------------
 # Helpers
 # ----------------------------
-def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
-                         blur_strength: int = 6, opacity_boost: float = 0.65) -> Image.Image:
-    """
-    Apply left-side fade (blur + white overlay) so the left side becomes drawable for text.
-    """
-    if image.mode != "RGBA":
-        base_img = image.convert("RGBA")
-    else:
-        base_img = image.copy()
+# def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
+#                          blur_strength: int = 6, opacity_boost: float = 0.65) -> Image.Image:
+#     """
+#     Apply left-side fade (blur + white overlay) so the left side becomes drawable for text.
+#     """
+#     if image.mode != "RGBA":
+#         base_img = image.convert("RGBA")
+#     else:
+#         base_img = image.copy()
 
-    w, h = base_img.size
-    fade_w = int(w * fade_width_ratio)
+#     w, h = base_img.size
+#     fade_w = int(w * fade_width_ratio)
 
-    # mask: left-to-right ramp 0 -> 255
-    mask = Image.new("L", (w, h), 255)
-    mdraw = ImageDraw.Draw(mask)
-    for x in range(fade_w):
-        alpha = int(255 * (x / max(1, fade_w)))
-        mdraw.line([(x, 0), (x, h)], fill=alpha)
+#     # mask: left-to-right ramp 0 -> 255
+#     mask = Image.new("L", (w, h), 255)
+#     mdraw = ImageDraw.Draw(mask)
+#     for x in range(fade_w):
+#         alpha = int(255 * (x / max(1, fade_w)))
+#         mdraw.line([(x, 0), (x, h)], fill=alpha)
 
-    # blurred background blended
-    blurred = base_img.filter(ImageFilter.GaussianBlur(blur_strength))
-    faded = Image.composite(blurred, base_img, mask)
+#     # blurred background blended
+#     blurred = base_img.filter(ImageFilter.GaussianBlur(blur_strength))
+#     faded = Image.composite(blurred, base_img, mask)
 
-    # overlay white on left side to create text-friendly space
-    overlay = Image.new("RGBA", base_img.size, (255, 255, 255, int(255 * opacity_boost)))
-    left_mask = mask.point(lambda p: 255 - p)  # invert so left side gets overlay
-    faded_img = Image.composite(overlay, faded, left_mask)
+#     # overlay white on left side to create text-friendly space
+#     overlay = Image.new("RGBA", base_img.size, (255, 255, 255, int(255 * opacity_boost)))
+#     left_mask = mask.point(lambda p: 255 - p)  # invert so left side gets overlay
+#     faded_img = Image.composite(overlay, faded, left_mask)
 
-    return faded_img
+#     return faded_img
 
 # ----------------------------
 # LLM: single-call multi-page to generate final SDXL prompts
@@ -1813,47 +1829,48 @@ def build_multi_page_llm_payload(pages: List[SDXLPageIn]) -> Dict:
     """
     pages_dict = {f"Page {p.page}": p.text for p in pages}
     user_content = (
-    "You are a professional SDXL prompt engineer specialized in STORY-GROUNDED illustration.\n\n"
+    "You are an expert SDXL background image generator specializing in STORYBOOK AESTHETIC BACKGROUNDS.\n\n"
 
     "You will receive a JSON object mapping Page numbers to short STORY PAGE TEXTS.\n"
     "Each page text describes a specific moment in the story.\n\n"
 
     "YOUR TASK:\n"
-    "For EACH page, generate ONE final SDXL prompt that visually represents THAT PAGE ONLY.\n"
-    "The prompt MUST be derived STRICTLY from the page text.\n\n"
+    "For EACH page, generate ONE SDXL prompt that visually represents THAT PAGE ONLY.\n"
+    "The illustration MUST depend strictly and only on the content of the page text.\n\n"
 
-    "CRITICAL STORY-GROUNDING RULES (NON-NEGOTIABLE):\n"
-    "- Extract ONLY concrete, visual elements explicitly mentioned or strongly implied in the page text.\n"
-    "- Do NOT invent locations, objects, scenery, or atmosphere that are not supported by the text.\n"
-    "- If the page mentions a room, house, table, window, road, garden, or time of day — use THAT.\n"
-    "- If something is NOT in the page text, it MUST NOT appear in the image prompt.\n"
-    "- The image should look like a frozen visual frame from THAT story page.\n\n"
+    "STORY DEPENDENCY RULES (STRICT):\n"
+    "- Use ONLY objects, settings, or themes explicitly mentioned or clearly implied in the page text.\n"
+    "- Do NOT invent scenery, objects, symbols, colors, or atmosphere not supported by the text.\n"
+    "- If the page is emotional or reflective without a clear setting, create a soft abstract background only.\n"
+    "- The illustration must contain VERY FEW elements.\n"
+    "- Minimal, calm, and visually pleasing is mandatory.\n\n"
 
     "CHARACTER SAFETY RULES:\n"
     "- NO humans, NO people, NO faces, NO silhouettes, NO human shapes.\n"
-    "- If characters are present in the story text, represent them ONLY through environmental traces\n"
-    "  (e.g. empty chair, open door, plates on a table, footprints, toys, books, lamps, curtains).\n\n"
+    "- If characters are mentioned, represent them ONLY through environmental traces\n"
+    "  (for example: empty chair, open door, shells on sand, plates on a table, curtains by a window).\n\n"
 
-    "STYLE RULES (SECONDARY TO STORY):\n"
-    "- Pastel watercolor storybook style.\n"
-    "- Soft brushwork, gentle lighting.\n"
-    "- Cinematic but grounded realism.\n\n"
+    "USE THESE TERMS OR CONCEPTS:\n"
+    "- photorealistic, ultra HD, 8k, cinematic lighting, hyperrealism,\n"
+    "- sharp focus, depth of field, dramatic shadows, lens effects.\n\n"
 
     "PROMPT CONSTRUCTION RULES:\n"
-    "- Exactly ONE sentence per prompt.\n"
-    "- Include: location + lighting + atmosphere + 2–5 story-specific visual objects.\n"
-    "- Do NOT reuse generic scenery across pages unless the story text repeats it.\n\n"
+    "- Exactly ONE sentence per page.\n"
+    "- Begin each prompt with: \"soft watercolor storybook illustration of\".\n"
+    "- Include ONLY minimal story-supported objects or background washes.\n"
+    "- Keep the composition simple, uncluttered, and gentle.\n\n"
 
     "OUTPUT FORMAT (STRICT):\n"
-    "- Return ONLY a valid JSON object.\n"
-    "- Keys MUST be exactly: 'Page 1', 'Page 2', etc.\n"
-    "- Each value MUST be: { \"sdxl_prompt\": \"...\" }\n"
+    "- Return ONLY valid JSON.\n"
+    "- Keys must be exactly: \"Page 1\", \"Page 2\", etc.\n"
+    "- Each value must be: { \"sdxl_prompt\": \"...\" }\n"
     "- No explanations. No markdown. No extra text.\n\n"
 
-    "EXAMPLE (ILLUSTRATIVE ONLY — DO NOT COPY CONTENT):\n"
-    "{ \"Page 1\": { \"sdxl_prompt\": \"pastel watercolor interior of a quiet kitchen, sunlight through a window, wooden table with two empty plates, folded chairs nearby, warm morning light, soft storybook atmosphere\" } }\n\n"
+    "STYLE EXAMPLES (REFERENCE ONLY):\n"
+    "{ \"Page 1\": { \"sdxl_prompt\": \"\" } }\n"
+    "{ \"Page 2\": { \"sdxl_prompt\": \"\" } }\n\n"
 
-    "NOW PROCESS THIS INPUT JSON:\n"
+    "INPUT JSON:\n"
     f"{json.dumps(pages_dict, ensure_ascii=False)}\n\n"
 
     "Return only the JSON object."
@@ -1979,40 +1996,13 @@ def _generate_titles_internal(full_story: str, genre: str, avoid_list: List[str]
             + "\n".join(f"- {t}" for t in avoid_list)
         )
 
-    prompt = f"""
-You are a bestselling book-title creator known for crafting powerful but simple cinematic titles.
+    prompt = render_prompt(
+    TITLE_GENERATOR,
+    genre=genre,
+    full_story=full_story,
+    avoid_list_text=avoid_list_text
+    )
 
-TASK:
-Generate FIVE easy-to-understand, emotionally strong book titles.
-Each title must use simple, everyday vocabulary while still feeling cinematic and premium.
-Each title must be different in wording and meaning.
-
-STRICT RULES FOR EACH TITLE:
-- 3 to 4 words total
-- SIMPLE everyday words only
-- No complex or abstract vocabulary
-- No character names
-- No locations unless essential
-- No punctuation or quotes
-- No numbering
-- No “X of Y” structure
-- No titles starting with “The”
-- Each title MUST appear on its own line
-
-STYLE:
-- Simple but cinematic
-- Emotional, clear, meaningful
-- Understandable at a glance
-
-GENRE: {genre}
-
-STORY:
-{full_story}
-
-{avoid_list_text}
-
-Now generate exactly 5 NEW titles:
-"""
 
     resp = client.chat.completions.create(
         model="meta-llama/llama-3.3-70b-instruct:free",
@@ -2031,6 +2021,31 @@ Now generate exactly 5 NEW titles:
 
     return titles[:5]
 
+# ============================
+# 🏷️ Tagline Generator
+# ============================
+
+def _generate_tagline_internal(story: str, genre: str) -> str:
+    """
+    Generates ONE short cinematic tagline.
+    Uses the SAME input as title generation.
+    """
+
+    prompt = render_prompt(
+    TAGLINE_GENERATOR,
+    genre=genre,
+    story=story
+    )
+
+
+    resp = client.chat.completions.create(
+        model="meta-llama/llama-3.3-70b-instruct:free",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.9,
+        timeout=60,
+    )
+
+    return resp.choices[0].message.content.strip()
 
 # ============================
 # 🧾 API Models
@@ -2049,6 +2064,7 @@ class RegenerateTitleRequest(BaseModel):
 
 class TitleListResponse(BaseModel):
     titles: List[str]
+    tagline: Optional[str] = None
     regenerated: bool = False
 # ============================
 # coverback_api_simple.py
@@ -2075,7 +2091,6 @@ NEGATIVE_PROMPT_TEXT = (
 # ----------------------------
 # FastAPI + Models
 # ----------------------------
-#app = FastAPI(title="Cover & BackCover Generator (Simple, No Characters on Cover)")
 
 class CoverPageIn(BaseModel):
     page: int
@@ -2275,24 +2290,8 @@ RULES:
 # ----------------------------
 
 def build_cover_prompt_from_visuals(extracted_visuals: str, genre: str) -> str:
-    system = """
-You are a cinematic visual prompt generator for AI image models.
+    system = get_prompt(COVER_VISUAL_SYSTEM)
 
-STRICT RULES:
-- NO text, NO title, NO symbols, NO lettering.
-- Absolutely NO characters.
-- MUST be photorealistic, modern, sharp, and cinematic.
-- Only ONE visual scene (35–45 words).
-- Must be based ONLY on objects/locations/atmosphere from the extracted visuals.
-- No long sentences. No paragraphs.
-- No metaphors, no abstract symbolism.
-
-Start with:
-"ultra HD, 8k, photorealistic, ultra-sharp focus, dramatic cinematic lighting,"
-
-End with:
-"Hyperrealism, natural lighting."
-"""
     user = f"Extracted: {extracted_visuals}\nGenre: {genre}"
 
     try:
@@ -2306,19 +2305,12 @@ End with:
 
 def generate_back_blurb_and_prompt(full_story_text: str, genre: str) -> Tuple[str, str]:
     # Generate blurb
-    back_sys = (
-        "You are a senior editorial writer at Penguin Random House.\n\n"
-        "Write a polished, market-ready BACK COVER BLURB.\n\n"
-        "STRICT RULES:\n"
-        "- Output MUST be ONLY the blurb sentence + the Theme Highlight.\n"
-        "- Do NOT write: 'Here is...', 'This is...', 'Below is...', or any meta-text.\n"
-        "- Do NOT explain, introduce, label, or format the answer.\n"
-        "- EXACTLY 1 warm, emotional, premium sentence.\n"
-        "- No spoilers.\n"
-        "- Mention characters lightly.\n"
-        f"- Tone must match the genre: {genre}.\n"
-        "- End with a one-line Theme Highlight formatted as: Theme Highlight: \"...\""
+    back_sys = render_prompt(
+    BACK_BLURB_SYSTEM,
+    genre=genre
     )
+
+
     user = f"Story gist:\n{full_story_text}\nGenre: {genre}"
 
     try:
@@ -2328,19 +2320,11 @@ def generate_back_blurb_and_prompt(full_story_text: str, genre: str) -> Tuple[st
         blurb = "A powerful emotional journey.\nTheme Highlight: \"Hope and resilience.\""
 
     # Generate back cover visual prompt
-    back_visual_sys = (
-        "You are a cinematic visual prompt generator for AI book BACK COVERS.\n\n"
-        "Rules:\n"
-        "- NO humans, NO silhouettes.\n"
-        "- Only environments, objects, props, lighting.\n"
-        "- Mood: reflective, calm ending.\n"
-        "- Photorealistic 8k, cinematic.\n"
-        "- 35–45 words only.\n"
-        f"- Genre tone: {genre}.\n"
-        "- No metaphors.\n"
-        "Begin with: ultra HD, 8k, photorealistic, soft dramatic lighting,\n"
-        "End with: Hyperrealism, natural lighting."
+    back_visual_sys = render_prompt(
+    BACK_VISUAL_SYSTEM,
+    genre=genre
     )
+
 
     try:
         back_prompt_raw = call_openrouter_system_user(back_visual_sys, user, temperature=0.5)
@@ -2544,12 +2528,17 @@ def next_question(data: AnswerInput):
 # ============================
 
 @app.post("/upload-books")
+
 async def upload_books(
     user_id: str = Query(...),
     files: list[UploadFile] = File(...)
 ):
     if user_id not in SESSION_UPLOADS:
-        SESSION_UPLOADS[user_id] = []
+        SESSION_UPLOADS[user_id] = {
+        "files": [],
+        "created_at": time.time()
+    }
+
 
     for file in files:
         ext = Path(file.filename).suffix.lower()
@@ -2560,14 +2549,15 @@ async def upload_books(
         tmp.write(await file.read())
         tmp.close()
 
-        SESSION_UPLOADS[user_id].append(tmp.name)
+        SESSION_UPLOADS[user_id]["files"].append(tmp.name)
 
-    if not SESSION_UPLOADS[user_id]:
+
+    if not SESSION_UPLOADS[user_id]["files"]:
         raise HTTPException(400, "No valid files uploaded")
 
     return {
         "status": "uploaded",
-        "files_uploaded": len(SESSION_UPLOADS[user_id]),
+        "files_uploaded": len(SESSION_UPLOADS[user_id]["files"]),
         "next_step": "Call /process-books"
     }
 
@@ -2582,7 +2572,8 @@ def process_books(user_id: str):
     books_text = {}
     books_meta = []
 
-    for path in SESSION_UPLOADS[user_id]:
+    for path in SESSION_UPLOADS[user_id]["files"]:
+
         ext = Path(path).suffix.lower()
         book_id = f"book_{uuid.uuid4().hex[:8]}"
 
@@ -2653,7 +2644,7 @@ def process_books(user_id: str):
     )
 
     # ---- CLEAN TEMP FILES ----
-    for p in SESSION_UPLOADS[user_id]:
+    for p in SESSION_UPLOADS[user_id]["files"]:
         os.unlink(p)
     del SESSION_UPLOADS[user_id]
 
@@ -2683,11 +2674,14 @@ def gist(data: GistInput):
         user_id=data.user_id
     )
 
+    genres = parse_genres(data.genre)
+
     return {
         "user_id": data.user_id,
-        "genre": data.genre,
+        "genres": genres,
         "gist": gist_text
     }
+
 
 # ============================
 
@@ -2697,7 +2691,7 @@ def gist_preview_images(payload: GistResponse):
         images = generate_preview_images_from_gist(payload.gist)
         return {
             "user_id": payload.user_id,
-            "genre": payload.genre,
+            "genres": payload.genres,
             "images": images
         }
     except Exception as e:
@@ -2765,6 +2759,11 @@ def images_generate(req: ImageRequest):
 
         except Exception as e:
             results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error=str(e)))
+            logger.info(
+    f"[ARTIFACT] req={request_id_ctx.get()} "
+    f"type=image page={page_num} ttl=ephemeral"
+    )
+
 
     return ImageResponse(pages=results, message="HiDream generation completed (SDXL background pending).")
 
@@ -2877,11 +2876,11 @@ def sdxl_generate(req: SDXLRequest):
 
             # decode image and apply fade
             img = Image.open(BytesIO(base64.b64decode(b64)))
-            faded_img = fade_left_background(img)
+            #img = fade_left_background(img)  # optional fade effect
 
             # encode final image into base64 PNG
             buf = BytesIO()
-            faded_img.save(buf, format="PNG")
+            img.save(buf, format="PNG")
             final_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
             page_result.sdxl_background_base64 = final_b64
@@ -2900,9 +2899,6 @@ def sdxl_generate(req: SDXLRequest):
 
 @app.post("/title/generate", response_model=TitleListResponse)
 def title_generate(req: GenerateTitleRequest):
-    """
-    Generate 5 simple cinematic book titles.
-    """
     story = req.story.strip()
     genre = req.genre.strip()
 
@@ -2910,15 +2906,18 @@ def title_generate(req: GenerateTitleRequest):
         raise HTTPException(status_code=400, detail="Story text is empty.")
 
     titles = _generate_titles_internal(story, genre)
+    tagline = _generate_tagline_internal(story, genre)
 
-    return TitleListResponse(titles=titles, regenerated=False)
+    return TitleListResponse(
+        titles=titles,
+        tagline=tagline,
+        regenerated=False
+    )
+# ============================
 
 
 @app.post("/title/regenerate", response_model=TitleListResponse)
 def title_regenerate(req: RegenerateTitleRequest):
-    """
-    Regenerate 5 NEW titles that must NOT be similar to previous ones.
-    """
     story = req.story.strip()
     genre = req.genre.strip()
 
@@ -2926,11 +2925,22 @@ def title_regenerate(req: RegenerateTitleRequest):
         raise HTTPException(status_code=400, detail="Story text is empty.")
 
     if not req.previous_titles:
-        raise HTTPException(status_code=400, detail="previous_titles is required for regeneration.")
+        raise HTTPException(status_code=400, detail="previous_titles is required.")
 
-    new_titles = _generate_titles_internal(story, genre, avoid_list=req.previous_titles)
+    new_titles = _generate_titles_internal(
+        story,
+        genre,
+        avoid_list=req.previous_titles
+    )
 
-    return TitleListResponse(titles=new_titles, regenerated=True)
+    tagline = _generate_tagline_internal(story, genre)
+
+    return TitleListResponse(
+        titles=new_titles,
+        tagline=tagline,
+        regenerated=True
+    )
+
 # ============================
 
 # ----------------------------

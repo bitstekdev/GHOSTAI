@@ -6,7 +6,7 @@ const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000'
 
 const fastApiClient = axios.create({
   baseURL: FASTAPI_BASE_URL,
-  timeout: 1800000 // 30 minutes for long-running operations
+  timeout: 3600000 // 30 minutes for long-running operations
 });
 
 // Questionnaire endpoints--------------------------------------------------
@@ -60,12 +60,15 @@ exports.generateStory = async (
 // Generate temporary preview images from a gist (no storage)
 // FastAPI: POST /gist/preview-images
 exports.generateGistPreviewImages = async ({ userId, genre, gist }) => {
+  console.log("Generating gist preview images in FastAPI service for user:", userId, "genre:", genre, "gist:", gist);
   try {
     const response = await fastApiClient.post('/gist/preview-images', {
       user_id: userId,
-      genre,
+      genres: [genre || "Family"],
       gist
     });
+
+    console.log("Received gist preview images response:", response);
 
     return response.data;
 

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw, History } from "lucide-react";
 import api from "../../services/axiosInstance";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
 import ImageHistoryModal from "../helperComponents/ImageHistoryModal.jsx";
@@ -77,6 +78,8 @@ const StoryFlipbook = () => {
   const hideToolbarTimer = useRef(null);
 
   const { storyId } = useParams();
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   // console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
@@ -478,21 +481,23 @@ const openEdit = () => {
   // Use book typography mapping so on-screen text matches PDF rules
   const genreStyle = BOOK_GENRE_STYLES[story.genre] || BOOK_GENRE_STYLES.Default;
 
-  // Normalize font size (accepts "16px" or 16)
-  const baseFontSize = parseInt(genreStyle.fontSize, 10) || 14;
-
-  // Orientation scale multipliers (tweak these numbers to taste)
-  const orientationScale = {
-    Portrait: 0.85,
-    Landscape: 0.9,
-    Square: 0.88,
+  // Master page font-size helper — single source of truth
+  const getPageFontSize = (orientation) => {
+    switch (orientation) {
+      case "Portrait":
+        return "13px";
+      case "Landscape":
+        return "15.5px";
+      case "Square":
+        return "14.5px";
+      default:
+        return "14px";
+    }
   };
-
-  const scale = orientationScale[story.orientation] || 1;
 
   const pageTextStyle = {
     fontFamily: genreStyle.fontFamily,
-    fontSize: `${Math.round(baseFontSize * scale)}px`,
+    fontSize: getPageFontSize(story.orientation),
     lineHeight: genreStyle.lineHeight,
     letterSpacing: genreStyle.letterSpacing,
     color: '#111827',
@@ -585,9 +590,22 @@ pages.forEach((page, index) => {
             ) : (
               <p
                 className="text-black leading-relaxed"
-                style={pageTextStyle}
+                style={{
+    ...pageTextStyle,
+    textAlign: "justify",
+    textJustify: "inter-word"
+  }}
               >
+                <span
+    style={{
+      background: "rgba(255, 255, 255, 0.88)",
+      padding: "0.15em 0.35em",
+      boxDecorationBreak: "clone",
+      WebkitBoxDecorationBreak: "clone",
+    }}
+  >
                 {page.text}
+                </span>
               </p>
             )}
           </div>
@@ -758,21 +776,21 @@ pages.forEach((page, index) => {
               }>
               <button
                 onClick={() => setShowRegenerateConfirm(true)}
-                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
                 <RefreshCcw size={20} />
                 Regenerate
               </button>
 
               <button
                 onClick={openEdit}
-                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
                 <Edit size={20} />
                 Edit
               </button>
 
               <button
                 onClick={openFaceSwap}
-                className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
+                className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition relative">
                 <Users size={20} />
                 Face Swap
                 <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">Beta</span>
@@ -790,20 +808,20 @@ pages.forEach((page, index) => {
                     setShowHistory(true);
                   }
                 }}
-                className="flex flex-col items-center text-xs hover:text-purple-400 transition">
+                className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
                 <History size={20} />
                 Revert
               </button>
 
-              <button className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
+              {/* <button className="flex flex-col items-center text-xs hover:text-purple-400 transition relative">
                 <Scissors size={20} />
                 Erase
                 <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">V2</span>
-              </button>
+              </button> */}
 
               <button
                 onClick={downloadPDF}
-                className="flex flex-col items-center text-xs hover:text-green-400 transition"
+                className="flex flex-col items-center text-xs text-white hover:text-green-400 transition"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download PDF
@@ -882,10 +900,25 @@ pages.forEach((page, index) => {
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-4">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+          <button
+            onClick={() => {
+              if (!storyData || !storyData.story) return;
+              addToCart({
+                storyId: storyId,
+                title: storyData.story.title,
+                cover: storyData.story.coverImage?.s3Url,
+                price: 29.99,
+              });
+            }}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+          >
             Add to Cart
           </button>
-          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+
+          <button
+            onClick={() => navigate("/order")}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+          >
             Order Now
           </button>
         </div>

@@ -26,7 +26,6 @@ pdfminer.six
 Pillow
 python-docx
 
-boto3
 pymongo
-
+jinja2
 
