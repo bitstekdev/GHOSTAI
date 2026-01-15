@@ -7,70 +7,6 @@ const s3Service = require('../services/s3Service');
 const { emitJobUpdate } = require("../services/socket");
 
 
-// IMAGE JOB FUNCTION
-// const runBookCreationJob = async (jobId, payload) => {
-//   try {
-//     await ImageJob.findByIdAndUpdate(jobId, {
-//       status: "processing",
-//       startedAt: new Date()
-//     });
-
-//     // STEP 1: Characters
-//     emitJobUpdate(jobId, { step: "characters", progress: 10 });
-
-//     await generateCharacterImagesLogic({
-//       storyId: payload.storyId,
-//       userId: payload.userId,
-//       title: payload.title
-//     });
-
-//     await ImageJob.findByIdAndUpdate(jobId, {
-//       step: "backgrounds",
-//       progress: 50
-//     });
-
-//     emitJobUpdate(jobId, { step: "backgrounds", progress: 50 });
-
-//     // STEP 2: Backgrounds
-//     await generateBackgroundImagesLogic(payload.storyId);
-
-//     await ImageJob.findByIdAndUpdate(jobId, {
-//       step: "cover",
-//       progress: 80
-//     });
-
-//     emitJobUpdate(jobId, { step: "cover", progress: 80 });
-
-//     // STEP 3: Cover
-//     await generateCoverLogic(payload.storyId);
-
-//     await ImageJob.findByIdAndUpdate(jobId, {
-//       status: "completed",
-//       step: "done",
-//       progress: 100,
-//       completedAt: new Date()
-//     });
-
-//     await Story.findByIdAndUpdate(payload.storyId, {
-//         currentJob: null,
-//         step: 6,
-//         status: "completed"
-//     });
-
-//     emitJobUpdate(jobId, { step: "done", progress: 100 });
-
-//   } catch (err) {
-//     await ImageJob.findByIdAndUpdate(jobId, {
-//       status: "failed",
-//       error: err.message
-//     });
-
-//     emitJobUpdate(jobId, {
-//       status: "failed",
-//       error: err.message
-//     });
-//   }
-// };
 
 const emitSmoothProgress = (jobId, base, range, current, total) => {
   const percent = Math.floor(base + (current / total) * range);
@@ -78,9 +14,10 @@ const emitSmoothProgress = (jobId, base, range, current, total) => {
 };
 
 
+// IMAGE JOB FUNCTION
 const runBookCreationJob = async (jobId, payload) => {
   try {
-    // 1️⃣ Load job state from DB
+    // Load job state from DB
     const job = await ImageJob.findById(jobId);
     if (!job) return;
 
@@ -96,7 +33,7 @@ const runBookCreationJob = async (jobId, payload) => {
     }
 
     /**
-     * STEP 1️⃣ CHARACTERS
+     *  CHARACTERS
      */
     if (!job.step || job.step === "characters") {
 
@@ -107,7 +44,6 @@ const runBookCreationJob = async (jobId, payload) => {
         });
 
       emitJobUpdate(jobId, { step: "characters", progress: 10 });
-
       await generateCharacterImagesLogic({
         storyId: payload.storyId,
         userId: payload.userId,
@@ -117,31 +53,31 @@ const runBookCreationJob = async (jobId, payload) => {
 
       await ImageJob.findByIdAndUpdate(jobId, {
         step: "backgrounds",
-        progress: 50
+        progress: 45
       });
     }
 
     /**
-     * STEP 2️⃣ BACKGROUNDS
+     *  BACKGROUNDS
      */
     const jobAfterCharacters = await ImageJob.findById(jobId);
     if (jobAfterCharacters.step === "backgrounds") {
-      emitJobUpdate(jobId, { step: "backgrounds", progress: 50 });
+      emitJobUpdate(jobId, { step: "backgrounds", progress: 45 });
 
       await generateBackgroundImagesLogic(payload.storyId, jobId);
 
       await ImageJob.findByIdAndUpdate(jobId, {
         step: "cover",
-        progress: 80
+        progress: 85
       });
     }
 
     /**
-     * STEP 3️⃣ COVER
+     *  COVER
      */
     const jobAfterBackgrounds = await ImageJob.findById(jobId);
     if (jobAfterBackgrounds.step === "cover") {
-      emitJobUpdate(jobId, { step: "cover", progress: 80 });
+      emitJobUpdate(jobId, { step: "cover", progress: 85 });
 
       await generateCoverLogic(payload.storyId, jobId);
 
@@ -182,8 +118,7 @@ const runBookCreationJob = async (jobId, payload) => {
 
 // CHARACTER IMAGE GENERATION JOBS
 const generateCharacterImagesLogic = async ({ storyId, userId, title, jobId }) => {
-    console.log("Generating character images for story:", storyId, userId, title);
-    emitJobUpdate(jobId, { progress: 11 });
+    // console.log("Generating character images for story:", storyId, userId, title);
   // Verify story ownership
   const story = await Story.findOne({
     _id: storyId,
@@ -211,8 +146,6 @@ const generateCharacterImagesLogic = async ({ storyId, userId, title, jobId }) =
   const storyGenreString = Array.isArray(story.genres)
     ? story.genres.join(", ")
     : story.genre;
-
-    emitJobUpdate(jobId, { progress: 15 });
 
   const result = await fastApiService.generateImages(
     pageData,
@@ -260,7 +193,7 @@ const generateCharacterImagesLogic = async ({ storyId, userId, title, jobId }) =
         { characterImage: image._id, status: "completed" }
       );
 
-      emitSmoothProgress(story.currentJob, 10, 40, index + 1, pages.length);
+      emitSmoothProgress(jobId, 1, 44, index + 1, pages.length);
 
       return image;
     } catch (err) {
@@ -286,8 +219,7 @@ const generateCharacterImagesLogic = async ({ storyId, userId, title, jobId }) =
 
 // BACKGROUND IMAGE GENERATION JOBS
 const generateBackgroundImagesLogic = async (storyId, jobId) => {
-  console.log("Generating background images for story:", storyId);
-  emitJobUpdate(jobId, { progress: 51 });  
+  // console.log("Generating background images for story:", storyId);
   const story = await Story.findOne({ _id: storyId });
 
   if (!story) {
@@ -295,6 +227,8 @@ const generateBackgroundImagesLogic = async (storyId, jobId) => {
   }
 
   const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+  const total = pages.length;
+  let completed = 0;
 
   const pageData = pages.map(p => ({
     page: p.pageNumber,
@@ -347,7 +281,8 @@ const generateBackgroundImagesLogic = async (storyId, jobId) => {
         fluxPrompt: pageResult.flux_prompt
       }
     );
-   emitJobUpdate(jobId, { progress: 79 });
+    completed++;
+    emitSmoothProgress(jobId, 45, 40, completed, total);
     return image;
   });
 
@@ -359,8 +294,8 @@ const generateBackgroundImagesLogic = async (storyId, jobId) => {
 
 // COVER IMAGE GENERATION JOB
 const generateCoverLogic = async (storyId, jobId) => {
-  console.log("Generating cover images for story:", storyId);
-  emitJobUpdate(jobId, { progress: 81 });
+  // console.log("Generating cover images for story:", storyId);
+  emitJobUpdate(jobId, { progress: 88 });
   const story = await Story.findOne({ _id: storyId });
   if (!story) throw new Error("Story not found");
 
@@ -418,6 +353,7 @@ const generateCoverLogic = async (storyId, jobId) => {
 
     story.coverImage = image._id;
   }
+  emitJobUpdate(jobId, { progress: 92 });
 
   if (coverData.back_image_base64) {
     const buffer = Buffer.from(coverData.back_image_base64, "base64");
@@ -445,11 +381,13 @@ const generateCoverLogic = async (storyId, jobId) => {
 
     story.backCoverImage = image._id;
   }
+  emitJobUpdate(jobId, { progress: 96 });
   emitJobUpdate(jobId, { progress: 99 });
 
   if (coverData.back_blurb) story.backCoverBlurb = coverData.back_blurb;
   story.qrUrl = qr_url;
   await story.save();
+  emitJobUpdate(jobId, { progress: 100 });
 }
 
 // EXPORTS

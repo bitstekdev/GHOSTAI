@@ -100,26 +100,31 @@ const Dashboard = () => {
 
   // Legacy auto-start tour (useTour) removed; using TourContext hook above
 
- const getResumeRoute = (story) => {
-  const sid = story?._id;
-  if (!sid) return "/generatestory";
+        const getResumeRoute = (story) => {
+          const sid = story?._id;
+          if (!sid) return "/generatestory";
 
-  if (story.step <= 2) return `/questioner/${sid}`;
-  if (story.step === 3) return `/templateselection/${sid}`;
-  if (story.step === 4) return `/titlegenerator/${sid}`;
+          if (story.step <= 2) return `/questioner/${sid}`;
+          if (story.step === 3) return `/templateselection/${sid}`;
+          if (story.step === 4) return `/titlegenerator/${sid}`;
 
-  // Step 5: Book generation in progress
-  if (story.step === 5 && story.currentJob) {
-    return `/generatorPage/${sid}?jobId=${story.currentJob}`;
-  }
+          // if failed during book generation
+          if (story.step === 5 && story.status === "failed" && !story.currentJob) {
+            return `/titlegenerator/${sid}`;
+          }
 
-  // Step 5 completed → flipbook
-  if (story.step === 6 && !story.currentJob) {
-    return `/flipbook/${sid}`;
-  }
+          // Step 5: Book generation in progress
+          if (story.step === 5 && story.currentJob) {
+            return `/generatorPage/${sid}?jobId=${story.currentJob}`;
+          }
 
-  return `/generatestory`;
-};
+          // Step 5 completed → flipbook
+          if (story.step === 6 && !story.currentJob) {
+            return `/flipbook/${sid}`;
+          }
+
+          return `/generatestory`;
+        };
 
 
   const handleOpenStory = (story) => {

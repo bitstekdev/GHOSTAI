@@ -9,9 +9,6 @@ import { ProgressStep5 } from "../helperComponents/Steps.jsx";
 
 import { AppContext } from "../../context/AppContext";
 
-const socket = io(import.meta.env.VITE_SOCKET_URL, {
-  withCredentials: true,
-});
 
 const STEPS = {
   characters: {
@@ -44,68 +41,88 @@ const GeneratorPage = () => {
   
   
   const [socketActive, setSocketActive] = useState(false);
-  console.log("Job ID:", socketActive, jobId);    
+  // console.log("Socket Active:", socketActive, "Job ID:", jobId);    
   const [progress, setProgress] = useState(5);
   const [step, setStep] = useState("characters");
   const [status, setStatus] = useState("processing");
 
   // --- WebSocket
-  useEffect(() => {
-    if (!jobId) return;
+ useEffect(() => {
+  if (!jobId) return;
 
+  const socket = io(import.meta.env.VITE_SOCKET_URL, {
+    withCredentials: true,
+    transports: ["websocket"], // force WS
+  });
+
+  socket.on("connect", () => {
+     if(import.meta.env.VITE_DEV) console.log("🟢 Socket connected:", socket.id);
+    setSocketActive(true); // IMPORTANT
     socket.emit("join-job", jobId);
+  });
 
-    socket.on("job-update", (data) => {
-    setSocketActive(true);
+  socket.on("job-update", (data) => {
+    if(import.meta.env.VITE_DEV) console.log("Job update:", data);
 
     if (data.step) setStep(data.step);
     if (data.progress !== undefined) setProgress(data.progress);
 
     if (data.status === "completed" || data.step === "done") {
-        setProgress(100);
-        navigateTo(`/flipbook/${storyId}`);
+      setProgress(100);
+      navigateTo(`/flipbook/${storyId}`);
     }
 
     if (data.status === "failed") {
-        setStatus("failed");
+      setStatus("failed");
+      setTimeout(() => {
+      navigateTo(`/titlegenerator/${storyId}`);
+      }, 3000);
     }
-    });
+  });
 
+  socket.on("disconnect", () => {
+    if(import.meta.env.VITE_DEV) console.log("🔴 Socket disconnected");
+    setSocketActive(false);
+  });
 
-    return () => {
-      socket.off("job-update");
-    };
-  }, [jobId]);
+  return () => {
+    socket.disconnect();
+  };
+}, [jobId]);
+
 
   // --- Polling fallback
     useEffect(() => {
-    if (!jobId || socketActive) return;
+      if (!jobId || socketActive) return;
 
-    const interval = setInterval(async () => {
+      const interval = setInterval(async () => {
         try {
-        const res = await api.get(`/api/v1/images/job-status/${jobId}`);
-        const job = res.data;
+          const res = await api.get(`/api/v1/images/job-status/${jobId}`);
+          const job = res.data;
 
-        if( job.status === "failed") {
-            setStatus("failed");
-            clearInterval(interval);
-            navigateTo(`/titlegenerator/${storyId}`);
-        }
+          setStep(job.step);
+          setProgress(job.progress);
 
-        setStep(job.step);
-        setProgress(job.progress);
-
-        if (job.status === "completed") {
+          if (job.status === "completed") {
             clearInterval(interval);
             navigateTo(`/flipbook/${storyId}`);
-        }
-        } catch (err) {
-        console.error("Polling failed", err);
-        }
-    }, 5000);
+          }
 
-    return () => clearInterval(interval);
+          if (job.status === "failed") {
+            setStatus("failed");
+            clearInterval(interval);
+            setTimeout(() => {
+              navigateTo(`/titlegenerator/${storyId}`);
+            }, 3000);
+          }
+        } catch (err) {
+          console.error("Polling failed", err);
+        }
+      }, 5000);
+
+      return () => clearInterval(interval);
     }, [jobId, socketActive]);
+
 
 
   const stepUI = STEPS[step] || STEPS.characters;
@@ -116,7 +133,7 @@ const GeneratorPage = () => {
         <ProgressStep5 />
          {status === "failed" && (
           <p className="text-red-400 mt-6">
-            Something went wrong. Please try again.
+            Something went wrong. Please try again later.
           </p>
         )}
       <div className="p-6 py-10 max-w-3xl w-full text-white text-center">
@@ -147,7 +164,7 @@ const GeneratorPage = () => {
 
         {progress < 15 ? (
         <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-            <div className="h-full w-1/3 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-running" />
+            <div className="h-full w-1/4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-running" />
         </div>
         ) : (
         <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden relative">

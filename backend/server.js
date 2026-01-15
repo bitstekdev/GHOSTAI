@@ -18,10 +18,10 @@ const PORT = process.env.PORT || 5000;
 const resumeJobs = async () => {
   const jobs = await ImageJob.find({ status: "processing" });
   if (jobs.length === 0){
-    console.log("✅No processing jobs to resume.");
+    console.log("✅ No processing jobs to resume.");
     return;
   } 
-  console.log(`✔️Resuming ${jobs.length} processing jobs...`);
+  console.log(`✔️ Resuming ${jobs.length} processing jobs...`);
   for (const job of jobs) {
     runBookCreationJob(job._id, {
       storyId: job.story,

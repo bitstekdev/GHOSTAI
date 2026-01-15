@@ -20,7 +20,7 @@ const TitleSelection = () => {
 
   useEffect(() => {
     fetchStoryData();
-    if (import.meta.env.DEV) console.log("Story ID:", storyId);
+    if (import.meta.env.VITE_DEV) console.log("Story ID:", storyId);
   }, []);
 
   const fetchStoryData = async () => {
@@ -33,7 +33,7 @@ const TitleSelection = () => {
         setStatus("failed");
         setInterval(() => {
           setStatus("processing");
-        }, 15000);
+        }, 6000);
       }
     } catch (err) {
       console.error("Fetch story failed:", err);
@@ -42,7 +42,6 @@ const TitleSelection = () => {
 
   // Generate AI Titles
   const handleGenerateTitles = async () => {
-    if (import.meta.env.DEV) console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -58,7 +57,6 @@ const TitleSelection = () => {
       // setAiTitles(res.data.titles || []);
       setAiTitles(res.data.data.titles || []);
       setRegenerate(true);
-      
       // console.log("AI Titles Response:", res.data);
     } catch (err) {
       console.error("AI Title fetch failed:", err);
@@ -118,7 +116,7 @@ const TitleSelection = () => {
       {/* error */}
       {status === "failed" && (
           <p className="text-red-400 mt-6">
-            Something went wrong. Please try again.
+            Something went wrong. Please try again later.
           </p>
         )}
     <div className="p-6 py-10 relative max-w-3xl w-full text-white">
