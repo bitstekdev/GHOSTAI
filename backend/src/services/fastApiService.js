@@ -26,11 +26,11 @@ exports.nextQuestion = async (conversation, answer) => {
 
 // Gist generation--------------------------------------------------
 exports.generateGist = async (conversation, genre, userId) => {
+  // Send the genre/style label verbatim to FastAPI. Do not attempt to transform it.
   const payload = {
     user_id: userId,
     conversation,
-    genre,
-    use_custom_genre: false
+    genre
   };
 
   const response = await fastApiClient.post('/gist', payload);
@@ -91,8 +91,10 @@ exports.generateImages = async (pages, orientation, genre) => {
 };
 
 // SDXL Background generation------------------------------------------
-exports.generateSDXLBackgrounds = async (pages, orientation) => {
-  const response = await fastApiClient.post('/images/sdxl_generate', {
+// exports.generateSDXLBackgrounds = async (pages, orientation) => {
+//   const response = await fastApiClient.post('/images/sdxl_generate', {
+exports.generateFLUXBackgrounds = async (pages, orientation) => {
+  const response = await fastApiClient.post('/images/flux_generate', {
     pages,
     orientation
   });

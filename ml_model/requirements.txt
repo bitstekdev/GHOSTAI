@@ -25,6 +25,7 @@ fastapi-utilities
 pdfminer.six
 Pillow
 python-docx
+pdfplumber
 
 pymongo
 jinja2

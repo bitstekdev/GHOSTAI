@@ -24,7 +24,7 @@ import Image2 from "../../assets/images/landscape.png";
 ////////////////////////////////////////////////////////////////////////////////////
 
 // const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
-const StoryFlipbook = () => {
+const StoryFlipbook = ({ storyId: storyIdProp, onAddToCart, onOrderNow }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +41,15 @@ const StoryFlipbook = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [editPage, setEditPage] = useState(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
+  const wrapperRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  const [showToolbar, setShowToolbar] = useState(false);
+  const hideToolbarTimer = useRef(null);
+
+  const params = useParams();
+  // Prefer prop, fallback to URL params
+  const storyId = storyIdProp ?? params.storyId;
 
   const downloadPDF = async () => {
     try {
@@ -70,15 +79,6 @@ const StoryFlipbook = () => {
     }
   };
 
-
-  const wrapperRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const [showToolbar, setShowToolbar] = useState(false);
-  const hideToolbarTimer = useRef(null);
-
-  const { storyId } = useParams();
-
-  // console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
   const dummyStoryData = {
   story: {
@@ -749,6 +749,38 @@ pages.forEach((page, index) => {
     .map(word => `<span>${word} </span>`)
     .join("");
 
+  // ============================
+  // COMMERCE HANDLERS
+  // ============================
+  const handleAddToCartClick = () => {
+    if (!storyData?.story) return;
+
+    onAddToCart?.({
+      id: storyId,
+      title: storyData.story.title,
+      genre: storyData.story.genre,
+      orientation: storyData.story.orientation,
+      coverImage: storyData.story.coverImage,
+      backCoverImage: storyData.story.backCoverImage,
+      backCoverBlurb: storyData.story.backCoverBlurb,
+      pages: storyData.pages,
+    });
+  };
+
+  const handleOrderNowClick = () => {
+    if (!storyData?.story) return;
+
+    onOrderNow?.({
+      id: storyId,
+      title: storyData.story.title,
+      genre: storyData.story.genre,
+      orientation: storyData.story.orientation,
+      coverImage: storyData.story.coverImage,
+      backCoverImage: storyData.story.backCoverImage,
+      backCoverBlurb: storyData.story.backCoverBlurb,
+      pages: storyData.pages,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-black to-gray-900 py-4 sm:py-8 px-2 sm:px-4">
@@ -897,10 +929,14 @@ pages.forEach((page, index) => {
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-4">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+          <button 
+            onClick={handleAddToCartClick}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Add to Cart
           </button>
-          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+          <button 
+            onClick={handleOrderNowClick}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Order Now
           </button>
         </div>
@@ -984,7 +1020,5 @@ pages.forEach((page, index) => {
       )}
     </div>
   );
-
 };
-
 export default StoryFlipbook;

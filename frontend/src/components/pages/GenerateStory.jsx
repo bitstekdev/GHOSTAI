@@ -31,7 +31,7 @@ const GenerateStory = () => {
 
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
-  // const [currentStep, setCurrentStep] = useState("title"); 
+  // const [currentStep, setCurrentStep] = useState(""); 
   const [currentStep, setCurrentStep] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -152,7 +152,6 @@ const GenerateStory = () => {
     // Custom Genre selected
     if (value === "__custom__") {
       addUserMessage("Custom Genre");
-      setFormData(prev => ({ ...prev, genres: [...(prev.genres || []), "Custom"] }));
       addBotMessage(
         "Awesome 🎨 Upload a reference document to define your custom genre."
       );
@@ -261,15 +260,15 @@ How would you like to continue?
           );
           setCurrentStep("storyDirection");
         } else {
-          addBotMessage("What would you like to change? (title, genre, length, characters)");
+          addBotMessage("What would you like to change? (genre, length, characters)");
           setCurrentStep("edit");
         }
         break;
 
       case "storyDirection":
         if (input === "1") {
-          setFormData(prev => ({ ...prev, entryMode: "questionnaire" }));
-          handleSubmit();
+          // Avoid relying on async setState — pass payload directly
+          handleSubmit({ ...formData, entryMode: "questionnaire" });
         } 
         else if (input === "2") {
           setFormData(prev => ({ ...prev, entryMode: "gist" }));
@@ -295,25 +294,26 @@ How would you like to continue?
         break;
 
       case "edit":
-        const editChoice = input.toLowerCase();
-        if (editChoice.includes("title")) {
-          addBotMessage("Titles are no longer requested. You can edit the genre, length, or characters instead.");
-          setCurrentStep("genre");
-        } else if (editChoice.includes("genre")) {
-          addBotMessage("Select the Genre or occasion? ");
-          setCurrentStep("genre");
-        } else if (editChoice.includes("length")) {
-          addBotMessage("Number of pages? (1-10)");
-          setCurrentStep("length");
-        } else if (editChoice.includes("character")) {
-          setFormData(prev => ({ ...prev, characterDetails: [] }));
-          addBotMessage("Let's start over with characters. What's the name of your first character?");
-          setCurrentStep("characterName");
-          setCurrentCharacter({ index: 0, name: "", details: "" });
-        } else {
-          addBotMessage("Please specify what you'd like to edit: title, genre, length, or characters");
-        }
-        break;
+  const editChoice = input.toLowerCase();
+
+  if (editChoice.includes("genre")) {
+    addBotMessage("Select the genre or occasion.");
+    setCurrentStep("genre");
+  } 
+  else if (editChoice.includes("length")) {
+    addBotMessage("Number of pages? (1-20)");
+    setCurrentStep("length");
+  } 
+  else if (editChoice.includes("character")) {
+    setFormData(prev => ({ ...prev, characterDetails: [] }));
+    addBotMessage("Let's start over with characters. What's the name of your first character?");
+    setCurrentStep("characterName");
+    setCurrentCharacter({ index: 0, name: "", details: "" });
+  } 
+  else {
+    addBotMessage("Please specify what you'd like to edit: genre, length, or characters.");
+  }
+  break;
 
       default:
         break;
@@ -342,10 +342,18 @@ How would you like to continue?
     if (
       !dataToSend.genres || dataToSend.genres.length === 0 ||
       !dataToSend.length ||
-      !dataToSend.numCharacters ||
-      dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
+      !dataToSend.numCharacters
     ) {
       addBotMessage("❌ Please complete all story details before continuing.");
+      return;
+    }
+
+    // Only enforce full character details for GIST mode
+    if (
+      dataToSend.entryMode === "gist" &&
+      dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
+    ) {
+      addBotMessage("❌ Please complete all character details before continuing.");
       return;
     }
 
@@ -384,7 +392,8 @@ How would you like to continue?
           // For gist users: generate previews before navigating so TemplateSelection can display them
           try {
             const previewRes = await api.post('/api/v1/images/gist/preview-images', {
-              gist: dataToSend.gist
+              gist: dataToSend.gist,
+              genres: dataToSend.genres || []
             });
 
             const previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
@@ -439,12 +448,14 @@ How would you like to continue?
 
           setCustomGenres(genres);
 
-          // Auto-apply learned style and continue flow
+          // Refresh available learned styles but DO NOT auto-select them.
+          // Preserve any existing user selections in `formData.genres`.
           if (activeGenre) {
-            setFormData(prev => ({ ...prev, genres: [activeGenre] }));
-            addBotMessage(`🧠 Custom genre trained and selected: ${activeGenre}`);
-            addBotMessage("You can keep this genre or choose one more (max 2). ");
-            addBotMessage("Type 'continue' or select another genre.");
+            addBotMessage(`🧠 Custom writing style trained: ${activeGenre}`);
+            // If the user hasn't selected any genre yet, prompt them to pick one.
+            if (!formData.genres || (Array.isArray(formData.genres) && formData.genres.length === 0)) {
+              addBotMessage("Select the trained style from the dropdown, or type 'continue' to proceed.");
+            }
             setCurrentStep("genre");
           }
         } catch (e) {
@@ -607,9 +618,10 @@ How would you like to continue?
             addBotMessage("⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres.");
             return prev;
           }
-          return { ...prev, genres: [...existing, "Custom"] };
+          // DO NOT insert a placeholder like 'Custom' — open the upload flow instead
+          return prev;
         });
-        addBotMessage("Awesome 🎨 Upload a reference document to define your custom genre.");
+        addBotMessage("Upload documents to teach a custom writing style.");
         setShowUploadMenu(true);
         setTriggerUploadFromGenre(true);
         setIsCustomGenreProcessing(true);

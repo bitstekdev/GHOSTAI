@@ -87,7 +87,7 @@ IMAGE_PROMPT_SYSTEM = "image_prompt_system"
 REGEN_STORY_SYSTEM = "regen_story_system"
 REGEN_PROMPT_SYSTEM = "regen_prompt_system"
 REGEN_REWRITE_PROMPT = "regen_rewrite_prompt"
-SDXL_BACKGROUND_USER = "sdxl_background_user_prompt"
+FLUX_BACKGROUND_USER = "flux_background_user_prompt"
 TITLE_GENERATOR = "title_generator_prompt"
 TAGLINE_GENERATOR = "tagline_generator_prompt"
 BACK_BLURB_SYSTEM = "back_blurb_system"
@@ -102,7 +102,7 @@ styles_collection.create_index(
 )
 # ============================================================
 SESSION_UPLOADS = {}
-SESSION_TTL_SECONDS = 30 * 60  # 30 minutes
+SESSION_TTL_SECONDS = 60 * 60  # 60 minutes
 
 def cleanup_expired_sessions():
     now = time.time()
@@ -223,10 +223,7 @@ def call_llm(
 RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
 RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS")
 RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
-
-RUNPOD_SDXL_URL = os.getenv("RUNPOD_SDXL_URL")
-RUNPOD_SDXL_STATUS = os.getenv("RUNPOD_SDXL_STATUS")
-
+RUNPOD_FLUX_URL = os.getenv("RUNPOD_FLUX_URL")
 DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "1600"))
 POLL_INTERVAL = float(os.getenv("IMAGE_GEN_POLL_INTERVAL_S", "3.0"))
 JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT_S", "600"))
@@ -261,7 +258,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("storybook_api")
-
 
 
 # ============================================================
@@ -691,8 +687,7 @@ def require_env(name: str) -> str:
 RUNPOD_AUTH_BEARER = require_env("RUNPOD_AUTH_BEARER")
 RUNPOD_HIDREAM_URL = require_env("RUNPOD_HIDREAM_URL")
 RUNPOD_HIDREAM_STATUS = require_env("RUNPOD_HIDREAM_STATUS")
-RUNPOD_SDXL_URL = require_env("RUNPOD_SDXL_URL")
-RUNPOD_SDXL_STATUS = require_env("RUNPOD_SDXL_STATUS")
+RUNPOD_FLUX_URL = require_env("RUNPOD_FLUX_URL")
 RUNPOD_FACESWAP_URL = require_env("RUNPOD_FACESWAP_URL")
 RUNPOD_BANANA_ENDPOINT = require_env("RUNPOD_BANANA_ENDPOINT")
 MONGO_URI = require_env("MONGO_URI")
@@ -893,6 +888,7 @@ class StoryRequest(BaseModel):
     character_details: str = Field(..., description="Character details, one per line, format: Name: description")
     genre: str = Field("Family", description="Genre name")
     num_pages: int = Field(5, description="Exact number of pages to generate")
+    orientation: str = "Portrait"
     user_id: Optional[str] = None
 
 
@@ -945,6 +941,27 @@ def extract_json_from_text(text: str) -> Optional[Dict]:
                         # keep searching
                         start_idx = None
     return None
+
+def enforce_page_line_limit(text: str, max_lines: int) -> str:
+    """
+    Hard trim page text to fit physical page height.
+    1 line = 1 sentence OR 1 blank line
+    """
+    if not text:
+        return ""
+
+    lines = text.split("\n")
+    trimmed = []
+    count = 0
+
+    for line in lines:
+        trimmed.append(line)
+        count += 1
+        if count >= max_lines:
+            break
+
+    return "\n".join(trimmed).rstrip()
+
 
 def regenerate_page(story_text, old_prompt, character_map, page_num, orientation="Landscape"):
     global client 
@@ -1362,7 +1379,21 @@ def generate_html_for_pages(story_pages: Dict[str, str], genre: str) -> Dict[str
 
     return html_map
 
-def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,user_id: Optional[str]):
+# --------------------------------------------------
+# PAGE LAYOUT CONFIG (SINGLE SOURCE OF TRUTH)
+# --------------------------------------------------
+PAGE_LINE_LIMITS = {
+    "portrait": 12,
+    "landscape": 8,
+    "square": 10
+}
+
+# Default orientation (you can later pass this from request)
+orientation = "portrait"
+orientation = orientation.lower()
+max_lines = PAGE_LINE_LIMITS.get(orientation.lower(), 10)
+
+def generate_story_and_prompts(story_gist: str, num_characters: int, character_details: str, genre: str, num_pages: int,orientation: str,user_id: Optional[str]):
     
     user_genre_map = {}
     static_genre_map = {}
@@ -1436,7 +1467,9 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
     writing_style=writing_style,
     num_pages=num_pages,
     genre=genre,
-    style_example=style_example
+    style_example=style_example,
+    orientation=orientation.capitalize(),
+    max_lines=max_lines
     )
 
 
@@ -1461,7 +1494,14 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
     story_pages = {}
     for i in range(1, num_pages + 1):
         tag = f"Page {i}"
-        story_pages[tag] = extract_page_from_story(story_output, tag) or ""
+
+        raw_page = extract_page_from_story(story_output, tag) or ""
+
+        story_pages[tag] = enforce_page_line_limit(
+            raw_page,
+         max_lines
+        )
+
         # --- Generate HTML for ALL pages (SINGLE LLM CALL)
     html_pages = generate_html_for_pages(story_pages, genre)
 
@@ -1579,7 +1619,7 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
 class HiDreamPageIn(BaseModel):
     page: int
-    text: str   # SDXL prompt placeholder (not used for hidream now)
+    text: str   # Flux prompt placeholder (not used for hidream now)
     prompt: str # HiDreamXL prompt (detailed)
 
 class ImageRequest(BaseModel):
@@ -1738,11 +1778,11 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
         logger.error(f"RunPod image generation failed: {str(e)}")
         # Bubble up string message to caller
         raise RuntimeError(str(e))
-# images_api_sdxl.py
+# images_api_flux.py
 """
-SDXL Background Generator API
-- Single LLM call for all pages (LLM returns final SDXL prompts for each page)
-- Per-page SDXL generation (RunPod)
+Flux Background Generator API
+- Single LLM call for all pages (LLM returns final flux prompts for each page)
+- Per-page flux generation (RunPod)
 - Left-side fade effect applied to each background (ready for text overlay)
 - Outputs base64 PNG per page with same structure as HiDream API
 """
@@ -1751,140 +1791,58 @@ SDXL Background Generator API
 # ----------------------------
 
 # Tunables
-LLM_MODEL = os.getenv("SDXL_LLM_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
-LLM_TEMPERATURE = float(os.getenv("SDXL_LLM_TEMP", "0.3"))
-POLL_INTERVAL = float(os.getenv("SDXL_POLL_INTERVAL_S", "3.0"))
-JOB_TIMEOUT = int(os.getenv("SDXL_JOB_TIMEOUT_S", "600"))  # 10 minutes
-
-# Negative prompt for SDXL (can be edited)
-NEGATIVE_PROMPT = os.getenv("SDXL_NEGATIVE_PROMPT", (
-    "text, watermark, signature, low quality, deformed, mutated, extra limbs, "
-    "bad anatomy, bad proportions, poorly drawn, jpeg artifacts, pixelated, nsfw, nude"
-))
-
+LLM_MODEL = os.getenv("FLUX_LLM_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+LLM_TEMPERATURE = float(os.getenv("FLUX_LLM_TEMP", "0.3"))
+POLL_INTERVAL = float(os.getenv("FLUX_POLL_INTERVAL_S", "3.0"))
+JOB_TIMEOUT = int(os.getenv("FLUX_JOB_TIMEOUT_S", "600"))  # 10 minutes
 # ----------------------------
 # FastAPI app + models
 # ----------------------------
 
-class SDXLPageIn(BaseModel):
+class FluxPageIn(BaseModel):
     page: int
-    text: str  # story page text (used by LLM to create prompt)
+    text: str
 
-class SDXLRequest(BaseModel):
-    pages: List[SDXLPageIn]
+class FluxRequest(BaseModel):
+    pages: List[FluxPageIn]
     orientation: Optional[str] = Field("Landscape", description="Landscape | Portrait | Square")
 
-class SDXLPageOut(BaseModel):
+class FluxPageOut(BaseModel):
     page: int
-    sdxl_prompt: Optional[str] = None
-    sdxl_background_base64: Optional[str] = None
+    flux_prompt: Optional[str] = None
+    flux_background_base64: Optional[str] = None
     error: Optional[str] = None
 
-class SDXLResponse(BaseModel):
-    pages: List[SDXLPageOut]
+class FluxResponse(BaseModel):
+    pages: List[FluxPageOut]
     message: str
-
 # ----------------------------
-# Helpers
+# LLM: single-call multi-page to generate final FLUX prompts
 # ----------------------------
-# def fade_left_background(image: Image.Image, fade_width_ratio: float = 0.45,
-#                          blur_strength: int = 6, opacity_boost: float = 0.65) -> Image.Image:
-#     """
-#     Apply left-side fade (blur + white overlay) so the left side becomes drawable for text.
-#     """
-#     if image.mode != "RGBA":
-#         base_img = image.convert("RGBA")
-#     else:
-#         base_img = image.copy()
-
-#     w, h = base_img.size
-#     fade_w = int(w * fade_width_ratio)
-
-#     # mask: left-to-right ramp 0 -> 255
-#     mask = Image.new("L", (w, h), 255)
-#     mdraw = ImageDraw.Draw(mask)
-#     for x in range(fade_w):
-#         alpha = int(255 * (x / max(1, fade_w)))
-#         mdraw.line([(x, 0), (x, h)], fill=alpha)
-
-#     # blurred background blended
-#     blurred = base_img.filter(ImageFilter.GaussianBlur(blur_strength))
-#     faded = Image.composite(blurred, base_img, mask)
-
-#     # overlay white on left side to create text-friendly space
-#     overlay = Image.new("RGBA", base_img.size, (255, 255, 255, int(255 * opacity_boost)))
-#     left_mask = mask.point(lambda p: 255 - p)  # invert so left side gets overlay
-#     faded_img = Image.composite(overlay, faded, left_mask)
-
-#     return faded_img
-
-# ----------------------------
-# LLM: single-call multi-page to generate final SDXL prompts
-# ----------------------------
-def build_multi_page_llm_payload(pages: List[SDXLPageIn]) -> Dict:
-    """
-    Build a user content containing JSON mapping Page -> text to send to the LLM.
-    We ask the LLM to return a JSON object mapping Page N -> {"sdxl_prompt": "..."}
-    with strict rules for scenic, pastel, no humans, no silhouettes.
-    """
+def build_multi_page_llm_payload(pages: List[FluxPageIn]) -> Dict:
     pages_dict = {f"Page {p.page}": p.text for p in pages}
-    user_content = (
-    "You are an expert SDXL background image generator specializing in STORYBOOK AESTHETIC BACKGROUNDS.\n\n"
 
-    "You will receive a JSON object mapping Page numbers to short STORY PAGE TEXTS.\n"
-    "Each page text describes a specific moment in the story.\n\n"
+    system_prompt = render_prompt(
+    FLUX_BACKGROUND_USER,
+    pages_json=json.dumps(pages_dict, ensure_ascii=False)
+    )
 
-    "YOUR TASK:\n"
-    "For EACH page, generate ONE SDXL prompt that visually represents THAT PAGE ONLY.\n"
-    "The illustration MUST depend strictly and only on the content of the page text.\n\n"
 
-    "STORY DEPENDENCY RULES (STRICT):\n"
-    "- Use ONLY objects, settings, or themes explicitly mentioned or clearly implied in the page text.\n"
-    "- Do NOT invent scenery, objects, symbols, colors, or atmosphere not supported by the text.\n"
-    "- If the page is emotional or reflective without a clear setting, create a soft abstract background only.\n"
-    "- The illustration must contain VERY FEW elements.\n"
-    "- Minimal, calm, and visually pleasing is mandatory.\n\n"
-
-    "CHARACTER SAFETY RULES:\n"
-    "- NO humans, NO people, NO faces, NO silhouettes, NO human shapes.\n"
-    "- If characters are mentioned, represent them ONLY through environmental traces\n"
-    "  (for example: empty chair, open door, shells on sand, plates on a table, curtains by a window).\n\n"
-
-    "USE THESE TERMS OR CONCEPTS:\n"
-    "- photorealistic, ultra HD, 8k, cinematic lighting, hyperrealism,\n"
-    "- sharp focus, depth of field, dramatic shadows, lens effects.\n\n"
-
-    "PROMPT CONSTRUCTION RULES:\n"
-    "- Exactly ONE sentence per page.\n"
-    "- Begin each prompt with: \"soft watercolor storybook illustration of\".\n"
-    "- Include ONLY minimal story-supported objects or background washes.\n"
-    "- Keep the composition simple, uncluttered, and gentle.\n\n"
-
-    "OUTPUT FORMAT (STRICT):\n"
-    "- Return ONLY valid JSON.\n"
-    "- Keys must be exactly: \"Page 1\", \"Page 2\", etc.\n"
-    "- Each value must be: { \"sdxl_prompt\": \"...\" }\n"
-    "- No explanations. No markdown. No extra text.\n\n"
-
-    "STYLE EXAMPLES (REFERENCE ONLY):\n"
-    "{ \"Page 1\": { \"sdxl_prompt\": \"\" } }\n"
-    "{ \"Page 2\": { \"sdxl_prompt\": \"\" } }\n\n"
-
-    "INPUT JSON:\n"
-    f"{json.dumps(pages_dict, ensure_ascii=False)}\n\n"
-
-    "Return only the JSON object."
-)
+    user_prompt = json.dumps(pages_dict, ensure_ascii=False)
 
     return {
         "model": LLM_MODEL,
-        "messages": [{"role": "user", "content": user_content}],
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
         "temperature": LLM_TEMPERATURE
     }
 
-def call_llm_get_prompts(pages: List[SDXLPageIn]) -> Optional[Dict[str, Dict[str, str]]]:
+
+def call_llm_get_prompts(pages: List[FluxPageIn]) -> Optional[Dict[str, Dict[str, str]]]:
     """
-    Call OpenRouter (LLM) once, parse JSON and return mapping Page -> {"sdxl_prompt": "..."}
+    Call OpenRouter (LLM) once, parse JSON and return mapping Page -> {"flux_prompt": "..."}
     """
     payload = build_multi_page_llm_payload(pages)
     headers = {
@@ -1921,64 +1879,71 @@ def call_llm_get_prompts(pages: List[SDXLPageIn]) -> Optional[Dict[str, Dict[str
         return None
 
 # ----------------------------
-# SDXL call wrapper (RunPod)
+# FLUX call wrapper (RunPod)
 # ----------------------------
-def run_runpod_sdxl(prompt: str, width: int, height: int, seed: int = None):
-    """
-    Call RunPod SDXL serverless endpoint with a simple payload.
-    Expects the RunPod job to return an output.images[0] that contains a data:image/png;base64,... string.
-    """
-    if seed is None:
-        seed = int(hashlib.sha256((prompt + str(time.time())).encode()).hexdigest(), 16) % (2**32)
-
+def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> str:
     payload = {
         "input": {
             "prompt": prompt,
-            "negative_prompt": NEGATIVE_PROMPT,
             "width": width,
             "height": height,
-            "num_inference_steps": 25,
-            "refiner_inference_steps": 50,
-            "guidance_scale": 7.5,
-            "strength": 0.3,
+            "num_inference_steps": 4,
+            "guidance": 3.5,
             "seed": seed,
-            "scheduler": "K_EULER",
-            "num_images": 1
+            "image_format": "png"
         }
     }
 
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"}
-    resp = requests.post(RUNPOD_SDXL_URL, headers=headers, json=payload, timeout=30)
-    if resp.status_code not in (200, 201):
-        raise RuntimeError(f"RunPod SDXL start failed: {resp.status_code} {resp.text}")
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
+        "Content-Type": "application/json"
+    }
 
-    job = resp.json()
-    job_id = job.get("id")
-    if not job_id:
-        raise RuntimeError("No job id from RunPod SDXL.")
+    last_error = None
 
-    start_time = time.time()
-    while True:
-        if time.time() - start_time > JOB_TIMEOUT:
-            raise RuntimeError("TTL exceeded: RunPod SDXL job timed out.")
-        status = requests.get(RUNPOD_SDXL_STATUS.format(job_id), headers=headers, timeout=30)
-        if status.status_code != 200:
-            raise RuntimeError(f"RunPod status check failed: {status.status_code} {status.text}")
-        st = status.json()
-        code = st.get("status", "").upper()
-        if code == "COMPLETED":
-            output = st.get("output", {})
-            images = output.get("images", [])
-            if not images:
-                raise RuntimeError("No images returned from RunPod SDXL.")
-            # images[0] should be data:image/png;base64,...
-            return images[0]
-        if code == "FAILED":
-            raise RuntimeError("RunPod SDXL job failed.")
-        if time.time() - start_time > JOB_TIMEOUT:
-            raise RuntimeError("Timeout waiting for RunPod SDXL job.")
-        time.sleep(POLL_INTERVAL)
-        
+    for attempt in range(3):
+        try:
+            resp = requests.post(
+                RUNPOD_FLUX_URL,
+                json=payload,
+                headers=headers,
+                timeout=180
+            )
+            resp.raise_for_status()
+
+            data = resp.json()
+
+            # ✅ SUCCESS STATE
+            if data.get("status") != "COMPLETED":
+                raise RuntimeError(data.get("error", "FLUX generation failed"))
+
+            result = data.get("output", {}).get("result")
+
+            if not result:
+                raise RuntimeError(f"No result returned: {data}")
+
+            # 🟢 CASE 1 — URL → download → base64
+            if isinstance(result, str) and result.startswith("http"):
+                img_resp = requests.get(result, timeout=30)
+                img_resp.raise_for_status()
+                return base64.b64encode(img_resp.content).decode("utf-8")
+
+            # 🟢 CASE 2 — data:image/...;base64
+            if isinstance(result, str) and result.startswith("data:image"):
+                return result.split(",", 1)[1]
+
+            # 🟢 CASE 3 — raw base64
+            if isinstance(result, str):
+                return result
+
+            raise RuntimeError(f"Unsupported FLUX output format: {result}")
+
+        except Exception as e:
+            last_error = e
+            time.sleep(2 * (attempt + 1))
+
+    raise RuntimeError(f"FLUX request failed after retries: {last_error}")
+
 # ============================
 # 🎨 Base Title Generator
 # ============================
@@ -2159,11 +2124,11 @@ def call_openrouter_system_user(system_prompt: str, user_prompt: str, model="xia
 def runpod_hidream_generate(prompt: str, orientation: str = "Portrait") -> str:
     o = (orientation or "Portrait").strip().lower()
     if o == "portrait":
-        width, height = 1024, 1536
+        width, height = 768, 1024
     elif o == "square":
         width, height = 1024, 1024
     else:
-        width, height = 1536, 1024
+        width, height = 1024, 768
 
     workflow_payload = {
         "input": {
@@ -2708,7 +2673,7 @@ def story_generate(req: StoryRequest):
         if req.num_pages < 1 or req.num_pages > 50:
             raise HTTPException(status_code=400, detail="num_pages must be between 1 and 50")
 
-        pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages,req.user_id)
+        pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages,req.orientation,req.user_id)
 
         page_objects = [
             PageOutput(
@@ -2739,7 +2704,7 @@ def images_generate(req: ImageRequest):
     for p in req.pages:
         page_num = p.page
         prompt = p.prompt or ""
-        # We use prompt for HiDream generation. text is reserved for SDXL later.
+        # We use prompt for HiDream generation. text is reserved for flux later.
         try:
             # NSFW quick check
             if is_nsfw_prompt(prompt):
@@ -2765,7 +2730,7 @@ def images_generate(req: ImageRequest):
     )
 
 
-    return ImageResponse(pages=results, message="HiDream generation completed (SDXL background pending).")
+    return ImageResponse(pages=results, message="HiDream generation completed (Flux background pending).")
 
 class RegenPageInput(BaseModel):
     page: int
@@ -2817,81 +2782,71 @@ def regenerate_images(req: RegenRequest):
 # ============================
 
 # ----------------------------
-# Run with: uvicorn images_api_hidream:app --reload
+# Run with: uvicorn images_api_flux:app --reload
 # ----------------------------
-@app.post("/images/sdxl_generate", response_model=SDXLResponse)
-def sdxl_generate(req: SDXLRequest):
+@app.post("/images/flux_generate", response_model=FluxResponse)
+def flux_generate(req: FluxRequest):
+    logger.info(f"/images/flux_generate called. Orientation={req.orientation}")
+
     if not req.pages:
         raise HTTPException(status_code=400, detail="No pages provided.")
 
-    # Quick NSFW guard: entire batch should not contain NSFW tokens
+    # Batch NSFW guard
     combined_text = " ".join([p.text for p in req.pages])
     if is_nsfw_prompt(combined_text):
-        raise HTTPException(status_code=400, detail="NSFW content detected in input texts.")
+        raise HTTPException(status_code=400, detail="NSFW content detected.")
 
-    # 1) Single LLM call to get final SDXL prompts for all pages
+    # 1️⃣ LLM call (UNCHANGED PROMPT, ONLY RENAMED TYPES)
     llm_out = call_llm_get_prompts(req.pages)
-    if not llm_out:
-        raise HTTPException(status_code=500, detail="LLM failed to produce SDXL prompts.")
+    if not isinstance(llm_out, dict):
+        raise HTTPException(status_code=500, detail="LLM failed to return valid JSON.")
 
-    # Validate structure: expecting keys "Page 1", "Page 2", ...
-    results: List[SDXLPageOut] = []
     width, height = get_dimensions(req.orientation)
+    results: List[FluxPageOut] = []
 
     for p in req.pages:
         page_key = f"Page {p.page}"
-        page_result = SDXLPageOut(page=p.page)
+        page_result = FluxPageOut(page=p.page)
+
         try:
-            page_info = llm_out.get(page_key) if isinstance(llm_out, dict) else None
-            if not page_info or "sdxl_prompt" not in page_info:
+            page_info = llm_out.get(page_key)
+            if not page_info or "flux_prompt" not in page_info:
                 page_result.error = "LLM did not return prompt for this page."
                 results.append(page_result)
                 continue
 
-            sdxl_prompt = page_info["sdxl_prompt"]
-            page_result.sdxl_prompt = sdxl_prompt
+            # ✅ keep flux prompt key, just rename variable
+            flux_prompt = page_info["flux_prompt"]
+            page_result.flux_prompt = flux_prompt
 
-            # per-page NSFW safety check on the produced prompt
-            if is_nsfw_prompt(sdxl_prompt):
-                page_result.error = "LLM produced NSFW prompt. Skipped."
+            if is_nsfw_prompt(flux_prompt):
+                page_result.error = "NSFW prompt generated by LLM."
                 results.append(page_result)
                 continue
 
-            # call RunPod SDXL
-            raw_image_data = run_runpod_sdxl(sdxl_prompt, width, height)
+            # 2️⃣ FLUX IMAGE GENERATION
+            image_url = run_runpod_flux(flux_prompt, width, height)
 
-            # raw_image_data may be a URL or a data:image/png;base64,... string
-            if raw_image_data.startswith("data:image"):
-                b64 = raw_image_data.split(",", 1)[1]
+            if image_url.startswith("http"):
+                r = requests.get(image_url, timeout=30)
+                r.raise_for_status()
+                final_b64 = base64.b64encode(r.content).decode()
+            elif image_url.startswith("data:image"):
+                final_b64 = image_url.split(",", 1)[1]
             else:
-                # if it's a URL, fetch it
-                if raw_image_data.startswith("http"):
-                    r = requests.get(raw_image_data, timeout=30)
-                    if r.status_code != 200:
-                        raise RuntimeError("Failed to fetch image URL from RunPod output.")
-                    b64 = base64.b64encode(r.content).decode()
-                else:
-                    # maybe it's already raw base64 (no header)
-                    b64 = raw_image_data
+                final_b64 = image_url
 
-            # decode image and apply fade
-            img = Image.open(BytesIO(base64.b64decode(b64)))
-            #img = fade_left_background(img)  # optional fade effect
-
-            # encode final image into base64 PNG
-            buf = BytesIO()
-            img.save(buf, format="PNG")
-            final_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-
-            page_result.sdxl_background_base64 = final_b64
-            page_result.error = None
+            page_result.flux_background_base64 = final_b64
             results.append(page_result)
 
         except Exception as e:
             page_result.error = str(e)
             results.append(page_result)
 
-    return SDXLResponse(pages=results, message="SDXL generation finished (fade applied).")
+    return FluxResponse(
+        pages=results,
+        message="FLUX.1 Schnell background generation completed"
+    )
 
 # ============================
 # 🚀 API ENDPOINTS
@@ -2944,7 +2899,7 @@ def title_regenerate(req: RegenerateTitleRequest):
 # ============================
 
 # ----------------------------
-# Run: uvicorn images_api_sdxl:app --reload
+# Run: uvicorn images_api_flux:app --reload
 # ----------------------------
 @app.post("/coverback/generate", response_model=CoverBackResponse)
 def coverback_generate(req: CoverBackRequest):

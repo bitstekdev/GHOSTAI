@@ -179,17 +179,20 @@ exports.generateBackgroundImages = async (req, res, next) => {
       text: p.text
     }));
 
-    // Call FastAPI SDXL endpoint
-    const result = await fastApiService.generateSDXLBackgrounds(pageData, story.orientation);
+    // // Call FastAPI SDXL endpoint
+    // const result = await fastApiService.generateSDXLBackgrounds(pageData, story.orientation);
+    const result = await fastApiService.generateFLUXBackgrounds(pageData, story.orientation);
 
     const imagePromises = result.pages.map(async (pageResult) => {
-      if (!pageResult.sdxl_background_base64 || pageResult.error) {
+      // if (!pageResult.sdxl_background_base64 || pageResult.error) {
+      if (!pageResult.flux_background_base64 || pageResult.error) {
         console.error(`Page ${pageResult.page} background failed:`, pageResult.error);
         return null;
       }
 
       try {
-        const imageBuffer = Buffer.from(pageResult.sdxl_background_base64, 'base64');
+        // const imageBuffer = Buffer.from(pageResult.sdxl_background_base64, 'base64');
+        const imageBuffer = Buffer.from(pageResult.flux_background_base64, 'base64');
 
         const s3Result = await s3Service.uploadToS3(
           imageBuffer,
@@ -205,18 +208,21 @@ exports.generateBackgroundImages = async (req, res, next) => {
           s3Key: s3Result.key,
           s3Url: s3Result.url,
           s3Bucket: s3Result.bucket,
-          prompt: pageResult.sdxl_prompt,
+          // prompt: pageResult.sdxl_prompt,
+          prompt: pageResult.flux_prompt,
           mimeType: 'image/png',
           size: imageBuffer.length,
           metadata: {
             orientation: story.orientation,
-            model: 'sdxl'
+            // model: 'sdxl'
+            model: 'flux'
           }
         });
 
         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
           backgroundImage: image._id,
-          sdxlPrompt: pageResult.sdxl_prompt
+          // sdxlPrompt: pageResult.sdxl_prompt
+          fluxPrompt: pageResult.flux_prompt
         });
         console.log(`Page ${pageResult.page} image generated and stored successfully.`);
 
@@ -726,7 +732,6 @@ exports.regenerateCharacterImage = async (req, res) => {
 // @route   GET /api/images/page/:pageId
 // @access  Private
 exports.getPageImages = async (req, res, next) => {
-  generateCover()
   try {
     const { pageId } = req.params;
 
@@ -869,7 +874,7 @@ exports.testRoute = async (req, res, next) => {
 // @access  Private
 exports.gistPreviewImages = async (req, res, next) => {
   try {
-    const { gist, genre } = req.body;
+    const { gist, genre, genres } = req.body;
     console.log("Gist Preview Images Request:", req.body);
     console.log("User ID:", req.user.id);
 
@@ -880,9 +885,17 @@ exports.gistPreviewImages = async (req, res, next) => {
       });
     }
 
+    // Accept either `genres` (array) or `genre` (string). Use the first learned style if array provided.
+    let genreToUse = 'Family';
+    if (Array.isArray(genres) && genres.length > 0) {
+      genreToUse = genres[0];
+    } else if (genre) {
+      genreToUse = genre;
+    }
+
     const previews = await fastApiService.generateGistPreviewImages({
       userId: req.user.id,
-      genre: genre || 'Family',
+      genre: genreToUse,
       gist
     });
 

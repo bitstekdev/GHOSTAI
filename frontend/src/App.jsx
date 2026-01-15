@@ -23,6 +23,7 @@ import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
 import BackgroundGenerator from "./components/pages/BackgroundGenerator";
 import GenerateCovers from "./components/pages/GenerateCovers";
+import CommercingRoot from "./components/pages/CommercingRoot";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -81,7 +82,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
           <Route path="/templateselection/:storyId" element={<TemplateSelection />} />
-          <Route path="/flipbook/:storyId" element={<FlipBook />} />
+          <Route path="/flipbook/:storyId" element={<CommercingRoot />} />
           <Route path="/flipbook/mockup" element={<FlipBookMockUp />} />
           <Route path="/characterdump" element={<CharacterDump />} />
           <Route path="/datadump" element={<DataDump />} />
@@ -92,6 +93,7 @@ const App = () => {
           <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
           <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} />
           <Route path="/generatecovers/:storyId" element={<GenerateCovers />} />
+          <Route path="/shop/:storyId" element={<CommercingRoot />} />
 
           <Route path="*" element={<Navigate to="/generatestory" replace />} />
         </Route>

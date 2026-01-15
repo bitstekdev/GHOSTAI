@@ -30,7 +30,8 @@ const storyPageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  sdxlPrompt: String,
+  // sdxlPrompt: String,
+  fluxPrompt: String,
   oldStory: [oldStorySchema],
   characterImage: {
     type: mongoose.Schema.Types.ObjectId,
