@@ -12,7 +12,7 @@ const { protect } = require('../middleware/auth');
 // Protected routes - require authentication
 router.post('/', protect, createAddress);
 router.get('/', protect, getMyAddresses);
-router.get('/:id', protect, getAddress);
+router.post('/address', protect, getAddress);
 router.put('/:id', protect, updateAddress);
 router.delete('/:id', protect, deleteAddress);
 

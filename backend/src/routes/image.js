@@ -8,9 +8,11 @@ const upload = multer({
 
 const router = express.Router();
 const {
-  generateCharacterImages,
-  generateBackgroundImages,
-  generateCover,
+  // generateCharacterImages,
+  // generateBackgroundImages,
+  // generateCover,
+  createBook,
+  getJobStatus,
   faceSwap,
   editImage,
   regenerateCharacterImage,
@@ -22,10 +24,12 @@ const {
 } = require('../controllers/imageController');
 const { protect } = require('../middleware/auth');
 
-router.post('/generate-characters/:storyId', protect, generateCharacterImages);
+router.post('/generate-book/:storyId', protect, createBook);
+router.get('/job-status/:jobId', protect, getJobStatus);
+// router.post('/generate-characters/:storyId', protect, generateCharacterImages);
+// router.post('/generate-backgrounds', protect, generateBackgroundImages);
+// router.post('/generate-covers', protect, generateCover);
 router.get('/page/:pageId', protect, getPageImages);
-router.post('/generate-backgrounds', protect, generateBackgroundImages);
-router.post('/generate-covers', protect, generateCover);
 
 router.post('/faceswap', protect, upload.single("source"), faceSwap);
 router.post('/edit', protect, editImage);

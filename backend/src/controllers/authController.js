@@ -89,14 +89,19 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    // console.log("user found:", user.email);
+
     // Check if password matches
     const isPasswordMatch = await user.comparePassword(password);
+    // console.log("ispassword match:", isPasswordMatch);
     if (!isPasswordMatch) {
+      // console.log("password mismatch");
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
+    // console.log("password matched");
 
     // Check if email is verified
     if (!user.isEmailVerified) {

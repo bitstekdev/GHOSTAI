@@ -2,12 +2,13 @@ import { useState, useContext } from "react";
 import { FaGhost, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/axiosInstance";
 import ClipLoader from "react-spinners/ClipLoader";
 import { AppContext } from "../../context/AppContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { signin, googleSignin } = useContext(AppContext);
+  const { googleSignin, setUserData, setIsAuthenticated } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,41 @@ const SignIn = () => {
     password: "",
   });
 
+
+  const signin = async (data) => {
+  try {
+    setLoading(true);
+    const response = await api.post(`/api/auth/login`, data);
+
+    setIsAuthenticated(true);
+    setUserData(response.data.data.user);
+
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    setIsAuthenticated(false);
+    const status = error.response?.status;
+    const payload = error.response?.data;
+    if (status === 403 && payload?.requiresEmailVerification) {
+      return {
+        success: false,
+        requiresEmailVerification: true,
+        message: payload.message || "Please verify your email before logging in.",
+      };
+    }
+    const errors = payload?.errors;
+
+    console.log("Signin Error:", error);
+    const message =
+      (Array.isArray(errors) && errors[0]?.msg) ||
+      payload?.message ||
+      "Something went wrong!";
+    return { success: false, message };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   // -------- HANDLE SIGNIN ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +62,9 @@ const SignIn = () => {
 
     try {
       const res = await signin(formData);
-      setMsg(res.data.message);
+      console.log(res);
+      if (!res.success) throw new Error(res.message);
+      setMsg(res.message);
       navigate("/dashboard"); 
     } catch (err) {
       setMsg(err.message || "Login failed");

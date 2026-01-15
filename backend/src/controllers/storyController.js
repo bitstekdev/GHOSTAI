@@ -4,6 +4,7 @@ const Image = require('../models/Image');
 const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
 
+
 // @desc    Start story (hybrid: questionnaire or direct gist)
 // @route   POST /api/story/start
 // @access  Private
@@ -70,12 +71,18 @@ exports.startStory = async (req, res, next) => {
       step: entryMode === 'gist' ? 3 : 1
     });
 
-    if (entryMode === 'questionnaire') {
+    if (entryMode === "questionnaire") {
       const result = await fastApiService.startQuestionnaire();
+      //Save initial conversation
+      if (result?.conversation?.length) {
+        story.conversation = result.conversation;
+        story.step = 1;
+        await story.save();
+      }
       return res.status(200).json({
         success: true,
         storyId: story._id,
-        data: result
+        data: result,
       });
     }
 
@@ -314,6 +321,49 @@ exports.createStory = async (req, res, next) => {
   }
 };
 
+// @desc    Rename story
+// @route   PATCH /api/story/rename/:storyId
+// @access  Private
+
+exports.renameStory = async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const { title } = req.body;
+    const userId = req.user._id;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Title is required"
+      });
+    }
+
+    const story = await Story.findOneAndUpdate(
+      { _id: storyId, user: userId },
+      { title: title.trim() },
+      { new: true }
+    ).select("_id title");
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: "Story not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: { story }
+    });
+  } catch (error) {
+    console.error("Rename story error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to rename story"
+    });
+  }
+};
+
 // @desc    Update story gist (user-provided)
 // @route   PATCH /api/story/:id/gist
 // @access  Private
@@ -481,34 +531,53 @@ exports.regenerateTitles = async (req, res, next) => {
 // @desc    Delete story
 // @route   DELETE /api/story/:id
 // @access  Private
-exports.deleteStory = async (req, res, next) => {
-  try {
-    const story = await Story.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    });
+exports.deleteStory = async (req, res) => {
+  const { storyId } = req.params;
+  const userId = req.user._id;
 
+  try {
+    // 1️⃣ Verify story ownership
+    const story = await Story.findOne({ _id: storyId, user: userId });
     if (!story) {
-      return res.status(404).json({
-        success: false,
-        message: 'Story not found'
-      });
+      return res.status(404).json({ message: "Story not found" });
     }
 
-    // Delete associated pages
-    await StoryPage.deleteMany({ story: story._id });
+    // 2️⃣ Find all images related to the story
+    const images = await Image.find({ story: storyId });
 
-    // Delete story
-    await story.deleteOne();
+    // 3️⃣ Delete images from S3
+    await Promise.all(
+      images.map(img =>
+        s3Service.deleteFromS3(img.s3Key, img.s3Bucket)
+          .catch(err => {
+            console.error("S3 delete failed:", img.s3Key, err);
+          })
+      )
+    );
 
-    res.status(200).json({
-      success: true,
-      message: 'Story deleted successfully'
+    // 4️⃣ Delete images from DB
+    await Image.deleteMany({ story: storyId });
+
+    // 5️⃣ Delete story pages
+    await StoryPage.deleteMany({ story: storyId });
+
+    // 6️⃣ Delete the story
+    await Story.deleteOne({ _id: storyId });
+
+    return res.status(200).json({
+      message: "Story and all related data deleted successfully"
     });
+
   } catch (error) {
-    next(error);
+    console.error("Delete story error:", error);
+    return res.status(500).json({
+      message: "Failed to delete story",
+      error: error.message
+    });
   }
 };
+
+
 // @desc    Upload custom genre files AND process them
 // @route   POST /api/story/upload-genre
 // @access  Private
@@ -584,3 +653,34 @@ exports.getCustomGenres = async (req, res) => {
     });
   }
 };
+
+// @desc    Get story conversation and step
+// @route   GET /api/v1/story/:storyId/conversation
+// @access  Private
+exports.getConversation = async (req, res) => {
+  console.log("GET-CONVERSATION HIT");
+  try {
+    const { storyId } = req.params;
+
+    const story = await Story.findOne({
+      _id: storyId,
+      user: req.user.id
+    }).select("conversation step status");
+
+    if (!story) {
+      return res.status(404).json({ success: false, message: "Story not found" });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        conversation: story.conversation,
+        step: story.step,
+        status: story.status
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to load conversation" });
+  }
+};
+
