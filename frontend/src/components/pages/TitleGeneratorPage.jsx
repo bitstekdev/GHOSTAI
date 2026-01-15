@@ -12,6 +12,7 @@ const TitleSelection = () => {
 
   const [aiTitles, setAiTitles] = useState([]); // MUST be array
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [status, setStatus] = useState("processing");
 
   const [loadingTitles, setLoadingTitles] = useState(false);
   const [creatingBook, setCreatingBook] = useState(false);
@@ -24,11 +25,16 @@ const TitleSelection = () => {
 
   const fetchStoryData = async () => {
     try {
-      // const res = await api.get(`/api/v1/story/6939cb6e18374ba322e05efa`);
       const res = await api.get(`/api/v1/story/${storyId}`);
       const story = res.data.data.story;
       setStoryData(story);
       setSelectedTitle(story.title || "");
+      if(story.status === "failed") {
+        setStatus("failed");
+        setInterval(() => {
+          setStatus("processing");
+        }, 15000);
+      }
     } catch (err) {
       console.error("Fetch story failed:", err);
     }
@@ -91,15 +97,12 @@ const TitleSelection = () => {
     try {
       setCreatingBook(true);
 
-      // YOU WILL ADD API CALL HERE
-      // console.log("Final Title Submitted:", selectedTitle);
-
-      const res = await api.post(`/api/v1/images/generate-characters/${storyData._id}`, {
+      const res = await api.post(`/api/v1/images/generate-book/${storyData._id}`, {
         title: selectedTitle,
       });
 
       if (import.meta.env.DEV) console.log("Book creation succeeded");
-      navigateTo(`/backgroundgenerator/${res.data.storyId}`);
+      navigateTo(`/generatorPage/${res.data.storyId}?jobId=${res.data.jobId}`);
 
     } catch (err) {
       console.error(err);
@@ -112,6 +115,12 @@ const TitleSelection = () => {
   return (
      <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
       <ProgressStep4 />
+      {/* error */}
+      {status === "failed" && (
+          <p className="text-red-400 mt-6">
+            Something went wrong. Please try again.
+          </p>
+        )}
     <div className="p-6 py-10 relative max-w-3xl w-full text-white">
       {/* MAIN HEADING */}
       <h1 className="text-3xl font-bold text-purple-400 mb-4">

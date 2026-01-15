@@ -217,19 +217,32 @@ const Stories = () => {
         setAllStories(stories);
 
         // Use only STEP to classify generation progress
-        const { inProgress, completed } = stories.reduce(
-          (acc, story) => {
-            if (story.step < 4) {
-              // not fully generated yet
-              acc.inProgress.push(story);
-            } else {
-              // step 4 or more → story text is generated
-              acc.completed.push(story);
-            }
-            return acc;
-          },
-          { inProgress: [], completed: [] }
-        );
+       const { inProgress, completed } = stories.reduce(
+  (acc, story) => {
+    // Still in creation flow (Q&A, template, title)
+    if (story.step <= 4) {
+      acc.inProgress.push(story);
+      return acc;
+    }
+
+    // Step 5: Book generation running
+    if (story.step === 5 && story.currentJob) {
+      acc.inProgress.push(story);
+      return acc;
+    }
+
+    // Step 6: Fully completed
+    if (story.step === 6 && !story.currentJob) {
+      acc.completed.push(story);
+      return acc;
+    }
+
+    // Fallback safety
+    acc.inProgress.push(story);
+    return acc;
+  },
+  { inProgress: [], completed: [] }
+);
 
         setStoriesInProgress(inProgress);
         setCompletedStories(completed);
@@ -248,20 +261,41 @@ const Stories = () => {
     fetchStories();
   }, []);
 
-  const getResumeRoute = (story) => {
-    if (story.step <= 2) {
-      // still in Q&A
-      return `/questioner/${story._id}`;
-    }
+  // const getResumeRoute = (story) => {
+  //   if (story.step <= 2) {
+  //     // still in Q&A
+  //     return `/questioner/${story._id}`;
+  //   }
 
-    if (story.step === 3) {
-      // gist done, selecting template / generating full story
-      return `/templateselection/${story._id}`;
-    }
+  //   if (story.step === 3) {
+  //     // gist done, selecting template / generating full story
+  //     return `/templateselection/${story._id}`;
+  //   }
 
-    // step >= 4 → story text exists, open flipbook
-    return `/flipbook/${story._id}`;
-  };
+  //   // step >= 4 → story text exists, open flipbook
+  //   return `/flipbook/${story._id}`;
+  // };
+
+   const getResumeRoute = (story) => {
+  const sid = story?._id;
+  if (!sid) return "/generatestory";
+
+  if (story.step <= 2) return `/questioner/${sid}`;
+  if (story.step === 3) return `/templateselection/${sid}`;
+  if (story.step === 4) return `/titlegenerator/${sid}`;
+
+  // Step 5: Book generation in progress
+  if (story.step === 5 && story.currentJob) {
+    return `/generatorPage/${sid}?jobId=${story.currentJob}`;
+  }
+
+  // Step 5 completed → flipbook
+  if (story.step === 6 && !story.currentJob) {
+    return `/flipbook/${sid}`;
+  }
+
+  return `/generatestory`;
+};
 
   const handleContinue = (story) => {
     // If in questioner phase (step 2), load conversation into localStorage
@@ -321,7 +355,7 @@ const Stories = () => {
                 <h3 className="text-white font-medium">{story.title}</h3>
                 <p className="text-purple-400 text-sm">{formatGenres(story)}</p>
                 <p className="text-gray-500 text-xs mt-1">
-                  Step {story.step} of 4
+                  Step {story.step} of 6
                 </p>
               </div>
               <div className="flex items-center gap-3">

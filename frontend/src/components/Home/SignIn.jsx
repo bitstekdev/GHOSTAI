@@ -8,7 +8,7 @@ import { AppContext } from "../../context/AppContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { backendUrl, googleSignin, setUserData, setIsAuthenticated } = useContext(AppContext);
+  const { googleSignin, setUserData, setIsAuthenticated } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ const SignIn = () => {
   const signin = async (data) => {
   try {
     setLoading(true);
-    const response = await api.post(`${backendUrl}/api/auth/login`, data);
+    const response = await api.post(`/api/auth/login`, data);
 
     setIsAuthenticated(true);
     setUserData(response.data.data.user);

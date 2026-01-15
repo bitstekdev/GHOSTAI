@@ -48,11 +48,11 @@ const Dashboard = () => {
         // Classify stories based on step
         const { inProgress, completed } = stories.reduce(
           (acc, story) => {
-            if (story.step < 4) {
+            if (story.step < 5) {
               // Story not fully generated yet
               acc.inProgress.push(story);
             } else {
-              // Step 4 or more → story text is generated
+              // Step 5 or more → story text is generated
               acc.completed.push(story);
             }
             return acc;
@@ -100,16 +100,27 @@ const Dashboard = () => {
 
   // Legacy auto-start tour (useTour) removed; using TourContext hook above
 
-  const getResumeRoute = (story) => {
-    const sid = story?._id;
-    if (!sid) return "/generatestory";
+ const getResumeRoute = (story) => {
+  const sid = story?._id;
+  if (!sid) return "/generatestory";
 
-    if (story.step <= 2) return `/questioner/${sid}`;
-    if (story.step === 3) return `/templateselection/${sid}`;
+  if (story.step <= 2) return `/questioner/${sid}`;
+  if (story.step === 3) return `/templateselection/${sid}`;
+  if (story.step === 4) return `/titlegenerator/${sid}`;
 
-    // step >= 4 → open flipbook
+  // Step 5: Book generation in progress
+  if (story.step === 5 && story.currentJob) {
+    return `/generatorPage/${sid}?jobId=${story.currentJob}`;
+  }
+
+  // Step 5 completed → flipbook
+  if (story.step === 6 && !story.currentJob) {
     return `/flipbook/${sid}`;
-  };
+  }
+
+  return `/generatestory`;
+};
+
 
   const handleOpenStory = (story) => {
     navigate(getResumeRoute(story));
@@ -248,13 +259,13 @@ const Dashboard = () => {
                   • {formatDate(story.createdAt)}
                 </p>
                 <p className="text-gray-400 text-sm">
-                  {story.step < 4 ? "Story in Progress" : "Story Completed"}
+                  {story.step <= 5 ? "Story in Progress" : "Story Completed"}
                 </p>
               </div>
               <button
                 onClick={() => handleOpenStory(story)}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
-                {story.step < 4 ? "Continue" : "Open"}
+                {story.step <= 5 ? "Continue" : "Open"}
               </button>
             </div>
           ))}

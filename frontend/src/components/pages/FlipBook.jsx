@@ -588,19 +588,19 @@ pages.forEach((page, index) => {
               <p
                 className="text-black leading-relaxed"
                 style={{
-    ...pageTextStyle,
-    textAlign: "justify",
-    textJustify: "inter-word"
-  }}
+                  ...pageTextStyle,
+                  textAlign: "justify",
+                  textJustify: "inter-word"
+                }}
               >
                 <span
-    style={{
-      background: "rgba(255, 255, 255, 0.88)",
-      padding: "0.15em 0.35em",
-      boxDecorationBreak: "clone",
-      WebkitBoxDecorationBreak: "clone",
-    }}
-  >
+                  style={{
+                    background: "rgba(255, 255, 255, 0.88)",
+                    padding: "0.15em 0.35em",
+                    boxDecorationBreak: "clone",
+                    WebkitBoxDecorationBreak: "clone",
+                    }}
+                  >
                 {page.text}
                 </span>
               </p>

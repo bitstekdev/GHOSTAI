@@ -574,3 +574,34 @@ exports.getCustomGenres = async (req, res) => {
     });
   }
 };
+
+// @desc    Get story conversation and step
+// @route   GET /api/v1/story/:storyId/conversation
+// @access  Private
+exports.getConversation = async (req, res) => {
+  console.log("GET-CONVERSATION HIT");
+  try {
+    const { storyId } = req.params;
+
+    const story = await Story.findOne({
+      _id: storyId,
+      user: req.user.id
+    }).select("conversation step status");
+
+    if (!story) {
+      return res.status(404).json({ success: false, message: "Story not found" });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        conversation: story.conversation,
+        step: story.step,
+        status: story.status
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to load conversation" });
+  }
+};
+

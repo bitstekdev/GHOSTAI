@@ -1,8 +1,10 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
+const ImageJob = require('../models/ImageJob');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
+const { runBookCreationJob } = require('../jobs/imageFunction');
 
 // Remove outer HTML/doctype wrappers returned by the generator
 const stripHtmlWrapper = (html) => {
@@ -25,356 +27,440 @@ const pushCurrentToHistory = (imageDoc, label = 'update') => {
   });
 };
 
-// @desc    Generate character images for story pages
-// @route   POST /api/images/generate-characters/:storyId
+// @desc    Create book image generation job
+// @route   POST /api/images/create-book/:storyId
 // @access  Private
-exports.generateCharacterImages = async (req, res, next) => {
+exports.createBook = async (req, res, next) => {
   try {
     const { storyId } = req.params;
     const { title } = req.body;
 
-    // Verify story ownership
-    const story = await Story.findOne({
-      _id: storyId,
-      user: req.user.id
+     // PREVENT duplicate jobs for same story
+    const existingJob = await ImageJob.findOne({
+      story: storyId,
+      status: { $in: ["queued", "processing"] }
     });
 
-    if (!story) {
-      return res.status(404).json({
+    if (existingJob) {
+      return res.status(409).json({
         success: false,
-        message: 'Story not found'
+        message: "Book generation already in progress",
+        jobId: existingJob._id
       });
     }
 
-    const updateTitle = await Story.findByIdAndUpdate(
+    const job = await ImageJob.create({
+      story: storyId,
+      user: req.user.id,
+      status: "queued"
+    });
+
+    const payload = {
       storyId,
-      { title: title },
+      userId: req.user.id,
+      title
+    };
+
+    process.nextTick(() => {
+      runBookCreationJob(job._id, payload);
+    });
+
+    // Update story: step + jobId
+    const updateStory = await Story.findByIdAndUpdate(
+      storyId,
+      {
+        step: 5,
+        currentJob: job._id,
+        status: "generating"
+      },
       { new: true }
     );
 
-    // Get all pages
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
-
-    // Prepare data for FastAPI
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text,
-      prompt: p.prompt
-    }));
-
-    // Call FastAPI to generate images
-    // Pass genre string if available
-    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
-    const result = await fastApiService.generateImages(pageData, story.orientation, storyGenreString);
-
-    // Upload images to S3 and create Image documents
-    const imagePromises = result.pages.map(async (pageResult) => {
-      if (!pageResult.hidream_image_base64 || pageResult.error) {
-        console.error(`Page ${pageResult.page} generation failed:`, pageResult.error);
-        return null;
-      }
-
-      // Convert base64 to buffer
-      const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
-
-      // Upload to S3
-      const s3Result = await s3Service.uploadToS3(
-        imageBuffer,
-        `stories/${storyId}/characters`,
-        `page-${pageResult.page}.png`,
-        'image/png'
-      );
-
-      // Create Image document
-      const image = await Image.create({
-        story: storyId,
-        storyPage: pages[pageResult.page - 1]._id,
-        imageType: 'character',
-        // base64Data: pageResult.hidream_image_base64,
-        s3Key: s3Result.key,
-        s3Url: s3Result.url,
-        s3Bucket: s3Result.bucket,
-        prompt: pages[pageResult.page - 1].prompt,
-        mimeType: 'image/png',
-        size: imageBuffer.length,
-        metadata: {
-          orientation: story.orientation,
-          model: 'hidream'
-        }
-      });
-
-      try {
-        // Update StoryPage with image reference
-        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          characterImage: image._id,
-          status: 'completed'
-        });
-
-        console.log(`Page ${pageResult.page} image generated and stored successfully.`);
-
-        return image;
-      } catch (error) {
-        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          characterImage: image._id,
-          status: 'failed'
-        });
-        console.error(`Error processing page ${pageResult.page}:`, error);
-        return null;
-      }
-    });
-
-    const images = await Promise.all(imagePromises);
-    const successfulImages = images.filter(img => img !== null);
-
-    // Generate background images and cover images
-    // try {
-    // const backgroundImages = await generateBackgroundImages(storyId);
-    // console.log("Background Images Generated:", backgroundImages);
-    // const coverImages = await generateCover(storyId);
-    // console.log("Cover Images Generated:", coverImages);
-    // } catch (coverBgError) {
-    //   console.error("Error generating cover/background images:", coverBgError);
-    // }
-
-    // send email notification of completion
-
-    res.status(200).json({
-      success: true,
-      message: 'Character images generated successfully',
-      storyId: storyId,
-      data: {
-        totalPages: pages.length,
-        successfulGenerations: successfulImages.length,
-        images: successfulImages
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Generate background images for story pages
-// @route   POST /api/images/generate-backgrounds/
-// @access  Private
-exports.generateBackgroundImages = async (req, res, next) => {
-  // const generateBackgroundImages = async (storyId) => {
-  try {
-    const { storyId } = req.body;
-
-    const story = await Story.findOne({
-      _id: storyId,
-    });
-
-    if (!story) {
-      return {
+    if (!updateStory) {
+      return res.status(404).json({
         success: false,
-        message: 'Story not found'
-      };
-    }
-
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
-
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text
-    }));
-
-    // Call FastAPI SDXL endpoint
-    const result = await fastApiService.generateSDXLBackgrounds(pageData, story.orientation);
-
-    const imagePromises = result.pages.map(async (pageResult) => {
-      if (!pageResult.sdxl_background_base64 || pageResult.error) {
-        console.error(`Page ${pageResult.page} background failed:`, pageResult.error);
-        return null;
-      }
-
-      try {
-        const imageBuffer = Buffer.from(pageResult.sdxl_background_base64, 'base64');
-
-        const s3Result = await s3Service.uploadToS3(
-          imageBuffer,
-          `stories/${storyId}/backgrounds`,
-          `page-${pageResult.page}.png`,
-          'image/png'
-        );
-
-        const image = await Image.create({
-          story: storyId,
-          storyPage: pages[pageResult.page - 1]._id,
-          imageType: 'background',
-          s3Key: s3Result.key,
-          s3Url: s3Result.url,
-          s3Bucket: s3Result.bucket,
-          prompt: pageResult.sdxl_prompt,
-          mimeType: 'image/png',
-          size: imageBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'sdxl'
-          }
-        });
-
-        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          backgroundImage: image._id,
-          sdxlPrompt: pageResult.sdxl_prompt
-        });
-        console.log(`Page ${pageResult.page} image generated and stored successfully.`);
-
-      } catch (error) {
-        console.error(`Error processing background ${pageResult.page}:`, error);
-        return null;
-      }
-    });
-
-    const images = await Promise.all(imagePromises);
-    const successfulImages = images.filter(img => img !== null);
-
-    res.status(200).json({
-      success: true,
-      message: 'Background images generated successfully',
-      data: {
-        totalPages: pages.length,
-        successfulGenerations: successfulImages.length,
-        images: successfulImages
-      }
-    });
-  } catch (error) {
-    console.error('Error generating background images:', error);
-    next(error);
-  }
-};
-
-
-// @desc    Generate cover and back cover for a story
-// @route   POST /api/cover/generate/
-// @access  Private
-exports.generateCover = async (req, res, next) => {
-  // const generateCover = async (storyId) => {
-  const { storyId } = req.body;
-  try {
-
-    const story = await Story.findOne({
-      _id: storyId,
-    });
-
-    if (!story) {
-      return {
-        success: false,
-        message: 'Story not found'
-      };
-    }
-
-    // Get all pages
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
-
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text,
-      prompt: p.prompt
-    }));
-
-    const qr_url = process.env.BACK_QR_URL || 'https://talescraftco.com/';
-
-    // Call FastAPI coverback/generate endpoint
-    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
-    const result = await fastApiService.generateCoverAndBack(
-      pageData,
-      storyGenreString,
-      story.orientation,
-      story.title,
-      qr_url
-    );
-
-    if (result.pages && result.pages[0]) {
-      const coverData = result.pages[0];
-
-      // Upload cover image to S3
-      let coverImage = null;
-      if (coverData.cover_image_base64) {
-        const coverBuffer = Buffer.from(coverData.cover_image_base64, 'base64');
-
-        const s3CoverResult = await s3Service.uploadToS3(
-          coverBuffer,
-          `stories/${storyId}/covers`,
-          'cover.png',
-          'image/png'
-        );
-
-        coverImage = await Image.create({
-          story: storyId,
-          imageType: 'cover',
-          s3Key: s3CoverResult.key,
-          s3Url: s3CoverResult.url,
-          s3Bucket: s3CoverResult.bucket,
-          prompt: coverData.cover_prompt,
-          mimeType: 'image/png',
-          size: coverBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-
-        story.coverImage = coverImage._id;
-      }
-
-      // Upload back cover image to S3
-      let backCoverImage = null;
-      if (coverData.back_image_base64) {
-        const backBuffer = Buffer.from(coverData.back_image_base64, 'base64');
-
-        const s3BackResult = await s3Service.uploadToS3(
-          backBuffer,
-          `stories/${storyId}/covers`,
-          'back-cover.png',
-          'image/png'
-        );
-
-        backCoverImage = await Image.create({
-          story: storyId,
-          imageType: 'backCover',
-          s3Key: s3BackResult.key,
-          s3Url: s3BackResult.url,
-          s3Bucket: s3BackResult.bucket,
-          prompt: coverData.back_prompt,
-          mimeType: 'image/png',
-          size: backBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-
-        story.backCoverImage = backCoverImage._id;
-      }
-
-      // Update story with blurb and QR URL
-      if (coverData.back_blurb) {
-        story.backCoverBlurb = coverData.back_blurb;
-      }
-      if (qr_url) {
-        story.qrUrl = qr_url;
-      }
-      const response = await story.save();
-      console.log('Story save result:', response);
-
-      console.log('Cover and back cover generated successfully.', story);
-
-      res.status(200).json({
-        success: true,
-        message: 'Cover and back cover images generated successfully',
-        data: {
-          totalPages: pages.length,
-        }
+        message: "Story not found"
       });
-    } else {
-      throw new Error('Failed to generate cover images');
     }
-  } catch (error) {
-    console.error('Error generating cover images:', error);
-    next(error);
+
+    res.status(202).json({
+      success: true,
+      storyId,
+      jobId: job._id
+    });
+
+  } catch (err) {
+    next(err);
   }
 };
+
+// @desc    Get image job status
+// @route   GET /api/images/job-status/:jobId
+// @access  Private
+exports.getJobStatus = async (req, res) => {
+  const job = await ImageJob.findById(req.params.jobId);
+  console.log("Get Job Status");
+  res.json(job);
+};
+
+
+
+// // @desc    Generate character images for story pages
+// // @route   POST /api/images/generate-characters/:storyId
+// // @access  Private
+// exports.generateCharacterImages = async (req, res, next) => {
+//   try {
+//     const { storyId } = req.params;
+//     const { title } = req.body;
+
+//     // Verify story ownership
+//     const story = await Story.findOne({
+//       _id: storyId,
+//       user: req.user.id
+//     });
+
+//     if (!story) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Story not found'
+//       });
+//     }
+
+//     const updateTitle = await Story.findByIdAndUpdate(
+//       storyId,
+//       { title: title },
+//       { new: true }
+//     );
+
+//     // Get all pages
+//     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+
+//     // Prepare data for FastAPI
+//     const pageData = pages.map(p => ({
+//       page: p.pageNumber,
+//       text: p.text,
+//       prompt: p.prompt
+//     }));
+
+//     // Call FastAPI to generate images
+//     // Pass genre string if available
+//     const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+//     const result = await fastApiService.generateImages(pageData, story.orientation, storyGenreString);
+
+//     // Upload images to S3 and create Image documents
+//     const imagePromises = result.pages.map(async (pageResult) => {
+//       if (!pageResult.hidream_image_base64 || pageResult.error) {
+//         console.error(`Page ${pageResult.page} generation failed:`, pageResult.error);
+//         return null;
+//       }
+
+//       // Convert base64 to buffer
+//       const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
+
+//       // Upload to S3
+//       const s3Result = await s3Service.uploadToS3(
+//         imageBuffer,
+//         `stories/${storyId}/characters`,
+//         `page-${pageResult.page}.png`,
+//         'image/png'
+//       );
+
+//       // Create Image document
+//       const image = await Image.create({
+//         story: storyId,
+//         storyPage: pages[pageResult.page - 1]._id,
+//         imageType: 'character',
+//         // base64Data: pageResult.hidream_image_base64,
+//         s3Key: s3Result.key,
+//         s3Url: s3Result.url,
+//         s3Bucket: s3Result.bucket,
+//         prompt: pages[pageResult.page - 1].prompt,
+//         mimeType: 'image/png',
+//         size: imageBuffer.length,
+//         metadata: {
+//           orientation: story.orientation,
+//           model: 'hidream'
+//         }
+//       });
+
+//       try {
+//         // Update StoryPage with image reference
+//         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
+//           characterImage: image._id,
+//           status: 'completed'
+//         });
+
+//         console.log(`Page ${pageResult.page} image generated and stored successfully.`);
+
+//         return image;
+//       } catch (error) {
+//         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
+//           characterImage: image._id,
+//           status: 'failed'
+//         });
+//         console.error(`Error processing page ${pageResult.page}:`, error);
+//         return null;
+//       }
+//     });
+
+//     const images = await Promise.all(imagePromises);
+//     const successfulImages = images.filter(img => img !== null);
+
+//     // Generate background images and cover images
+//     // try {
+//     // const backgroundImages = await generateBackgroundImages(storyId);
+//     // console.log("Background Images Generated:", backgroundImages);
+//     // const coverImages = await generateCover(storyId);
+//     // console.log("Cover Images Generated:", coverImages);
+//     // } catch (coverBgError) {
+//     //   console.error("Error generating cover/background images:", coverBgError);
+//     // }
+
+//     // send email notification of completion
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Character images generated successfully',
+//       storyId: storyId,
+//       data: {
+//         totalPages: pages.length,
+//         successfulGenerations: successfulImages.length,
+//         images: successfulImages
+//       }
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// // @desc    Generate background images for story pages
+// // @route   POST /api/images/generate-backgrounds/
+// // @access  Private
+// exports.generateBackgroundImages = async (req, res, next) => {
+//   // const generateBackgroundImages = async (storyId) => {
+//   try {
+//     const { storyId } = req.body;
+
+//     const story = await Story.findOne({
+//       _id: storyId,
+//     });
+
+//     if (!story) {
+//       return {
+//         success: false,
+//         message: 'Story not found'
+//       };
+//     }
+
+//     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+
+//     const pageData = pages.map(p => ({
+//       page: p.pageNumber,
+//       text: p.text
+//     }));
+
+//     // // Call FastAPI SDXL endpoint
+//     // const result = await fastApiService.generateSDXLBackgrounds(pageData, story.orientation);
+//     const result = await fastApiService.generateFLUXBackgrounds(pageData, story.orientation);
+
+//     const imagePromises = result.pages.map(async (pageResult) => {
+//       // if (!pageResult.sdxl_background_base64 || pageResult.error) {
+//       if (!pageResult.flux_background_base64 || pageResult.error) {
+//         console.error(`Page ${pageResult.page} background failed:`, pageResult.error);
+//         return null;
+//       }
+
+//       try {
+//         // const imageBuffer = Buffer.from(pageResult.sdxl_background_base64, 'base64');
+//         const imageBuffer = Buffer.from(pageResult.flux_background_base64, 'base64');
+
+//         const s3Result = await s3Service.uploadToS3(
+//           imageBuffer,
+//           `stories/${storyId}/backgrounds`,
+//           `page-${pageResult.page}.png`,
+//           'image/png'
+//         );
+
+//         const image = await Image.create({
+//           story: storyId,
+//           storyPage: pages[pageResult.page - 1]._id,
+//           imageType: 'background',
+//           s3Key: s3Result.key,
+//           s3Url: s3Result.url,
+//           s3Bucket: s3Result.bucket,
+//           // prompt: pageResult.sdxl_prompt,
+//           prompt: pageResult.flux_prompt,
+//           mimeType: 'image/png',
+//           size: imageBuffer.length,
+//           metadata: {
+//             orientation: story.orientation,
+//             // model: 'sdxl'
+//             model: 'flux'
+//           }
+//         });
+
+//         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
+//           backgroundImage: image._id,
+//           // sdxlPrompt: pageResult.sdxl_prompt
+//           fluxPrompt: pageResult.flux_prompt
+//         });
+//         console.log(`Page ${pageResult.page} image generated and stored successfully.`);
+
+//       } catch (error) {
+//         console.error(`Error processing background ${pageResult.page}:`, error);
+//         return null;
+//       }
+//     });
+
+//     const images = await Promise.all(imagePromises);
+//     const successfulImages = images.filter(img => img !== null);
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Background images generated successfully',
+//       data: {
+//         totalPages: pages.length,
+//         successfulGenerations: successfulImages.length,
+//         images: successfulImages
+//       }
+//     });
+//   } catch (error) {
+//     console.error('Error generating background images:', error);
+//     next(error);
+//   }
+// };
+
+
+// // @desc    Generate cover and back cover for a story
+// // @route   POST /api/cover/generate/
+// // @access  Private
+// exports.generateCover = async (req, res, next) => {
+//   // const generateCover = async (storyId) => {
+//   const { storyId } = req.body;
+//   try {
+
+//     const story = await Story.findOne({
+//       _id: storyId,
+//     });
+
+//     if (!story) {
+//       return {
+//         success: false,
+//         message: 'Story not found'
+//       };
+//     }
+
+//     // Get all pages
+//     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+
+//     const pageData = pages.map(p => ({
+//       page: p.pageNumber,
+//       text: p.text,
+//       prompt: p.prompt
+//     }));
+
+//     const qr_url = process.env.BACK_QR_URL || 'https://talescraftco.com/';
+
+//     // Call FastAPI coverback/generate endpoint
+//     const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+//     const result = await fastApiService.generateCoverAndBack(
+//       pageData,
+//       storyGenreString,
+//       story.orientation,
+//       story.title,
+//       qr_url
+//     );
+
+//     if (result.pages && result.pages[0]) {
+//       const coverData = result.pages[0];
+
+//       // Upload cover image to S3
+//       let coverImage = null;
+//       if (coverData.cover_image_base64) {
+//         const coverBuffer = Buffer.from(coverData.cover_image_base64, 'base64');
+
+//         const s3CoverResult = await s3Service.uploadToS3(
+//           coverBuffer,
+//           `stories/${storyId}/covers`,
+//           'cover.png',
+//           'image/png'
+//         );
+
+//         coverImage = await Image.create({
+//           story: storyId,
+//           imageType: 'cover',
+//           s3Key: s3CoverResult.key,
+//           s3Url: s3CoverResult.url,
+//           s3Bucket: s3CoverResult.bucket,
+//           prompt: coverData.cover_prompt,
+//           mimeType: 'image/png',
+//           size: coverBuffer.length,
+//           metadata: {
+//             orientation: story.orientation,
+//             model: 'hidream'
+//           }
+//         });
+
+//         story.coverImage = coverImage._id;
+//       }
+
+//       // Upload back cover image to S3
+//       let backCoverImage = null;
+//       if (coverData.back_image_base64) {
+//         const backBuffer = Buffer.from(coverData.back_image_base64, 'base64');
+
+//         const s3BackResult = await s3Service.uploadToS3(
+//           backBuffer,
+//           `stories/${storyId}/covers`,
+//           'back-cover.png',
+//           'image/png'
+//         );
+
+//         backCoverImage = await Image.create({
+//           story: storyId,
+//           imageType: 'backCover',
+//           s3Key: s3BackResult.key,
+//           s3Url: s3BackResult.url,
+//           s3Bucket: s3BackResult.bucket,
+//           prompt: coverData.back_prompt,
+//           mimeType: 'image/png',
+//           size: backBuffer.length,
+//           metadata: {
+//             orientation: story.orientation,
+//             model: 'hidream'
+//           }
+//         });
+
+//         story.backCoverImage = backCoverImage._id;
+//       }
+
+//       // Update story with blurb and QR URL
+//       if (coverData.back_blurb) {
+//         story.backCoverBlurb = coverData.back_blurb;
+//       }
+//       if (qr_url) {
+//         story.qrUrl = qr_url;
+//       }
+//       const response = await story.save();
+//       console.log('Story save result:', response);
+
+//       console.log('Cover and back cover generated successfully.', story);
+
+//       res.status(200).json({
+//         success: true,
+//         message: 'Cover and back cover images generated successfully',
+//         data: {
+//           totalPages: pages.length,
+//         }
+//       });
+//     } else {
+//       throw new Error('Failed to generate cover images');
+//     }
+//   } catch (error) {
+//     console.error('Error generating cover images:', error);
+//     next(error);
+//   }
+// };
 
 
 // @desc    Face swap source image onto character image
@@ -501,7 +587,6 @@ exports.faceSwap = async (req, res) => {
 exports.editImage = async (req, res) => {
   try {
     const { characterImageId, prompt } = req.body;
-    console.log("Edit Image Request:", req.body);
 
     if (!characterImageId || !prompt) {
       return res.status(400).json({
@@ -727,7 +812,6 @@ exports.regenerateCharacterImage = async (req, res) => {
 // @route   GET /api/images/page/:pageId
 // @access  Private
 exports.getPageImages = async (req, res, next) => {
-  generateCover()
   try {
     const { pageId } = req.params;
 

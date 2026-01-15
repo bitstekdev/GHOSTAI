@@ -14,7 +14,8 @@ const {
   deleteStory,
   updateGist,
   customGenre,
-  getCustomGenres
+  getCustomGenres,
+  getConversation
 } = require('../controllers/storyController');
 const { protect } = require('../middleware/auth');
 
@@ -43,5 +44,6 @@ router.patch('/:id/gist', protect, updateGist);
 router.post('/titles/generate', protect, generateTitles);
 router.post('/titles/regenerate', protect, regenerateTitles);
 router.delete('/:id', protect, deleteStory);
+router.get('/:storyId/conversation', protect, getConversation);
 
 module.exports = router;

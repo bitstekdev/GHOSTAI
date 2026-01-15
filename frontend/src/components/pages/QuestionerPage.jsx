@@ -154,7 +154,7 @@
 
 import { useEffect, useState, useContext, useRef } from "react";
 import { AppContext } from "../../context/AppContext";
-import logoImg from "../../assets/images/logo.gif";
+import { getConversationByStoryId, saveConversationByStoryId } from "../../utils//conversationStorage.js";
 import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import { Send } from "lucide-react";
@@ -178,12 +178,42 @@ export default function QuestionerPage() {
   const MAX_QUESTIONS = 15;
 
   /* -------------------- Load from localStorage -------------------- */
+  // useEffect(() => {
+  //   const saved = JSON.parse(localStorage.getItem("conversationData"));
+  //   if (saved?.conversation) {
+  //     setConversation(saved.conversation);
+  //   }
+  // }, []);
+  // load conversation for this storyId from DB
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("conversationData"));
-    if (saved?.conversation) {
-      setConversation(saved.conversation);
+  const loadConversation = async () => {
+    try {
+      setLoading(true);
+      console.log("Loading conversation for storyId:", storyIdParam);
+      const res = await api.get(`/api/v1/story/${storyIdParam}/conversation`);
+      console.log("Conversation response:", res.data);
+
+      const conv = res.data?.data?.conversation || [];
+
+      setConversation(conv);
+      saveConversationByStoryId(storyIdParam, conv);
+    } catch (err) {
+      console.error("Failed to load conversation", err);
+
+      // fallback to cache
+      const cached = getConversationByStoryId(storyIdParam);
+      if (cached) {
+        setConversation(cached);
+      }
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  if (storyIdParam) {
+    loadConversation();
+  }
+}, [storyIdParam]);
 
   /* -------------------- Auto Scroll -------------------- */
   useEffect(() => {
@@ -197,19 +227,13 @@ export default function QuestionerPage() {
     }
   }, [conversation, loading]);
 
-  const updateLocalStorage = (updatedConv) => {
-    localStorage.setItem(
-      "conversationData",
-      JSON.stringify({ storyIdParam, conversation: updatedConv })
-    );
-  };
 
   /* -------------------- Next Question -------------------- */
   const handleSend = async () => {
     if (!answer.trim() || loading) return;
 
     const userAnswer = answer.trim();
-    // optimistic UI: show pending answer while waiting for backend
+    // optimistic UI: show pending answer while waiting for backend 
     setPendingAnswer(userAnswer);
     setAnswer("");
     setLoading(true);
@@ -226,7 +250,7 @@ export default function QuestionerPage() {
 
       // Backend is the single source of truth for conversation state
       setConversation(result.conversation);
-      updateLocalStorage(result.conversation);
+      saveConversationByStoryId(storyIdParam, result.conversation);
       setPendingAnswer(null);
     } catch (err) {
       console.error("Next Question Error:", err?.response?.data || err);

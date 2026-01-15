@@ -90,9 +90,10 @@ exports.generateImages = async (pages, orientation, genre) => {
   return response.data;
 };
 
-// SDXL Background generation------------------------------------------
-exports.generateSDXLBackgrounds = async (pages, orientation) => {
-  const response = await fastApiClient.post('/images/sdxl_generate', {
+// FLUX Background generation------------------------------------------
+exports.generateFLUXBackgrounds = async (pages, orientation) => {
+  console.log("Generating FLUX backgrounds with pages:", pages, "orientation:", orientation);
+  const response = await fastApiClient.post('/images/flux_generate', {
     pages,
     orientation
   });

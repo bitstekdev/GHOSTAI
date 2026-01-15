@@ -105,42 +105,6 @@ const navigateTo = (path, opts) => {
 
 
 
-
-//   -------------------Signin-------------------
-
-// const signin = async (data) => {
-//   try {
-//     setLoading(true);
-//     const response = await api.post(`/api/auth/login`, data);
-
-//     setIsAuthenticated(true);
-//     setUserData(response.data.data.user);
-
-//     return { success: true, message: response.data.message };
-//   } catch (error) {
-//     setIsAuthenticated(false);
-//     const status = error.response?.status;
-//     const payload = error.response?.data;
-//     if (status === 403 && payload?.requiresEmailVerification) {
-//       return {
-//         success: false,
-//         requiresEmailVerification: true,
-//         message: payload.message || "Please verify your email before logging in.",
-//       };
-//     }
-//     const errors = payload?.errors;
-//     const message =
-//       (Array.isArray(errors) && errors[0]?.msg) ||
-//       payload?.message ||
-//       "Something went wrong!";
-//     return { success: false, message };
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-
 //----------------get profile---------------------
 const getProfile = async () => {
   try {
