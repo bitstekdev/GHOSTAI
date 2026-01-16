@@ -29,7 +29,8 @@ exports.getPlansByShowOnContext = async (req, res) => {
   const { context } = req.query;
   const filter = {
     isActive: true,
-    isArchived: false
+    isArchived: false,
+    code: { $ne: "FREE" }
   };
   if (context) {
     filter.$or = [

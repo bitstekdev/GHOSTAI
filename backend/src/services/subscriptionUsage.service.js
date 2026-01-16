@@ -1,18 +1,4 @@
-// exports.consumeUsage = async (subscription, key, count = 1) => {
-//   const baseLimit = subscription.plan.limits[key] || 0;
-//   const bonus = subscription.bonusCredits?.[key] || 0;
-//   const used = subscription.usage[key] || 0;
-
-//   const totalAllowed = baseLimit + bonus;
-
-//   if (totalAllowed > 0 && used + count > totalAllowed) {
-//     throw new Error(`Usage limit exceeded for ${key}`);
-//   }
-
-//   subscription.usage[key] = used + count;
-//   await subscription.save();
-// };
-
+const UserSubscription = require("../models/UserSubscription");
 
 exports.consumeUsage = async (subscription, key, count = 1) => {
   const baseLimit = subscription.plan.limits[key];
@@ -33,3 +19,19 @@ exports.consumeUsage = async (subscription, key, count = 1) => {
   subscription.usage[key] = used + count;
   await subscription.save();
 };
+
+
+exports.getActiveSubscriptionOrFail = async (userId) => {
+  const sub = await UserSubscription.findOne({
+    user: userId,
+    status: "active",
+    expiresAt: { $gt: new Date() }
+  }).populate("plan");
+
+  if (!sub) {
+    throw new Error("No active subscription");
+  }
+
+  return sub;
+};
+

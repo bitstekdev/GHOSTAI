@@ -3,6 +3,7 @@ const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
 const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
+const { consumeUsage, getActiveSubscriptionOrFail } = require("../services/subscriptionUsage.service");
 
 
 // @desc    Start story (hybrid: questionnaire or direct gist)
@@ -243,16 +244,9 @@ exports.createStory = async (req, res, next) => {
     // console.log("Fixed Character Details:", fixedCharacterDetails);
     // await new Promise(resolve => setTimeout(resolve, 20000));
     
-    
-    
-    
-    // Generate story pages from FastAPI
-    const staticGenres = [
-      'Fantasy','Adventure','Family','Mystery','Housewarming',
-      'Corporate Promotion','Marriage','Baby Shower','Birthday','Sci-Fi'
-    ];
 
-    const useCustomGenre = Array.isArray(storyGenresArray) && storyGenresArray.every(g => !staticGenres.includes(g));
+    // // numPages comes from req.body
+    // await consumeUsage(subscription, "maxPages", numPages);
 
     const storyResult = await fastApiService.generateStory(
       gist,
