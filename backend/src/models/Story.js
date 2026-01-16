@@ -93,6 +93,10 @@ const storySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Image",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     backCoverBlurb: String,
     qrUrl: String,
     generationMetadata: {

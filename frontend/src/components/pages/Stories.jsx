@@ -169,7 +169,7 @@ const handleDeleteStory = async () => {
   if (!storyToDelete?._id) return;
   setDelLoading(true);
   try {
-    await api.delete(`/api/v1/story/${storyToDelete._id}`);
+    await api.delete(`/api/v1/story/archive/${storyToDelete._id}`);
 
     setStoriesInProgress(prev =>
       prev.filter(s => s._id !== storyToDelete._id)

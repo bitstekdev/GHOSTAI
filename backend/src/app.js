@@ -94,6 +94,7 @@ const imageRoutes = require('./routes/image');
 const coverRoutes = require('./routes/cover');
 const addressRoutes = require('./routes/address');
 const pdfRoutes = require('./routes/pdf');
+const subscriptionRoutes = require('./routes/subscription.routes');
 
 const app = express();
 
@@ -152,7 +153,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/v1/story', storyRoutes);
 app.use('/api/v1/images', imageRoutes);
 app.use('/api/v1/cover', coverRoutes);
-app.use('/api/address', addressRoutes);
+app.use('/api/v1/address', addressRoutes);
+app.use('/api/v1/subscriptions', subscriptionRoutes);
 
 /* ======================================================
    PDF ROUTES (SPECIAL HANDLING)

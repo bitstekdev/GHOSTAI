@@ -14,6 +14,11 @@ const { initSocket } = require("./src/services/socket");
 const PORT = process.env.PORT || 5000;
 
 
+// START CRON JOBS (just import, no execution needed)
+const { expireOutdatedSubscriptions } = require("./src/services/subscriptionExpiry.service");
+
+
+
 // Resume processing image jobs that were in 'processing' state before server restart
 const resumeJobs = async () => {
   const jobs = await ImageJob.find({ status: "processing" });
@@ -31,10 +36,37 @@ const resumeJobs = async () => {
   }
 };
 
-// Connect to database
-connectDB();
-resumeJobs();
+// Connect to database and perform startup tasks
+// On server startup, expire any outdated subscriptions that may have been missed during downtime
+(async () => {
+  try {
+    // Connect DB
+    await connectDB();
 
+    //  RECOVER MISSED EXPIRATIONS
+    const recovered =
+      await expireOutdatedSubscriptions();
+
+    if (recovered > 0) {
+      console.log(
+        ` Startup recovery: expired ${recovered} subscriptions`
+      );
+    }
+
+    // Resume image jobs
+    await resumeJobs();
+
+    // Start cron jobs (daily checks)
+    require("./src/cron/subscriptionExpiry.cron");
+
+  } catch (err) {
+    console.error("❌ Startup failed:", err);
+    process.exit(1);
+  }
+})();
+
+
+// Create HTTP server and initialize socket.io
 const server = http.createServer(app);
 initSocket(server);
 

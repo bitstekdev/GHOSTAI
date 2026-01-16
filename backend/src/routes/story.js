@@ -12,11 +12,12 @@ const {
   getStory,
   generateTitles,
   regenerateTitles,
-  deleteStory,
   updateGist,
   customGenre,
   getCustomGenres,
-  getConversation
+  getConversation,
+  deleteStory,
+  deleteStoryForUser
 } = require('../controllers/storyController');
 const { protect } = require('../middleware/auth');
 
@@ -26,6 +27,8 @@ router.post('/gist', protect, generateGist);
 router.post('/create', protect, createStory);
 router.patch("/rename/:storyId", protect, renameStory);
 router.get('/my-stories', protect, getMyStories);
+router.get('/:id', protect, getStory);
+
 // Static routes (must come before dynamic `/:id`)
 router.post(
   "/upload-genre",
@@ -40,12 +43,14 @@ router.get(
 );
 
 // Dynamic routes
-router.get('/:id', protect, getStory);
 router.patch('/:id/gist', protect, updateGist);
 
 router.post('/titles/generate', protect, generateTitles);
 router.post('/titles/regenerate', protect, regenerateTitles);
-router.delete('/:storyId', protect, deleteStory);
 router.get('/:storyId/conversation', protect, getConversation);
+
+// Delete story and associated data (**SENSITIVE**) it deletes all data from DB and S3
+router.delete('/archive/:storyId', protect, deleteStoryForUser);
+router.delete('/delete/:storyId', protect, deleteStory);
 
 module.exports = router;

@@ -37,7 +37,7 @@ function initSocket(server) {
 function emitJobUpdate(jobId, payload) {
   if (io) {
     const roomId = jobId.toString();
-    console.log("📤 Emitting update to job:", roomId, payload);
+    console.log("Emitting update to job:", roomId, payload);
     io.to(roomId).emit("job-update", payload);
   }
 }

@@ -473,6 +473,17 @@ const openEdit = () => {
   }, [showFaceSwap, showEdit, showHistory, showRegenerateConfirm]);
 
   // ============================
+  const getPageLabel = () => {
+  if (!pages.length) return "";
+
+  if (currentPage === 0) return "Cover";
+  if (currentPage === pages.length - 1) return "Back Cover";
+
+  // Subtract cover page
+  return `Page ${currentPage}`;
+};
+
+  // ============================
   // PAGE GENERATION
   // ============================
   const generatePages = () => {
@@ -807,22 +818,44 @@ pages.forEach((page, index) => {
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
         <div className="flex justify-center mb-4 sm:mb-6 pt-2 sm:pt-4">
-          <h1 className="text-white text-lg sm:text-2xl font-bold">Ghostverse.ai</h1>
+          <h1 className="text-white text-lg sm:text-2xl font-bold">
+            Ghostverse.ai
+          </h1>
         </div>
 
         {/* NOTE: Top button bar removed — replaced with left toolbar next to the book */}
-        {errorMessage && ( <p className="text-red-600 text-sm">{errorMessage}</p> )}
+        {errorMessage && <p className="text-red-600 text-sm">{errorMessage}</p>}
 
         {/* LAYOUT: left toolbar + book */}
         <div className="flex justify-center w-full px-2">
           <div className="flex justify-center items-start gap-4 w-full">
-
             {/* LEFT ACTION BAR */}
             <div
               className={
                 `hidden sm:flex flex-col gap-4 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-xl sticky top-24 transition-all duration-300 ease-out ` +
-                (showToolbar ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 pointer-events-none")
+                (showToolbar
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-4 pointer-events-none")
               }>
+              {/* page numbers */}
+              <div
+                className={
+                  `hidden sm:flex flex-col gap-4 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-xl sticky top-24 transition-all duration-300 ease-out ` +
+                  (showToolbar
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-4 pointer-events-none")
+                }>
+                {/* PAGE LABEL */}
+                <div className="text-center">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    Current
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {getPageLabel()}
+                  </p>
+                </div>
+              </div>
+
               <button
                 onClick={() => setShowRegenerateConfirm(true)}
                 className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
@@ -852,7 +885,9 @@ pages.forEach((page, index) => {
                 className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition relative">
                 <Users size={20} />
                 Face Swap
-                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">Beta</span>
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">
+                  Beta
+                </span>
               </button>
 
               <button
@@ -880,9 +915,21 @@ pages.forEach((page, index) => {
 
               <button
                 onClick={downloadPDF}
-                className="flex flex-col items-center text-xs text-white hover:text-green-400 transition"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                className="flex flex-col items-center text-xs text-white hover:text-green-400 transition">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
                 Download PDF
               </button>
             </div>
@@ -892,21 +939,18 @@ pages.forEach((page, index) => {
               ref={wrapperRef}
               className="flex justify-center w-full px-2 relative"
               onMouseMove={showToolbarTemporarily}
-              onTouchStart={showToolbarTemporarily}
-            >
+              onTouchStart={showToolbarTemporarily}>
               <div
                 className="rounded-lg sm:rounded-2xl shadow-2xl bg-gray-800 p-2 sm:p-4 relative"
                 style={{
                   transform: `scale(${scale})`,
                   transformOrigin: "top center",
                 }}>
-
                 {/* LEFT ARROW */}
                 {currentPage > 0 && (
                   <button
                     onClick={prevPage}
-                    className="absolute left-0 top-0 h-full w-16 flex items-center justify-start bg-gradient-to-r from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20"
-                  >
+                    className="absolute left-0 top-0 h-full w-16 flex items-center justify-start bg-gradient-to-r from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20">
                     <ChevronLeft size={48} className="text-white/80 ml-2" />
                   </button>
                 )}
@@ -915,8 +959,7 @@ pages.forEach((page, index) => {
                 {currentPage < pages.length - 1 && (
                   <button
                     onClick={nextPage}
-                    className="absolute right-0 top-0 h-full w-16 flex items-center justify-end bg-gradient-to-l from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20"
-                  >
+                    className="absolute right-0 top-0 h-full w-16 flex items-center justify-end bg-gradient-to-l from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 z-20">
                     <ChevronRight size={48} className="text-white/80 mr-2" />
                   </button>
                 )}
@@ -1026,7 +1069,9 @@ pages.forEach((page, index) => {
       {showRegenerateConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
           <div className="bg-gray-900 text-white p-4 sm:p-6 rounded-xl w-full max-w-sm shadow-xl mx-4">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Regenerate Image?</h2>
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
+              Regenerate Image?
+            </h2>
             <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
               Doing this will regenerate this Page Image. This action cannot be
               undone.
