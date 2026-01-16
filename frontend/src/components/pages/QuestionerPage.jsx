@@ -114,26 +114,50 @@ export default function QuestionerPage() {
   const handleGetPrompt = async () => {
     try {
       setLoading(true);
+
+      // Only send fully answered Q&A pairs to the gist generator
+      const cleanedConversation = conversation.filter(
+        (msg) => msg && msg.question && msg.answer
+      );
+
       const response = await api.post("/api/v1/story/gist", {
         storyId: storyIdParam,
-        conversation
+        conversation: cleanedConversation
       });
 
-      const { storyId, gist } = response.data;
+      // Robustly extract gist and storyId from multiple possible response shapes
+      const storyId = response.data?.storyId || response.data?.data?.storyId || response.data?.data?._id || null;
+      const gist = response.data?.data?.gist || response.data?.gist || null;
+
+      if (!gist || gist.length < 20) {
+        console.error("Invalid gist returned", response.data);
+        setLoading(false);
+        return;
+      }
 
       // Generate previews via FastAPI through backend (no storage)
       let previews = null;
       try {
-        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist });
+        // Fetch story to obtain the selected learned style(s)
+        let genresToSend = [];
+        try {
+          const storyRes = await api.get(`/api/v1/story/${storyIdParam}`);
+          const storyObj = storyRes.data?.data?.story || storyRes.data?.data || storyRes.data;
+          genresToSend = storyObj?.genres || [];
+        } catch (fetchErr) {
+          console.warn('Failed to fetch story genres, falling back to empty genres array', fetchErr?.response?.data || fetchErr);
+        }
+
+        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist, genres: genresToSend });
         previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
       } catch (previewErr) {
         console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
       }
 
-      setStoryId(storyId);
+      if (storyId) setStoryId(storyId);
       navigateTo(`/templateselection/${storyId}`, { state: { previews } });
     } catch (err) {
-      console.error("Gist API Error", err);
+      console.error("Gist API Error", err?.response?.data || err);
     } finally {
       setLoading(false);
     }

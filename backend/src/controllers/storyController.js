@@ -26,7 +26,9 @@ exports.startStory = async (req, res, next) => {
       gist
     } = req.body;
 
-    const inputGenres = Array.isArray(genres) ? genres : (genre ? [genre] : []);
+    // Treat any frontend placeholder like "Custom" as transient — do not store it.
+    const rawInputGenres = Array.isArray(genres) ? genres : (genre ? [genre] : []);
+    const inputGenres = rawInputGenres.filter(Boolean).filter(g => g !== 'Custom');
 
     if (!inputGenres || inputGenres.length === 0 || !length || !numCharacters) {
       return res.status(400).json({
@@ -176,8 +178,13 @@ exports.generateGist = async (req, res, next) => {
       });
     }
 
-    // Pass genres as comma-separated string to FastAPI
+    // Pass the learned style label (genre) verbatim to FastAPI. Do not send placeholders.
     const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
+
+    if (!storyGenreString || storyGenreString === 'Custom') {
+      return res.status(400).json({ success: false, message: 'Invalid style label for gist generation' });
+    }
+
     const result = await fastApiService.generateGist(sanitizedConversation, storyGenreString, story.user.toString());
     
     if (result) {
@@ -227,6 +234,10 @@ exports.createStory = async (req, res, next) => {
     const gist = story.gist;
     const storyGenresArray = Array.isArray(genresFromBody) ? genresFromBody : (genre ? (Array.isArray(genre) ? genre : [genre]) : (story.genres || []));
     const storyGenre = Array.isArray(storyGenresArray) ? storyGenresArray.join(', ') : storyGenresArray;
+
+    if (!storyGenre || (Array.isArray(storyGenresArray) && storyGenresArray.includes('Custom')) || storyGenre === 'Custom') {
+      return res.status(400).json({ success: false, message: 'Invalid style label for story generation' });
+    }
     
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
     // console.log("Fixed Character Details:", fixedCharacterDetails);
@@ -250,8 +261,7 @@ exports.createStory = async (req, res, next) => {
       storyGenre,
       numPages,
       {
-        user_id: story.user.toString(),
-        use_custom_genre: useCustomGenre
+        user_id: story.user.toString()
       }
     );
 
@@ -659,7 +669,7 @@ exports.customGenre = async (req, res) => {
 exports.getCustomGenres = async (req, res) => {
   try {
     const result = await fastApiService.getUserGenres(req.user.id);
-
+    console.log("ye result", result);
     res.status(200).json({
       success: true,
       data: result

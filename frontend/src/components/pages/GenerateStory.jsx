@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import api from "../../services/axiosInstance";
 import { Send, Bot, User, Plus, Image, FileText } from "lucide-react";
-import Joyride from "react-joyride";
-import { AppContext } from "../../context/AppContext";
-import { ProgressStep1 } from "../helperComponents/Steps.jsx";
-import { useTourContext } from "../../context/TourContext";
-import { generateStoryTourSteps, tourStyles } from "../../config/tourSteps";
-import BlurText from "../helperComponents/TextType";
-import GenreDropdown from "../helperComponents/GenreDropdown.jsx";
+import Joyride from 'react-joyride';
+import { AppContext } from '../../context/AppContext'
+import {ProgressStep1} from '../helperComponents/Steps.jsx'
+import { useTourContext } from '../../context/TourContext';
+import { generateStoryTourSteps, tourStyles } from '../../config/tourSteps';
+import BlurText from '../helperComponents/TextType';
+import GenreDropdown from '../helperComponents/GenreDropdown.jsx';
 
 const GenerateStory = () => {
-  const { navigateTo, userData } = useContext(AppContext);
+  const {navigateTo, userData} = useContext(AppContext)
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
@@ -31,7 +31,7 @@ const GenerateStory = () => {
 
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
-  // const [currentStep, setCurrentStep] = useState("title");
+  // const [currentStep, setCurrentStep] = useState(""); 
   const [currentStep, setCurrentStep] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -44,22 +44,21 @@ const GenerateStory = () => {
     run,
     stepIndex,
     handleTourCallback: contextHandleCallback,
-    activeTour,
+    activeTour
   } = useTourContext();
 
-  const shouldRunTourOnThisPage =
-    activeTour === "onboarding" &&
-    window.location.pathname === "/generatestory";
+  const shouldRunTourOnThisPage = activeTour === 'onboarding' && 
+    window.location.pathname === '/generatestory';
 
   const handleTourCallback = (data) => {
     const { status, type } = data;
-
-    if (type === "tour:end" || status === "finished") {
+    
+    if (type === 'tour:end' || status === 'finished') {
       setTimeout(() => {
-        navigateTo("/stories");
+        navigateTo('/stories');
       }, 500);
     }
-
+    
     contextHandleCallback(data);
   };
 
@@ -73,7 +72,7 @@ const GenerateStory = () => {
 
   // Fetch learned custom genres
   useEffect(() => {
-    if (!userData) return;
+    if (!userData) return; 
 
     const fetchCustomGenres = async () => {
       try {
@@ -98,38 +97,30 @@ const GenerateStory = () => {
     const timer = setTimeout(() => {
       setShowIntro(false);
       setShowFirstQuestion(true);
-      setMessages([
-        {
-          type: "bot",
-          text: "👋 Welcome! Let's create your story together. 📖\n\nSelect **1 or 2 genres** for your story (maximum 2).",
-          timestamp: new Date(),
-        },
-      ]);
+      setMessages([{
+        type: "bot",
+        text: "👋 Welcome! Let's create your story together. 📖\n\nSelect **1 or 2 genres** for your story (maximum 2).",
+        timestamp: new Date()
+      }]);
       setCurrentStep("genre");
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
   const addBotMessage = (text) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "bot",
-        text,
-        timestamp: new Date(),
-      },
-    ]);
+    setMessages(prev => [...prev, {
+      type: "bot",
+      text,
+      timestamp: new Date()
+    }]);
   };
 
   const addUserMessage = (text) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "user",
-        text,
-        timestamp: new Date(),
-      },
-    ]);
+    setMessages(prev => [...prev, {
+      type: "user",
+      text,
+      timestamp: new Date()
+    }]);
   };
 
   // Central handler to proceed after genres selection
@@ -137,9 +128,7 @@ const GenerateStory = () => {
     if (!updatedGenres || updatedGenres.length === 0) return;
 
     addBotMessage(
-      `Great choice${
-        updatedGenres.length > 1 ? "s" : ""
-      }! 🎉\nHow many pages would you like your story to be(1-20)?`
+      `Great choice${updatedGenres.length > 1 ? "s" : ""}! 🎉\nHow many pages would you like your story to be(1-20)?`
     );
 
     setCurrentStep("length");
@@ -163,10 +152,6 @@ const GenerateStory = () => {
     // Custom Genre selected
     if (value === "__custom__") {
       addUserMessage("Custom Genre");
-      setFormData((prev) => ({
-        ...prev,
-        genres: [...(prev.genres || []), "Custom"],
-      }));
       addBotMessage(
         "Awesome 🎨 Upload a reference document to define your custom genre."
       );
@@ -189,36 +174,17 @@ const GenerateStory = () => {
 
       case "genre":
         // allow user to type 'continue' to proceed when they have selected at least one genre via UI
-        if (
-          input.toLowerCase() === "continue" &&
-          formData.genres &&
-          formData.genres.length > 0
-        ) {
+        if (input.toLowerCase() === "continue" && formData.genres && formData.genres.length > 0) {
           proceedAfterGenreSelection(formData.genres);
           return;
         }
 
-        const validGenres = [
-          "Fantasy",
-          "Adventure",
-          "Family",
-          "Mystery",
-          "Housewarming",
-          "Corporate Promotion",
-          "Marriage",
-          "Baby Shower",
-          "Birthday",
-          "Sci-Fi",
-        ];
-        const genre = validGenres.find(
-          (g) => g.toLowerCase() === input.toLowerCase()
-        );
+        const validGenres = ["Fantasy", "Adventure", "Family", "Mystery", "Housewarming", "Corporate Promotion", "Marriage", "Baby Shower", "Birthday", "Sci-Fi"];
+        const genre = validGenres.find(g => g.toLowerCase() === input.toLowerCase());
 
         if (genre) {
-          setFormData((prev) => ({ ...prev, genres: [genre] }));
-          addBotMessage(
-            `${genre}? Excellent choice! 🎉 How many pages would you like your story to be? `
-          );
+          setFormData(prev => ({ ...prev, genres: [genre] }));
+          addBotMessage(`${genre}? Excellent choice! 🎉 How many pages would you like your story to be? `);
           setCurrentStep("length");
         } else {
           addBotMessage("Please choose a valid genre from the list above.");
@@ -228,12 +194,8 @@ const GenerateStory = () => {
       case "length":
         const length = parseInt(input);
         if (length >= 1 && length <= 20) {
-          setFormData((prev) => ({ ...prev, length: length.toString() }));
-          addBotMessage(
-            `Perfect! ${length} page${
-              length > 1 ? "s" : ""
-            } it is! 📄 How many main characters will be in your story? (1-20)`
-          );
+          setFormData(prev => ({ ...prev, length: length.toString() }));
+          addBotMessage(`Perfect! ${length} page${length > 1 ? 's' : ''} it is! 📄 How many main characters will be in your story? (1-20)`);
           setCurrentStep("numCharacters");
         } else {
           addBotMessage("Please enter a number between 1 and 20.");
@@ -243,16 +205,9 @@ const GenerateStory = () => {
       case "numCharacters":
         const numChars = parseInt(input);
         if (numChars >= 1 && numChars <= 10) {
-          setFormData((prev) => ({
-            ...prev,
-            numCharacters: numChars.toString(),
-          }));
+          setFormData(prev => ({ ...prev, numCharacters: numChars.toString() }));
           if (numChars > 0) {
-            addBotMessage(
-              `Great! Now let's add details for your ${numChars} character${
-                numChars > 1 ? "s" : ""
-              }. 👤`
-            );
+            addBotMessage(`Great! Now let's add details for your ${numChars} character${numChars > 1 ? 's' : ''}. 👤`);
             addBotMessage("Please provide the name of character #1:");
             setCurrentStep("characterName");
             setCurrentCharacter({ index: 0, name: "", details: "" });
@@ -265,10 +220,8 @@ const GenerateStory = () => {
         break;
 
       case "characterName":
-        setCurrentCharacter((prev) => ({ ...prev, name: input }));
-        addBotMessage(
-          `Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "yogesh : indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`
-        );
+        setCurrentCharacter(prev => ({ ...prev, name: input }));
+        addBotMessage(`Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "yogesh : indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`);
         setCurrentStep("characterDetails");
         break;
 
@@ -276,20 +229,16 @@ const GenerateStory = () => {
         const newChar = { name: currentCharacter.name, details: input };
         const updatedFormData = {
           ...formData,
-          characterDetails: [...formData.characterDetails, newChar],
+          characterDetails: [...formData.characterDetails, newChar]
         };
 
         setFormData(updatedFormData);
-
+        
         const nextIndex = currentCharacter.index + 1;
         const totalChars = parseInt(updatedFormData.numCharacters, 10);
-
+        
         if (nextIndex < totalChars) {
-          addBotMessage(
-            `Character added! ✅ Now, please provide the name of character #${
-              nextIndex + 1
-            }:`
-          );
+          addBotMessage(`Character added! ✅ Now, please provide the name of character #${nextIndex + 1}:`);
           setCurrentStep("characterName");
           setCurrentCharacter({ index: nextIndex, name: "", details: "" });
         } else {
@@ -300,44 +249,42 @@ const GenerateStory = () => {
       case "confirm":
         if (input.toLowerCase() === "yes" || input.toLowerCase() === "y") {
           addBotMessage(
-            `Awesome! One last thing 😊
+`Awesome! One last thing 😊
 
-          How would you like to continue?
+How would you like to continue?
 
-          1️⃣ Guide me further with questions  
-          2️⃣ I already know what the book should be about
+1️⃣ Guide me further with questions  
+2️⃣ I already know what the book should be about
 
-          (Type 1 or 2)`
+(Type 1 or 2)`
           );
           setCurrentStep("storyDirection");
         } else {
-          addBotMessage(
-            "What would you like to change? (title, genre, length, characters)"
-          );
+          addBotMessage("What would you like to change? (genre, length, characters)");
           setCurrentStep("edit");
         }
         break;
 
       case "storyDirection":
         if (input === "1") {
-          setFormData((prev) => ({ ...prev, entryMode: "questionnaire" }));
-          handleSubmit();
-        } else if (input === "2") {
-          setFormData((prev) => ({ ...prev, entryMode: "gist" }));
+          // Avoid relying on async setState — pass payload directly
+          handleSubmit({ ...formData, entryMode: "questionnaire" });
+        } 
+        else if (input === "2") {
+          setFormData(prev => ({ ...prev, entryMode: "gist" }));
           addBotMessage(
             "Great 💫 Please describe what your book should be about. This will become the story prompt."
           );
           setCurrentStep("gistInput");
-        } else {
+        } 
+        else {
           addBotMessage("Please type 1 or 2 to continue.");
         }
         break;
 
       case "gistInput":
         if (input.length < 20) {
-          addBotMessage(
-            "Can you share a bit more detail so I can shape it into a story?"
-          );
+          addBotMessage("Can you share a bit more detail so I can shape it into a story?");
           return;
         }
 
@@ -347,31 +294,26 @@ const GenerateStory = () => {
         break;
 
       case "edit":
-        const editChoice = input.toLowerCase();
-        if (editChoice.includes("title")) {
-          addBotMessage(
-            "Titles are no longer requested. You can edit the genre, length, or characters instead."
-          );
-          setCurrentStep("genre");
-        } else if (editChoice.includes("genre")) {
-          addBotMessage("Select the Genre or occasion? ");
-          setCurrentStep("genre");
-        } else if (editChoice.includes("length")) {
-          addBotMessage("Number of pages? (1-10)");
-          setCurrentStep("length");
-        } else if (editChoice.includes("character")) {
-          setFormData((prev) => ({ ...prev, characterDetails: [] }));
-          addBotMessage(
-            "Let's start over with characters. What's the name of your first character?"
-          );
-          setCurrentStep("characterName");
-          setCurrentCharacter({ index: 0, name: "", details: "" });
-        } else {
-          addBotMessage(
-            "Please specify what you'd like to edit: title, genre, length, or characters"
-          );
-        }
-        break;
+  const editChoice = input.toLowerCase();
+
+  if (editChoice.includes("genre")) {
+    addBotMessage("Select the genre or occasion.");
+    setCurrentStep("genre");
+  } 
+  else if (editChoice.includes("length")) {
+    addBotMessage("Number of pages? (1-20)");
+    setCurrentStep("length");
+  } 
+  else if (editChoice.includes("character")) {
+    setFormData(prev => ({ ...prev, characterDetails: [] }));
+    addBotMessage("Let's start over with characters. What's the name of your first character?");
+    setCurrentStep("characterName");
+    setCurrentCharacter({ index: 0, name: "", details: "" });
+  } 
+  else {
+    addBotMessage("Please specify what you'd like to edit: genre, length, or characters.");
+  }
+  break;
 
       default:
         break;
@@ -382,12 +324,10 @@ const GenerateStory = () => {
     const summaryData = dataOverride ?? formData;
     const summary = `
   📚 **Story Summary:**
-  - Genres: ${(summaryData.genres || []).join(", ")}
-  - Length: ${summaryData.length} page${summaryData.length > 1 ? "s" : ""}
+  - Genres: ${(summaryData.genres || []).join(', ')}
+  - Length: ${summaryData.length} page${summaryData.length > 1 ? 's' : ''}
   - Characters: ${summaryData.numCharacters}
-  ${summaryData.characterDetails
-    .map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`)
-    .join("\n")}
+  ${summaryData.characterDetails.map((char, i) => `  ${i + 1}. ${char.name} - ${char.details}`).join('\n')}
 
   Is this correct? (Type 'yes' to proceed or 'no' to make changes)
     `;
@@ -400,13 +340,20 @@ const GenerateStory = () => {
 
     // Guard: Ensure all required fields are present
     if (
-      !dataToSend.genres ||
-      dataToSend.genres.length === 0 ||
+      !dataToSend.genres || dataToSend.genres.length === 0 ||
       !dataToSend.length ||
-      !dataToSend.numCharacters ||
-      dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
+      !dataToSend.numCharacters
     ) {
       addBotMessage("❌ Please complete all story details before continuing.");
+      return;
+    }
+
+    // Only enforce full character details for GIST mode
+    if (
+      dataToSend.entryMode === "gist" &&
+      dataToSend.characterDetails.length !== Number(dataToSend.numCharacters)
+    ) {
+      addBotMessage("❌ Please complete all character details before continuing.");
       return;
     }
 
@@ -415,9 +362,7 @@ const GenerateStory = () => {
       dataToSend.entryMode === "gist" &&
       (!dataToSend.gist || dataToSend.gist.length < 20)
     ) {
-      addBotMessage(
-        "❌ Please provide a valid story idea (at least 20 characters)."
-      );
+      addBotMessage("❌ Please provide a valid story idea (at least 20 characters).");
       return;
     }
 
@@ -428,15 +373,15 @@ const GenerateStory = () => {
       const response = await api.post("/api/v1/story/start", dataToSend);
       const { storyId, data } = response.data;
 
+      // Store conversation ONLY for questionnaire users
       if (dataToSend.entryMode === "questionnaire" && data?.conversation) {
-        const all = JSON.parse(localStorage.getItem("conversationData") || "{}");
-
-        all[storyId] = {
-          conversation: data.conversation,
-          updatedAt: new Date().toISOString()
-        };
-
-        localStorage.setItem("conversationData", JSON.stringify(all));
+        localStorage.setItem(
+          "conversationData",
+          JSON.stringify({
+            storyId,
+            conversation: data.conversation,
+          })
+        );
       }
 
       addBotMessage("Redirecting you now... 🎉");
@@ -446,25 +391,15 @@ const GenerateStory = () => {
         } else {
           // For gist users: generate previews before navigating so TemplateSelection can display them
           try {
-            const previewRes = await api.post(
-              "/api/v1/images/gist/preview-images",
-              {
-                gist: dataToSend.gist,
-              }
-            );
-
-            const previews =
-              previewRes.data?.previews?.images ||
-              previewRes.data?.previews ||
-              null;
-            navigateTo(`/templateselection/${storyId}`, {
-              state: { previews },
+            const previewRes = await api.post('/api/v1/images/gist/preview-images', {
+              gist: dataToSend.gist,
+              genres: dataToSend.genres || []
             });
+
+            const previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
+            navigateTo(`/templateselection/${storyId}`, { state: { previews } });
           } catch (previewErr) {
-            console.error(
-              "Preview generation failed:",
-              previewErr?.response?.data || previewErr
-            );
+            console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
             // fallback: navigate without previews
             navigateTo(`/templateselection/${storyId}`);
           }
@@ -480,69 +415,65 @@ const GenerateStory = () => {
     }
   };
 
-  // Upload handler for custom genre files
-  const handleCustomGenreUpload = async (files) => {
-    console.log("UPLOAD HANDLER FIRED", files);
-    if (!files || files.length === 0) return;
-    // ensure processing UI state is set when upload starts
-    setIsCustomGenreProcessing(true);
+    // Upload handler for custom genre files
+    const handleCustomGenreUpload = async (files) => {
+      console.log("UPLOAD HANDLER FIRED", files);
+      if (!files || files.length === 0) return;
+      // ensure processing UI state is set when upload starts
+      setIsCustomGenreProcessing(true);
 
-    const fd = new FormData();
-    Array.from(files).forEach((file) => fd.append("files", file));
+      const fd = new FormData();
+      Array.from(files).forEach((file) => fd.append("files", file));
 
-    try {
-      setLoading(true);
-      addBotMessage("📚 Uploading & training your custom genre...");
-
-      const res = await api.post("/api/v1/story/upload-genre", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      // Give user accurate feedback based on process result
-      if (res.data?.process) {
-        addBotMessage("✅ Custom genre processed successfully!");
-      } else {
-        addBotMessage(
-          "⚠️ Upload complete — processing may still be in progress."
-        );
-      }
-
-      // Refresh learned genres list and auto-apply active genre if present
       try {
-        const refreshed = await api.get("/api/v1/story/custom-genres");
-        const genres = refreshed.data.data?.genres || [];
-        const activeGenre =
-          refreshed.data.data?.activeGenre ||
-          (genres.length ? genres[0] : null);
+        setLoading(true);
+        addBotMessage("📚 Uploading & training your custom genre...");
 
-        setCustomGenres(genres);
+        const res = await api.post("/api/v1/story/upload-genre", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-        // Auto-apply learned style and continue flow
-        if (activeGenre) {
-          setFormData((prev) => ({ ...prev, genres: [activeGenre] }));
-          addBotMessage(`🧠 Custom genre trained and selected: ${activeGenre}`);
-          addBotMessage("You can keep this genre or choose one more (max 2). ");
-          addBotMessage("Type 'continue' or select another genre.");
-          setCurrentStep("genre");
+        // Give user accurate feedback based on process result
+        if (res.data?.process) {
+          addBotMessage("✅ Custom genre processed successfully!");
+        } else {
+          addBotMessage("⚠️ Upload complete — processing may still be in progress.");
         }
-      } catch (e) {
-        console.debug("Failed to refresh custom genres", e?.message || "");
+
+        // Refresh learned genres list and auto-apply active genre if present
+        try {
+          const refreshed = await api.get("/api/v1/story/custom-genres");
+          const genres = refreshed.data.data?.genres || [];
+          const activeGenre = refreshed.data.data?.activeGenre || (genres.length ? genres[0] : null);
+
+          setCustomGenres(genres);
+
+          // Refresh available learned styles but DO NOT auto-select them.
+          // Preserve any existing user selections in `formData.genres`.
+          if (activeGenre) {
+            addBotMessage(`🧠 Custom writing style trained: ${activeGenre}`);
+            // If the user hasn't selected any genre yet, prompt them to pick one.
+            if (!formData.genres || (Array.isArray(formData.genres) && formData.genres.length === 0)) {
+              addBotMessage("Select the trained style from the dropdown, or type 'continue' to proceed.");
+            }
+            setCurrentStep("genre");
+          }
+        } catch (e) {
+          console.debug("Failed to refresh custom genres", e?.message || "");
+        }
+      } catch (err) {
+        addBotMessage("❌ Failed to train custom genre. Check console for details.");
+        console.error("UPLOAD FAILED", err?.response?.data || err);
+      } finally {
+        setLoading(false);
+        // reset processing/trigger state (menu was closed immediately on file select)
+        setIsCustomGenreProcessing(false);
+        setTriggerUploadFromGenre(false);
       }
-    } catch (err) {
-      addBotMessage(
-        "❌ Failed to train custom genre. Check console for details."
-      );
-      console.error("UPLOAD FAILED", err?.response?.data || err);
-    } finally {
-      setLoading(false);
-      // reset processing/trigger state (menu was closed immediately on file select)
-      setIsCustomGenreProcessing(false);
-      setTriggerUploadFromGenre(false);
-    }
-  };
+    };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -560,20 +491,21 @@ const GenerateStory = () => {
         callback={handleTourCallback}
         styles={tourStyles}
         locale={{
-          back: "Back",
-          close: "Close",
-          last: "Next Page",
-          next: "Next",
-          skip: "Skip Tour",
+          back: 'Back',
+          close: 'Close',
+          last: 'Next Page',
+          next: 'Next',
+          skip: 'Skip Tour',
         }}
       />
-
+      
       <ProgressStep1 />
 
       {/* Chat Interface */}
       <div className="flex-1 flex flex-col items-center justify-center w-full pb-20">
         {/* Messages Container */}
         <div className="w-full max-w-4xl px-4 flex-1 flex flex-col justify-start overflow-y-visible pt-8 relative">
+          
           {/* Intro Text in Center */}
           {showIntro && (
             <div className="absolute top-[40%] left-[15%] flex justify-start">
@@ -595,149 +527,125 @@ const GenerateStory = () => {
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex ${
-                    message.type === "user" ? "justify-end" : "justify-start"
-                  }`}>
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   <div className="max-w-xl">
                     {/* Heading */}
                     <p
                       className={`text-sm font-semibold mb-1 ${
-                        message.type === "user"
-                          ? "text-gray-400 text-right"
-                          : "text-purple-300"
-                      }`}>
-                      {message.type === "user" ? "You" : "Ghostverse AI"}
+                        message.type === 'user'
+                          ? 'text-gray-400 text-right'
+                          : 'text-purple-300'
+                      }`}
+                    >
+                      {message.type === 'user' ? 'You' : 'Ghostverse AI'}
                     </p>
 
                     {/* Bubble */}
                     <div
                       className={`px-4 py-3 rounded-2xl ${
-                        message.type === "user"
-                          ? "bg-purple-600 text-white rounded-br-none"
-                          : "bg-gray-800 text-gray-100 rounded-bl-none"
-                      }`}>
-                      <p className="whitespace-pre-line text-base leading-relaxed">
-                        {message.text}
-                      </p>
+                        message.type === 'user'
+                          ? 'bg-purple-600 text-white rounded-br-none'
+                          : 'bg-gray-800 text-gray-100 rounded-bl-none'
+                      }`}
+                    >
+                      <p className="whitespace-pre-line text-base leading-relaxed">{message.text}</p>
                     </div>
                   </div>
                 </div>
               ))}
 
               {currentStep === "genre" && !isCustomGenreProcessing && (
-                <div
-                  className="inline-block
-                            bg-[#0b1220]
-                            border border-gray-800
-                            rounded-xl
-                            px-4 py-3
-                            max-w-md
-                          ">
-                  <span className="text-sm font-semibold text-gray-200 mb-1 block">
-                    Select a genre
-                  </span>
+<div className="
+  inline-block
+  bg-[#0b1220]
+  border border-gray-800
+  rounded-xl
+  px-4 py-3
+  max-w-md
+">
+    <span className="text-sm font-semibold text-gray-200 mb-1 block">Select a genre</span>
 
-                  <GenreDropdown
-                    value={(formData.genres || []).join(", ")}
-                    customGenres={customGenres}
-                    onSelect={(genre) => {
-                      let nextGenres = [];
+    <GenreDropdown
+      value={(formData.genres || []).join(", ")}
+      customGenres={customGenres}
+      onSelect={(genre) => {
+        let nextGenres = [];
 
-                      // enforce up to 2 genres and prevent mixing custom + static genres
-                      setFormData((prev) => {
-                        const existing = prev.genres || [];
-                        if (existing.includes(genre)) return prev;
+        // enforce up to 2 genres and prevent mixing custom + static genres
+        setFormData(prev => {
+          const existing = prev.genres || [];
+          if (existing.includes(genre)) return prev;
 
-                        const isCustom = customGenres.includes(genre);
-                        const existingHasCustom = existing.some((g) =>
-                          customGenres.includes(g)
-                        );
-                        const existingHasStatic = existing.some(
-                          (g) => !customGenres.includes(g)
-                        );
+          const isCustom = customGenres.includes(genre);
+          const existingHasCustom = existing.some(g => customGenres.includes(g));
+          const existingHasStatic = existing.some(g => !customGenres.includes(g));
 
-                        if (
-                          existing.length > 0 &&
-                          ((existingHasCustom && !isCustom) ||
-                            (existingHasStatic && isCustom))
-                        ) {
-                          addBotMessage(
-                            "⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres."
-                          );
-                          return prev;
-                        }
+          if (existing.length > 0 && ((existingHasCustom && !isCustom) || (existingHasStatic && isCustom))) {
+            addBotMessage("⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres.");
+            return prev;
+          }
 
-                        if (existing.length >= 2) {
-                          addBotMessage(
-                            "⚠️ You can select up to 2 genres only."
-                          );
-                          return prev;
-                        }
+          if (existing.length >= 2) {
+            addBotMessage("⚠️ You can select up to 2 genres only.");
+            return prev;
+          }
 
-                        nextGenres = [...existing, genre];
-                        return { ...prev, genres: nextGenres };
-                      });
+          nextGenres = [...existing, genre];
+          return { ...prev, genres: nextGenres };
+        });
 
-                      addUserMessage(genre);
+        addUserMessage(genre);
 
-                      // UX guidance: prompt when 1 genre selected, auto-proceed when 2
-                      setTimeout(() => {
-                        if (nextGenres.length === 1) {
-                          addBotMessage(
-                            "👍 You can select **one more genre**, or type **'continue'** to proceed."
-                          );
-                        }
+        // UX guidance: prompt when 1 genre selected, auto-proceed when 2
+        setTimeout(() => {
+          if (nextGenres.length === 1) {
+            addBotMessage("👍 You can select **one more genre**, or type **'continue'** to proceed.");
+          }
 
-                        if (nextGenres.length === 2) {
-                          proceedAfterGenreSelection(nextGenres);
-                        }
-                      }, 0);
-                    }}
-                    onNewCustomGenre={() => {
-                      addUserMessage("Custom Genre");
-                      // prevent mixing when existing selection contains static genres
-                      setFormData((prev) => {
-                        const existing = prev.genres || [];
-                        const existingHasStatic = existing.some(
-                          (g) => !customGenres.includes(g)
-                        );
-                        if (existing.length > 0 && existingHasStatic) {
-                          addBotMessage(
-                            "⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres."
-                          );
-                          return prev;
-                        }
-                        return { ...prev, genres: [...existing, "Custom"] };
-                      });
-                      addBotMessage(
-                        "Awesome 🎨 Upload a reference document to define your custom genre."
-                      );
-                      setShowUploadMenu(true);
-                      setTriggerUploadFromGenre(true);
-                      setIsCustomGenreProcessing(true);
-                    }}
-                  />
-                </div>
-              )}
+          if (nextGenres.length === 2) {
+            proceedAfterGenreSelection(nextGenres);
+          }
+        }, 0);
+      }}
+      onNewCustomGenre={() => {
+        addUserMessage("Custom Genre");
+        // prevent mixing when existing selection contains static genres
+        setFormData(prev => {
+          const existing = prev.genres || [];
+          const existingHasStatic = existing.some(g => !customGenres.includes(g));
+          if (existing.length > 0 && existingHasStatic) {
+            addBotMessage("⚠️ Cannot mix custom and standard genres. Choose either custom or standard genres.");
+            return prev;
+          }
+          // DO NOT insert a placeholder like 'Custom' — open the upload flow instead
+          return prev;
+        });
+        addBotMessage("Upload documents to teach a custom writing style.");
+        setShowUploadMenu(true);
+        setTriggerUploadFromGenre(true);
+        setIsCustomGenreProcessing(true);
+      }}
+    />
+  </div>
+)}
 
-              {currentStep === "genre" &&
-                (formData.genres || []).length === 1 && (
-                  <div className="mt-3 max-w-md">
-                    <button
-                      onClick={() =>
-                        proceedAfterGenreSelection(formData.genres)
-                      }
-                      className="
+              {currentStep === "genre" && (formData.genres || []).length === 1 && (
+                <div className="mt-3 max-w-md">
+                  <button
+                    onClick={() => proceedAfterGenreSelection(formData.genres)}
+                    className="
                       mt-3 w-full
                       bg-purple-600 hover:bg-purple-700
                       text-white
                       py-2 rounded-lg
                       transition
-                    ">
-                      Continue with 1 genre
-                    </button>
-                  </div>
-                )}
+                    "
+                  >
+                    Continue with 1 genre
+                  </button>
+                </div>
+              )}
 
               <div ref={messagesEndRef} />
             </div>
@@ -779,21 +687,21 @@ const GenerateStory = () => {
               {/* Plus Button */}
               <button
                 type="button"
-                onClick={() => setShowUploadMenu((prev) => !prev)}
+                onClick={() => setShowUploadMenu(prev => !prev)}
                 className="
                   absolute left-4 top-1/2 -translate-y-1/2
                   text-gray-400
                   hover:text-purple-400
                   transition
                 "
-                title="Upload">
+                title="Upload"
+              >
                 <Plus size={22} />
               </button>
 
               {/* Upload Menu */}
               {showUploadMenu && (
-                <div
-                  className="
+                <div className="
                   absolute bottom-14 left-2
                   bg-[#020617]
                   border border-gray-800
@@ -812,7 +720,8 @@ const GenerateStory = () => {
                       text-sm
                       text-gray-200
                       hover:bg-gray-800
-                    ">
+                    "
+                  >
                     <Image size={16} />
                     Upload Image
                   </button>
@@ -826,7 +735,8 @@ const GenerateStory = () => {
                       text-sm
                       text-gray-200
                       hover:bg-gray-800
-                    ">
+                    "
+                  >
                     <FileText size={16} />
                     Upload File
                   </button>
@@ -873,7 +783,8 @@ const GenerateStory = () => {
                   disabled:opacity-30
                   disabled:cursor-not-allowed
                 "
-                title="Send message">
+                title="Send message"
+              >
                 <Send size={22} />
               </button>
             </div>

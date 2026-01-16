@@ -26,11 +26,11 @@ exports.nextQuestion = async (conversation, answer) => {
 
 // Gist generation--------------------------------------------------
 exports.generateGist = async (conversation, genre, userId) => {
+  // Send the genre/style label verbatim to FastAPI. Do not attempt to transform it.
   const payload = {
     user_id: userId,
     conversation,
-    genre,
-    use_custom_genre: false
+    genre
   };
 
   const response = await fastApiClient.post('/gist', payload);
@@ -59,12 +59,12 @@ exports.generateStory = async (
 
 // Generate temporary preview images from a gist (no storage)
 // FastAPI: POST /gist/preview-images
-exports.generateGistPreviewImages = async ({ userId, genre, gist }) => {
-  console.log("Generating gist preview images in FastAPI service for user:", userId, "genre:", genre, "gist:", gist);
+exports.generateGistPreviewImages = async ({ userId, genres, gist }) => {
+  console.log("Generating gist preview images in FastAPI service for user:", userId, "genres:", genres, "gist:", gist);
   try {
     const response = await fastApiClient.post('/gist/preview-images', {
       user_id: userId,
-      genres: [genre || "Family"],
+      genres: Array.isArray(genres) ? genres : [genres || "Family"],
       gist
     });
 
@@ -90,9 +90,10 @@ exports.generateImages = async (pages, orientation, genre) => {
   return response.data;
 };
 
-// FLUX Background generation------------------------------------------
+// SDXL Background generation------------------------------------------
+// exports.generateSDXLBackgrounds = async (pages, orientation) => {
+//   const response = await fastApiClient.post('/images/sdxl_generate', {
 exports.generateFLUXBackgrounds = async (pages, orientation) => {
-  console.log("Generating FLUX backgrounds with pages:", pages, "orientation:", orientation);
   const response = await fastApiClient.post('/images/flux_generate', {
     pages,
     orientation

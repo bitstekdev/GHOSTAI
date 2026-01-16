@@ -24,7 +24,7 @@ import Image2 from "../../assets/images/landscape.png";
 ////////////////////////////////////////////////////////////////////////////////////
 
 // const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
-const StoryFlipbook = () => {
+const StoryFlipbook = ({ storyId: storyIdProp, onAddToCart, onOrderNow }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,14 +41,31 @@ const StoryFlipbook = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [editPage, setEditPage] = useState(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [isTextWhite, setIsTextWhite] = useState(false);
+
+  const wrapperRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  const [showToolbar, setShowToolbar] = useState(false);
+  const hideToolbarTimer = useRef(null);
+
+  const params = useParams();
+  // Prefer prop, fallback to URL params
+  const storyId = storyIdProp ?? params.storyId;
 
   const downloadPDF = async () => {
     try {
       const payload = storyData || dummyStoryData;
+      
+      // Pass current text color state to PDF
+      const enrichedPayload = {
+        ...payload,
+        textColor: isTextWhite ? "white" : "black",
+      };
+      
       const res = await fetch('/api/pdf/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storyData: payload }),
+        body: JSON.stringify({ storyData: enrichedPayload }),
       });
 
       if (!res.ok) {
@@ -70,15 +87,6 @@ const StoryFlipbook = () => {
     }
   };
 
-
-  const wrapperRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const [showToolbar, setShowToolbar] = useState(false);
-  const hideToolbarTimer = useRef(null);
-
-  const { storyId } = useParams();
-
-  // console.log("Story data in FlipBook:", storyData);
 /////////////////////////////////////////////////////////////////////////////////////
   const dummyStoryData = {
   story: {
@@ -331,7 +339,7 @@ const openEdit = () => {
     const getFontSize = (orientation) => {
       switch (orientation) {
         case "Portrait":
-          return "12px";
+          return "8px";
         case "Landscape":
           return "13px";
         case "Square":
@@ -493,11 +501,11 @@ const openEdit = () => {
   const getPageFontSize = (orientation) => {
     switch (orientation) {
       case "Portrait":
-        return "13px";
+        return "10.5px";
       case "Landscape":
         return "15.5px";
       case "Square":
-        return "14.5px";
+        return "12.5px";
       default:
         return "14px";
     }
@@ -508,7 +516,7 @@ const openEdit = () => {
     fontSize: getPageFontSize(story.orientation),
     lineHeight: genreStyle.lineHeight,
     letterSpacing: genreStyle.letterSpacing,
-    color: '#111827',
+    '--story-text-color': isTextWhite ? '#ffffff' : '#111827',
   };
 
 
@@ -572,7 +580,7 @@ pages.forEach((page, index) => {
         <div
   className="rounded-2xl"
   style={{
-    backgroundColor: 'transparent',
+     backgroundColor: '#f6f6f59e',
     padding:
       story.orientation === "Portrait"
         ? "20px 22px"
@@ -591,22 +599,25 @@ pages.forEach((page, index) => {
           <div className=" p-0.5 sm:p-1 rounded-lg">
             {page.html ? (
               <div
-                className="story-html-content text-black leading-relaxed"
+                className="story-html-content leading-relaxed"
                 style={pageTextStyle}
                 dangerouslySetInnerHTML={{ __html: page.html }}
               />
             ) : (
               <p
-                className="text-black leading-relaxed"
+                className="leading-relaxed"
                 style={{
                   ...pageTextStyle,
+                  color: "var(--story-text-color)",
                   textAlign: "justify",
                   textJustify: "inter-word"
                 }}
               >
                 <span
                   style={{
-                    background: "rgba(255, 255, 255, 0.88)",
+                    background: isTextWhite
+                      ? "rgba(0, 0, 0, 0.55)"
+                      : "rgba(255, 255, 255, 0.88)",
                     padding: "0.15em 0.35em",
                     boxDecorationBreak: "clone",
                     WebkitBoxDecorationBreak: "clone",
@@ -638,7 +649,12 @@ pages.forEach((page, index) => {
     allPages.push({
       type: "single",
       jsx: (
-        <div className="w-full h-full relative rounded-lg overflow-hidden bg-black flex items-center justify-center">
+        <div
+          className="w-full h-full relative rounded-lg overflow-hidden bg-black flex items-center justify-center"
+          style={{
+            '--story-text-color': isTextWhite ? '#ffffff' : '#111827',
+          }}
+        >
           <img
             src={story.backCoverImage?.s3Url}
             className="w-full h-full object-contain"
@@ -647,17 +663,21 @@ pages.forEach((page, index) => {
           />
           <div className="absolute inset-0 flex items-center justify-center px-6 py-6">
             <div
-              className="rounded-2xl p-1.5 sm:p-2"
+              className="rounded-2xl p-2 sm:p-2"
               style={{
-                backgroundColor: '#fbfbf822',
-                padding: '24px 32px',
-                width: '70%',
+                backgroundColor: '#1f1f1d28',
+                padding: '12px 12px',
+                width: '80%',
                 boxSizing: 'border-box',
               }}
             >
               <p
-                className="text-black-800 text-xs sm:text-sm leading-relaxed font-normal"
-                style={{ textAlign: 'center', margin: '0 auto' }}
+                className="text-xs sm:text-xs leading-relaxed font-medium"
+                style={{
+                  textAlign: 'center',
+                  margin: '0 auto',
+                  color: "var(--story-text-color)",
+                }}
               >
                 {story.backCoverBlurb}
               </p>
@@ -760,6 +780,38 @@ pages.forEach((page, index) => {
     .map(word => `<span>${word} </span>`)
     .join("");
 
+  // ============================
+  // COMMERCE HANDLERS
+  // ============================
+  const handleAddToCartClick = () => {
+    if (!storyData?.story) return;
+
+    onAddToCart?.({
+      id: storyId,
+      title: storyData.story.title,
+      genre: storyData.story.genre,
+      orientation: storyData.story.orientation,
+      coverImage: storyData.story.coverImage,
+      backCoverImage: storyData.story.backCoverImage,
+      backCoverBlurb: storyData.story.backCoverBlurb,
+      pages: storyData.pages,
+    });
+  };
+
+  const handleOrderNowClick = () => {
+    if (!storyData?.story) return;
+
+    onOrderNow?.({
+      id: storyId,
+      title: storyData.story.title,
+      genre: storyData.story.genre,
+      orientation: storyData.story.orientation,
+      coverImage: storyData.story.coverImage,
+      backCoverImage: storyData.story.backCoverImage,
+      backCoverBlurb: storyData.story.backCoverBlurb,
+      pages: storyData.pages,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-black to-gray-900 py-4 sm:py-8 px-2 sm:px-4">
@@ -816,6 +868,16 @@ pages.forEach((page, index) => {
                 className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
                 <Edit size={20} />
                 Edit
+              </button>
+
+              <button
+                onClick={() => setIsTextWhite(prev => !prev)}
+                className="flex flex-col items-center text-xs text-white hover:text-purple-400 transition">
+                <span
+                  className="w-4 h-4 rounded border mb-1"
+                  style={{ backgroundColor: isTextWhite ? "#fff" : "#000" }}
+                />
+                Text Color
               </button>
 
               <button
@@ -940,10 +1002,14 @@ pages.forEach((page, index) => {
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-4">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+          <button 
+            onClick={handleAddToCartClick}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Add to Cart
           </button>
-          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+          <button 
+            onClick={handleOrderNowClick}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
             Order Now
           </button>
         </div>
@@ -1029,7 +1095,5 @@ pages.forEach((page, index) => {
       )}
     </div>
   );
-
 };
-
 export default StoryFlipbook;
