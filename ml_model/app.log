@@ -1374,3 +1374,62 @@ RuntimeError: Prompt not found: regen_story_system
 2026-01-16 15:18:56,740 [INFO] storybook_api - [REQ_END] id=6fae8158e014 status=200 duration_ms=17016.4
 2026-01-16 15:19:12,005 [INFO] storybook_api - [REQ_START] id=cac9e53fe3f1 method=GET path=/genres
 2026-01-16 15:19:12,037 [INFO] storybook_api - [REQ_END] id=cac9e53fe3f1 status=200 duration_ms=31.99
+2026-01-16 15:53:57,601 [INFO] storybook_api - [REQ_START] id=01f9f45bcc2a method=GET path=/genres
+2026-01-16 15:53:57,776 [INFO] storybook_api - [REQ_END] id=01f9f45bcc2a status=200 duration_ms=180.09
+2026-01-16 15:53:57,906 [INFO] storybook_api - [REQ_START] id=d0f97545f008 method=GET path=/genres
+2026-01-16 15:53:57,933 [INFO] storybook_api - [REQ_END] id=d0f97545f008 status=200 duration_ms=27.9
+2026-01-16 15:54:16,002 [INFO] storybook_api - [REQ_START] id=40336dd902ac method=POST path=/upload-books
+2026-01-16 15:54:16,188 [INFO] storybook_api - [REQ_END] id=40336dd902ac status=200 duration_ms=185.98
+2026-01-16 15:54:16,199 [INFO] storybook_api - [REQ_START] id=573479d80fb7 method=POST path=/process-books
+2026-01-16 15:54:25,180 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 15:54:27,784 [INFO] storybook_api - [REQ_END] id=573479d80fb7 status=200 duration_ms=11585.23
+2026-01-16 15:54:27,939 [INFO] storybook_api - [REQ_START] id=eb7002ef6de5 method=GET path=/genres
+2026-01-16 15:54:27,963 [INFO] storybook_api - [REQ_END] id=eb7002ef6de5 status=200 duration_ms=23.98
+2026-01-16 15:56:29,359 [INFO] storybook_api - [REQ_START] id=f2f3d1abc2e1 method=GET path=/genres
+2026-01-16 15:56:29,699 [INFO] storybook_api - [REQ_END] id=f2f3d1abc2e1 status=200 duration_ms=364.06
+2026-01-16 15:56:29,835 [INFO] storybook_api - [REQ_START] id=f5c0a1a628eb method=GET path=/genres
+2026-01-16 15:56:29,867 [INFO] storybook_api - [REQ_END] id=f5c0a1a628eb status=200 duration_ms=31.97
+2026-01-16 15:56:29,927 [INFO] storybook_api - [REQ_START] id=e31dd4995231 method=GET path=/genres
+2026-01-16 15:56:29,972 [INFO] storybook_api - [REQ_END] id=e31dd4995231 status=200 duration_ms=44.16
+2026-01-16 16:06:06,864 [INFO] storybook_api - [REQ_START] id=f35219513a9f method=GET path=/genres
+2026-01-16 16:06:06,980 [INFO] storybook_api - [REQ_END] id=f35219513a9f status=200 duration_ms=120.78
+2026-01-16 16:06:07,060 [INFO] storybook_api - [REQ_START] id=8e4ba1236b58 method=GET path=/genres
+2026-01-16 16:06:07,103 [INFO] storybook_api - [REQ_END] id=8e4ba1236b58 status=200 duration_ms=43.43
+2026-01-16 16:07:47,604 [INFO] storybook_api - [REQ_START] id=9c405b8ee82d method=POST path=/upload-books
+2026-01-16 16:07:56,356 [INFO] storybook_api - [REQ_END] id=9c405b8ee82d status=200 duration_ms=8764.13
+2026-01-16 16:07:56,386 [INFO] storybook_api - [REQ_START] id=410ad8a99288 method=POST path=/process-books
+2026-01-16 16:08:15,976 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 16:08:21,979 [INFO] storybook_api - [REQ_END] id=410ad8a99288 status=200 duration_ms=25592.8
+2026-01-16 16:08:22,528 [INFO] storybook_api - [REQ_START] id=e580c3875923 method=GET path=/genres
+2026-01-16 16:08:22,618 [INFO] storybook_api - [REQ_END] id=e580c3875923 status=200 duration_ms=89.95
+2026-01-16 16:21:52,387 [INFO] storybook_api - [REQ_START] id=e21939acf47d method=GET path=/genres
+2026-01-16 16:21:53,901 [INFO] storybook_api - [REQ_END] id=e21939acf47d status=200 duration_ms=1559.78
+2026-01-16 16:21:54,146 [INFO] storybook_api - [REQ_START] id=a6242fabf2d6 method=GET path=/genres
+2026-01-16 16:21:54,190 [INFO] storybook_api - [REQ_END] id=a6242fabf2d6 status=200 duration_ms=43.97
+2026-01-16 16:21:54,332 [INFO] storybook_api - [REQ_START] id=d74907420524 method=GET path=/genres
+2026-01-16 16:21:54,428 [INFO] storybook_api - [REQ_END] id=d74907420524 status=200 duration_ms=96.49
+2026-01-16 16:28:16,708 [INFO] storybook_api - [REQ_START] id=5c3a92d45732 method=GET path=/genres
+2026-01-16 16:28:17,223 [INFO] storybook_api - [REQ_END] id=5c3a92d45732 status=200 duration_ms=536.97
+2026-01-16 16:28:17,409 [INFO] storybook_api - [REQ_START] id=299fda37d28d method=GET path=/genres
+2026-01-16 16:28:17,456 [INFO] storybook_api - [REQ_END] id=299fda37d28d status=200 duration_ms=47.02
+2026-01-16 16:28:17,526 [INFO] storybook_api - [REQ_START] id=a15f370039b4 method=GET path=/genres
+2026-01-16 16:28:17,567 [INFO] storybook_api - [REQ_END] id=a15f370039b4 status=200 duration_ms=41.07
+2026-01-16 16:29:03,775 [INFO] storybook_api - [REQ_START] id=0c62d9b735cd method=GET path=/genres
+2026-01-16 16:29:03,934 [INFO] storybook_api - [REQ_END] id=0c62d9b735cd status=200 duration_ms=169.6
+2026-01-16 16:29:04,335 [INFO] storybook_api - [REQ_START] id=971056560131 method=GET path=/genres
+2026-01-16 16:29:04,441 [INFO] storybook_api - [REQ_END] id=971056560131 status=200 duration_ms=106.56
+2026-01-16 16:29:04,560 [INFO] storybook_api - [REQ_START] id=0f1b90ec2b22 method=GET path=/genres
+2026-01-16 16:29:04,602 [INFO] storybook_api - [REQ_END] id=0f1b90ec2b22 status=200 duration_ms=41.95
+2026-01-16 16:29:36,685 [INFO] storybook_api - [REQ_START] id=47073fa551bd method=POST path=/upload-books
+2026-01-16 16:29:37,706 [INFO] storybook_api - [REQ_END] id=47073fa551bd status=200 duration_ms=1022.81
+2026-01-16 16:29:37,717 [INFO] storybook_api - [REQ_START] id=04213c3a13a3 method=POST path=/process-books
+2026-01-16 16:30:04,050 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 16:30:16,682 [INFO] storybook_api - [REQ_END] id=04213c3a13a3 status=200 duration_ms=38965.6
+2026-01-16 16:30:16,901 [INFO] storybook_api - [REQ_START] id=b1c534253499 method=GET path=/genres
+2026-01-16 16:30:16,932 [INFO] storybook_api - [REQ_END] id=b1c534253499 status=200 duration_ms=31.34
+2026-01-16 17:08:00,015 [INFO] storybook_api - [REQ_START] id=f1db352121a6 method=POST path=/gist/preview-images
+2026-01-16 17:08:01,626 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 17:08:08,531 [INFO] storybook_api - [IMG_JOB_START] req=f1db352121a6 job_id=7ea6fbe8-a84c-4dc0-a01f-22bb17765d3e-e1
+2026-01-16 17:10:28,592 [INFO] storybook_api - [IMG_JOB_START] req=f1db352121a6 job_id=4380eccf-2518-4f22-b113-44f405e42c4a-e1
+2026-01-16 17:10:57,975 [INFO] storybook_api - [IMG_JOB_START] req=f1db352121a6 job_id=08c55a2c-d465-47bd-803e-19c72281b2de-e2
+2026-01-16 17:11:36,735 [INFO] storybook_api - [REQ_END] id=f1db352121a6 status=200 duration_ms=216740.39
