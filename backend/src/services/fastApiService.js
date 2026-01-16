@@ -59,12 +59,12 @@ exports.generateStory = async (
 
 // Generate temporary preview images from a gist (no storage)
 // FastAPI: POST /gist/preview-images
-exports.generateGistPreviewImages = async ({ userId, genre, gist }) => {
-  console.log("Generating gist preview images in FastAPI service for user:", userId, "genre:", genre, "gist:", gist);
+exports.generateGistPreviewImages = async ({ userId, genres, gist }) => {
+  console.log("Generating gist preview images in FastAPI service for user:", userId, "genres:", genres, "gist:", gist);
   try {
     const response = await fastApiClient.post('/gist/preview-images', {
       user_id: userId,
-      genres: [genre || "Family"],
+      genres: Array.isArray(genres) ? genres : [genres || "Family"],
       gist
     });
 

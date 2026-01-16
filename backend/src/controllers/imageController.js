@@ -992,17 +992,17 @@ exports.gistPreviewImages = async (req, res, next) => {
       });
     }
 
-    // Accept either `genres` (array) or `genre` (string). Use the first learned style if array provided.
-    let genreToUse = 'Family';
+    // Accept either `genres` (array) or `genre` (string). Normalize to array.
+    let genresToSend = ['Family'];
     if (Array.isArray(genres) && genres.length > 0) {
-      genreToUse = genres[0];
+      genresToSend = genres;
     } else if (genre) {
-      genreToUse = genre;
+      genresToSend = [genre];
     }
 
     const previews = await fastApiService.generateGistPreviewImages({
       userId: req.user.id,
-      genre: genreToUse,
+      genres: genresToSend,
       gist
     });
 

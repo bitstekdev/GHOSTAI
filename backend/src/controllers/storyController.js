@@ -642,7 +642,7 @@ exports.customGenre = async (req, res) => {
 exports.getCustomGenres = async (req, res) => {
   try {
     const result = await fastApiService.getUserGenres(req.user.id);
-
+    console.log("ye result", result);
     res.status(200).json({
       success: true,
       data: result
