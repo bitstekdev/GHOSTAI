@@ -1088,3 +1088,265 @@ RuntimeError: Prompt not found: regen_story_system
 2026-01-15 19:56:57,691 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
 2026-01-15 19:57:29,531 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=b8c08ce6-509c-49a9-a053-92e2580c8fe6-e1
 2026-01-15 19:57:29,638 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-15 21:09:16,589 [INFO] storybook_api - [REQ_START] id=fe65393cb3ac method=GET path=/genres
+2026-01-15 21:09:16,846 [INFO] storybook_api - [REQ_END] id=fe65393cb3ac status=200 duration_ms=262.45
+2026-01-15 21:09:16,930 [INFO] storybook_api - [REQ_START] id=b0d519af0e74 method=GET path=/genres
+2026-01-15 21:09:16,962 [INFO] storybook_api - [REQ_END] id=b0d519af0e74 status=200 duration_ms=32.01
+2026-01-15 21:14:04,553 [INFO] storybook_api - [REQ_START] id=6b9641c1e129 method=GET path=/genres
+2026-01-15 21:14:04,588 [INFO] storybook_api - [REQ_END] id=6b9641c1e129 status=200 duration_ms=34.98
+2026-01-15 21:14:04,641 [INFO] storybook_api - [REQ_START] id=c02ec6b6d3c1 method=GET path=/genres
+2026-01-15 21:14:04,675 [INFO] storybook_api - [REQ_END] id=c02ec6b6d3c1 status=200 duration_ms=34.27
+2026-01-15 21:19:00,402 [INFO] storybook_api - [REQ_START] id=bedcaad1d0fb method=GET path=/genres
+2026-01-15 21:19:01,293 [INFO] storybook_api - [REQ_END] id=bedcaad1d0fb status=200 duration_ms=957.21
+2026-01-15 21:19:01,568 [INFO] storybook_api - [REQ_START] id=a569d782c0d2 method=GET path=/genres
+2026-01-15 21:19:01,617 [INFO] storybook_api - [REQ_END] id=a569d782c0d2 status=200 duration_ms=49.49
+2026-01-15 21:19:01,698 [INFO] storybook_api - [REQ_START] id=de97ee74bf57 method=GET path=/genres
+2026-01-15 21:19:01,734 [INFO] storybook_api - [REQ_END] id=de97ee74bf57 status=200 duration_ms=36.37
+2026-01-15 21:19:01,826 [INFO] storybook_api - [REQ_START] id=6ab9815996fc method=GET path=/genres
+2026-01-15 21:19:01,872 [INFO] storybook_api - [REQ_END] id=6ab9815996fc status=200 duration_ms=45.4
+2026-01-15 21:23:21,769 [INFO] storybook_api - [REQ_START] id=158354da61fd method=GET path=/genres
+2026-01-15 21:23:21,905 [INFO] storybook_api - [REQ_END] id=158354da61fd status=200 duration_ms=145.27
+2026-01-15 21:23:21,992 [INFO] storybook_api - [REQ_START] id=9c327fad258f method=GET path=/genres
+2026-01-15 21:23:22,023 [INFO] storybook_api - [REQ_END] id=9c327fad258f status=200 duration_ms=30.99
+2026-01-15 21:23:22,074 [INFO] storybook_api - [REQ_START] id=4f47bf600beb method=GET path=/genres
+2026-01-15 21:23:22,105 [INFO] storybook_api - [REQ_END] id=4f47bf600beb status=200 duration_ms=31.45
+2026-01-15 21:23:34,881 [INFO] storybook_api - [REQ_START] id=519a260b0fe0 method=GET path=/genres
+2026-01-15 21:23:34,914 [INFO] storybook_api - [REQ_END] id=519a260b0fe0 status=200 duration_ms=32.24
+2026-01-15 21:23:34,972 [INFO] storybook_api - [REQ_START] id=a29fa9ea5a50 method=GET path=/genres
+2026-01-15 21:23:35,005 [INFO] storybook_api - [REQ_END] id=a29fa9ea5a50 status=200 duration_ms=33.0
+2026-01-15 21:26:02,262 [INFO] storybook_api - [REQ_START] id=10734a292608 method=POST path=/upload-books
+2026-01-15 21:26:02,409 [INFO] storybook_api - [REQ_END] id=10734a292608 status=200 duration_ms=146.47
+2026-01-15 21:26:02,427 [INFO] storybook_api - [REQ_START] id=0c35721e8c67 method=POST path=/process-books
+2026-01-15 21:26:11,278 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:26:14,235 [INFO] storybook_api - [REQ_END] id=0c35721e8c67 status=200 duration_ms=11808.33
+2026-01-15 21:26:14,437 [INFO] storybook_api - [REQ_START] id=bc5df97620fc method=GET path=/genres
+2026-01-15 21:26:14,511 [INFO] storybook_api - [REQ_END] id=bc5df97620fc status=200 duration_ms=74.21
+2026-01-15 21:27:52,332 [INFO] storybook_api - [REQ_START] id=55788f991245 method=POST path=/upload-books
+2026-01-15 21:27:53,088 [INFO] storybook_api - [REQ_END] id=55788f991245 status=200 duration_ms=755.76
+2026-01-15 21:27:53,168 [INFO] storybook_api - [REQ_START] id=1fb755ac88c0 method=GET path=/genres
+2026-01-15 21:27:53,202 [INFO] storybook_api - [REQ_END] id=1fb755ac88c0 status=200 duration_ms=34.13
+2026-01-15 21:29:48,046 [INFO] storybook_api - [REQ_START] id=aa828435224b method=POST path=/gist/preview-images
+2026-01-15 21:29:50,010 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:29:53,537 [INFO] storybook_api - [IMG_JOB_START] req=aa828435224b job_id=037375c0-0706-4737-96dd-f3c524e3134c-e1
+2026-01-15 21:30:27,897 [INFO] storybook_api - [IMG_JOB_START] req=aa828435224b job_id=a4e947d5-4c01-4f47-9e60-1e8117d232ce-e2
+2026-01-15 21:30:59,698 [INFO] storybook_api - [IMG_JOB_START] req=aa828435224b job_id=d3e24ceb-9ace-41bc-9494-7b8d1060c71b-e1
+2026-01-15 21:31:39,244 [INFO] storybook_api - [REQ_END] id=aa828435224b status=200 duration_ms=111197.49
+2026-01-15 21:31:49,763 [INFO] storybook_api - [REQ_START] id=85a75ab51bfe method=POST path=/story/generate
+2026-01-15 21:31:51,580 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:31:54,571 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:32:00,990 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:32:06,454 [INFO] storybook_api - [ARTIFACT] req=85a75ab51bfe type=story pages=1 ttl=24h
+2026-01-15 21:32:07,804 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:32:08,936 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=contemporary fiction / culinary fiction, adventure
+2026-01-15 21:32:08,949 [INFO] storybook_api - [REQ_END] id=85a75ab51bfe status=200 duration_ms=19186.85
+2026-01-15 21:32:19,451 [INFO] storybook_api - [REQ_START] id=2bad36a99fbf method=POST path=/title/generate
+2026-01-15 21:32:21,011 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:32:23,245 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 21:32:24,000 [INFO] storybook_api - [REQ_END] id=2bad36a99fbf status=200 duration_ms=4548.46
+2026-01-15 21:32:29,626 [INFO] storybook_api - [REQ_START] id=fd612f5aac52 method=POST path=/images/generate
+2026-01-15 21:32:29,639 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2026-01-15 21:34:00,085 [INFO] storybook_api - [IMG_JOB_DONE] req=fd612f5aac52 job_id=925f67d9-45b1-411b-bc4b-99c15b8fd855-e2
+2026-01-15 21:34:00,090 [INFO] storybook_api - [ARTIFACT] req=fd612f5aac52 type=image page=1 ttl=ephemeral
+2026-01-15 21:34:00,394 [INFO] storybook_api - [REQ_END] id=fd612f5aac52 status=200 duration_ms=90768.29
+2026-01-15 21:34:02,919 [INFO] storybook_api - [REQ_START] id=ff6bd09d50d3 method=POST path=/images/flux_generate
+2026-01-15 21:34:02,922 [INFO] storybook_api - /images/flux_generate called. Orientation=Square
+2026-01-15 21:34:14,805 [INFO] storybook_api - [REQ_END] id=ff6bd09d50d3 status=200 duration_ms=11885.78
+2026-01-15 21:34:17,415 [INFO] storybook_api - [REQ_START] id=0d0ea0adf5e3 method=POST path=/coverback/generate
+2026-01-15 21:34:17,418 [INFO] storybook_api - /coverback/generate called. Genre=contemporary fiction / culinary fiction, adventure, Title=Beneath Dark Skies
+2026-01-15 21:35:55,988 [INFO] storybook_api - [REQ_END] id=0d0ea0adf5e3 status=200 duration_ms=98572.61
+2026-01-15 21:45:06,790 [INFO] storybook_api - [REQ_START] id=57691ae53148 method=GET path=/genres
+2026-01-15 21:45:06,977 [INFO] storybook_api - [REQ_END] id=57691ae53148 status=200 duration_ms=197.66
+2026-01-15 21:45:07,103 [INFO] storybook_api - [REQ_START] id=521d2c437da5 method=GET path=/genres
+2026-01-15 21:45:07,139 [INFO] storybook_api - [REQ_END] id=521d2c437da5 status=200 duration_ms=35.79
+2026-01-15 22:30:04,054 [WARNING] storybook_api - [TTL] Cleared expired upload session user_id=693f9d52cef2f9280426fa5f
+2026-01-15 22:41:59,410 [INFO] storybook_api - [REQ_START] id=307d12ecacc3 method=GET path=/genres
+2026-01-15 22:41:59,520 [INFO] storybook_api - [REQ_END] id=307d12ecacc3 status=200 duration_ms=113.74
+2026-01-15 22:41:59,610 [INFO] storybook_api - [REQ_START] id=3f5712c5f083 method=GET path=/genres
+2026-01-15 22:41:59,643 [INFO] storybook_api - [REQ_END] id=3f5712c5f083 status=200 duration_ms=33.45
+2026-01-15 22:43:13,542 [INFO] storybook_api - [REQ_START] id=07ad025ccd98 method=POST path=/gist/preview-images
+2026-01-15 22:43:16,053 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:43:22,818 [INFO] storybook_api - [IMG_JOB_START] req=07ad025ccd98 job_id=a13b6a47-0d2e-4208-acf4-865f6a25276c-e2
+2026-01-15 22:43:57,124 [INFO] storybook_api - [IMG_JOB_START] req=07ad025ccd98 job_id=4fa633b0-49c1-4b70-829d-78e277c6cf26-e1
+2026-01-15 22:44:28,288 [INFO] storybook_api - [IMG_JOB_START] req=07ad025ccd98 job_id=31041f6c-2836-483e-a6bf-2843dadc27fa-e1
+2026-01-15 22:45:07,939 [INFO] storybook_api - [REQ_END] id=07ad025ccd98 status=200 duration_ms=114396.86
+2026-01-15 22:45:25,390 [INFO] storybook_api - [REQ_START] id=f25c38490f0c method=POST path=/story/generate
+2026-01-15 22:45:27,365 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:45:31,477 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:45:51,014 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:46:09,723 [INFO] storybook_api - [ARTIFACT] req=f25c38490f0c type=story pages=2 ttl=24h
+2026-01-15 22:46:09,724 [INFO] storybook_api - [ARTIFACT] req=f25c38490f0c type=story pages=2 ttl=24h
+2026-01-15 22:46:10,942 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:46:12,948 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=Fantasy
+2026-01-15 22:46:12,965 [INFO] storybook_api - [REQ_END] id=f25c38490f0c status=200 duration_ms=47575.78
+2026-01-15 22:47:31,730 [INFO] storybook_api - [REQ_START] id=daa73b1c6227 method=POST path=/title/generate
+2026-01-15 22:47:33,334 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:47:37,121 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 22:47:37,375 [INFO] storybook_api - [REQ_END] id=daa73b1c6227 status=200 duration_ms=5644.58
+2026-01-15 22:47:50,599 [INFO] storybook_api - [REQ_START] id=8735ec27ca0b method=POST path=/images/generate
+2026-01-15 22:47:50,607 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-15 22:48:24,778 [INFO] storybook_api - [IMG_JOB_DONE] req=8735ec27ca0b job_id=6dcda0cb-6db6-41fc-af38-5595200f6f09-e2
+2026-01-15 22:48:24,786 [INFO] storybook_api - [ARTIFACT] req=8735ec27ca0b type=image page=1 ttl=ephemeral
+2026-01-15 22:48:25,052 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-15 22:48:59,728 [INFO] storybook_api - [IMG_JOB_DONE] req=8735ec27ca0b job_id=dc1978e7-d07f-4688-a677-b00ad20fe578-e2
+2026-01-15 22:48:59,732 [INFO] storybook_api - [ARTIFACT] req=8735ec27ca0b type=image page=2 ttl=ephemeral
+2026-01-15 22:49:00,047 [INFO] storybook_api - [REQ_END] id=8735ec27ca0b status=200 duration_ms=69448.48
+2026-01-15 22:49:03,848 [INFO] storybook_api - [REQ_START] id=bf70ddd336b4 method=POST path=/images/flux_generate
+2026-01-15 22:49:03,853 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-15 22:49:34,973 [INFO] storybook_api - [REQ_END] id=bf70ddd336b4 status=200 duration_ms=31124.27
+2026-01-15 22:49:37,071 [INFO] storybook_api - [REQ_START] id=fa345cc814ba method=POST path=/coverback/generate
+2026-01-15 22:49:37,075 [INFO] storybook_api - /coverback/generate called. Genre=Fantasy, Title=Darkness Falls Here
+2026-01-15 22:50:57,123 [INFO] storybook_api - [REQ_END] id=fa345cc814ba status=200 duration_ms=80051.56
+2026-01-15 22:57:32,428 [INFO] storybook_api - [REQ_START] id=6e60ab9a6a54 method=GET path=/genres
+2026-01-15 22:57:32,490 [INFO] storybook_api - [REQ_END] id=6e60ab9a6a54 status=200 duration_ms=62.6
+2026-01-15 22:57:32,546 [INFO] storybook_api - [REQ_START] id=2a62c75963c9 method=GET path=/genres
+2026-01-15 22:57:32,701 [INFO] storybook_api - [REQ_END] id=2a62c75963c9 status=200 duration_ms=155.25
+2026-01-15 23:01:44,130 [INFO] storybook_api - [REQ_START] id=0c2bebaa49b8 method=POST path=/gist/preview-images
+2026-01-15 23:01:45,935 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:01:52,498 [INFO] storybook_api - [IMG_JOB_START] req=0c2bebaa49b8 job_id=d0cbe63b-de62-43eb-be75-910af7994ee4-e1
+2026-01-15 23:02:26,681 [INFO] storybook_api - [IMG_JOB_START] req=0c2bebaa49b8 job_id=c6d0cdf6-432e-4b48-8fd3-f1b950f09dfd-e2
+2026-01-15 23:02:57,929 [INFO] storybook_api - [IMG_JOB_START] req=0c2bebaa49b8 job_id=21fa49c9-0867-47e0-a929-8df869ff8a46-e2
+2026-01-15 23:03:37,680 [INFO] storybook_api - [REQ_END] id=0c2bebaa49b8 status=200 duration_ms=113549.84
+2026-01-15 23:04:36,792 [INFO] storybook_api - [REQ_START] id=271321c72e5e method=POST path=/story/generate
+2026-01-15 23:04:38,790 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:04:48,506 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:05:26,975 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:05:41,472 [INFO] storybook_api - [REQ_START] id=bc6a02248276 method=POST path=/story/generate
+2026-01-15 23:05:43,743 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:05:52,041 [INFO] storybook_api - [ARTIFACT] req=271321c72e5e type=story pages=3 ttl=24h
+2026-01-15 23:05:52,042 [INFO] storybook_api - [ARTIFACT] req=271321c72e5e type=story pages=3 ttl=24h
+2026-01-15 23:05:52,042 [INFO] storybook_api - [ARTIFACT] req=271321c72e5e type=story pages=3 ttl=24h
+2026-01-15 23:05:53,655 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:05:55,052 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:05:57,434 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=Family
+2026-01-15 23:05:57,437 [INFO] storybook_api - [REQ_END] id=271321c72e5e status=200 duration_ms=80645.72
+2026-01-15 23:06:02,151 [INFO] storybook_api - [REQ_START] id=a7c6122ca47f method=POST path=/title/generate
+2026-01-15 23:06:04,053 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:06:05,433 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:06:06,037 [INFO] storybook_api - [REQ_END] id=a7c6122ca47f status=200 duration_ms=3885.73
+2026-01-15 23:06:11,170 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:06:15,072 [INFO] storybook_api - [REQ_START] id=6d5cc338b031 method=POST path=/images/generate
+2026-01-15 23:06:15,075 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-15 23:06:40,845 [INFO] storybook_api - [ARTIFACT] req=bc6a02248276 type=story pages=3 ttl=24h
+2026-01-15 23:06:40,845 [INFO] storybook_api - [ARTIFACT] req=bc6a02248276 type=story pages=3 ttl=24h
+2026-01-15 23:06:40,846 [INFO] storybook_api - [ARTIFACT] req=bc6a02248276 type=story pages=3 ttl=24h
+2026-01-15 23:06:41,915 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:06:44,133 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=Family
+2026-01-15 23:06:44,136 [INFO] storybook_api - [REQ_END] id=bc6a02248276 status=200 duration_ms=62663.4
+2026-01-15 23:06:52,998 [INFO] storybook_api - [IMG_JOB_DONE] req=6d5cc338b031 job_id=04461bec-ae56-467c-af24-7db7215adf15-e1
+2026-01-15 23:06:53,002 [INFO] storybook_api - [ARTIFACT] req=6d5cc338b031 type=image page=1 ttl=ephemeral
+2026-01-15 23:06:53,235 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-15 23:07:29,655 [INFO] storybook_api - [IMG_JOB_DONE] req=6d5cc338b031 job_id=39c636f3-2852-4779-8193-92ac14434fac-e1
+2026-01-15 23:07:29,658 [INFO] storybook_api - [ARTIFACT] req=6d5cc338b031 type=image page=2 ttl=ephemeral
+2026-01-15 23:07:29,871 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-15 23:08:06,128 [INFO] storybook_api - [IMG_JOB_DONE] req=6d5cc338b031 job_id=d8a485c0-0b8b-4b17-86c8-bd71495a2707-e2
+2026-01-15 23:08:06,132 [INFO] storybook_api - [ARTIFACT] req=6d5cc338b031 type=image page=3 ttl=ephemeral
+2026-01-15 23:08:06,395 [INFO] storybook_api - [REQ_END] id=6d5cc338b031 status=200 duration_ms=111323.13
+2026-01-15 23:08:08,942 [INFO] storybook_api - [REQ_START] id=00b2c9134fd5 method=POST path=/images/flux_generate
+2026-01-15 23:08:08,945 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-15 23:10:07,715 [INFO] storybook_api - [REQ_START] id=69fc4fbf0837 method=GET path=/genres
+2026-01-15 23:10:07,758 [INFO] storybook_api - [REQ_END] id=69fc4fbf0837 status=200 duration_ms=44.67
+2026-01-15 23:10:07,821 [INFO] storybook_api - [REQ_START] id=66229d7eade7 method=GET path=/genres
+2026-01-15 23:10:07,858 [INFO] storybook_api - [REQ_END] id=66229d7eade7 status=200 duration_ms=37.15
+2026-01-15 23:10:16,048 [INFO] storybook_api - [REQ_END] id=00b2c9134fd5 status=200 duration_ms=127105.95
+2026-01-15 23:11:29,764 [INFO] storybook_api - [REQ_START] id=8b77d1ca933b method=POST path=/gist/preview-images
+2026-01-15 23:11:31,201 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:11:35,414 [INFO] storybook_api - [IMG_JOB_START] req=8b77d1ca933b job_id=865339d1-3bcf-4646-ba2a-d8154b8086c4-e1
+2026-01-15 23:12:49,483 [INFO] storybook_api - [IMG_JOB_START] req=8b77d1ca933b job_id=38049d35-f08e-42ac-b39d-9674803ed5ea-e2
+2026-01-15 23:13:20,290 [INFO] storybook_api - [IMG_JOB_START] req=8b77d1ca933b job_id=1a6ebc7d-56a4-4b72-9ef8-95ef0b8be45a-e2
+2026-01-15 23:13:59,236 [INFO] storybook_api - [REQ_END] id=8b77d1ca933b status=200 duration_ms=149472.12
+2026-01-15 23:14:13,595 [INFO] storybook_api - [REQ_START] id=823a51ee5024 method=POST path=/story/generate
+2026-01-15 23:14:15,925 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:14:27,301 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:14:58,286 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:15:17,194 [INFO] storybook_api - [ARTIFACT] req=823a51ee5024 type=story pages=3 ttl=24h
+2026-01-15 23:15:17,195 [INFO] storybook_api - [ARTIFACT] req=823a51ee5024 type=story pages=3 ttl=24h
+2026-01-15 23:15:17,195 [INFO] storybook_api - [ARTIFACT] req=823a51ee5024 type=story pages=3 ttl=24h
+2026-01-15 23:15:23,325 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:15:25,443 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=Baby Shower
+2026-01-15 23:15:25,449 [INFO] storybook_api - [REQ_END] id=823a51ee5024 status=200 duration_ms=71853.15
+2026-01-15 23:15:29,070 [INFO] storybook_api - [REQ_START] id=71d087bc6dc6 method=POST path=/title/generate
+2026-01-15 23:15:31,057 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:15:32,211 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 23:15:32,638 [INFO] storybook_api - [REQ_END] id=71d087bc6dc6 status=200 duration_ms=3568.37
+2026-01-15 23:16:06,482 [INFO] storybook_api - [REQ_START] id=692d7ad9ab9d method=POST path=/images/generate
+2026-01-15 23:16:06,489 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2026-01-15 23:16:44,051 [INFO] storybook_api - [IMG_JOB_DONE] req=692d7ad9ab9d job_id=0eb441e4-4fc3-4b26-a025-a207e01b420a-e2
+2026-01-15 23:16:44,057 [INFO] storybook_api - [ARTIFACT] req=692d7ad9ab9d type=image page=1 ttl=ephemeral
+2026-01-15 23:16:44,373 [INFO] storybook_api - Generating image for page=2, orientation=Portrait
+2026-01-15 23:17:21,955 [INFO] storybook_api - [IMG_JOB_DONE] req=692d7ad9ab9d job_id=418620de-107a-4ff2-a873-2d91c9ed439f-e1
+2026-01-15 23:17:21,958 [INFO] storybook_api - [ARTIFACT] req=692d7ad9ab9d type=image page=2 ttl=ephemeral
+2026-01-15 23:17:22,244 [INFO] storybook_api - Generating image for page=3, orientation=Portrait
+2026-01-15 23:17:59,514 [INFO] storybook_api - [IMG_JOB_DONE] req=692d7ad9ab9d job_id=02b4faf1-0bc0-4efe-9e2b-14e36b0e9bdd-e1
+2026-01-15 23:17:59,520 [INFO] storybook_api - [ARTIFACT] req=692d7ad9ab9d type=image page=3 ttl=ephemeral
+2026-01-15 23:17:59,895 [INFO] storybook_api - [REQ_END] id=692d7ad9ab9d status=200 duration_ms=113413.9
+2026-01-15 23:18:02,608 [INFO] storybook_api - [REQ_START] id=eed5f50e894a method=POST path=/images/flux_generate
+2026-01-15 23:18:02,612 [INFO] storybook_api - /images/flux_generate called. Orientation=Portrait
+2026-01-15 23:20:15,444 [INFO] storybook_api - [REQ_END] id=eed5f50e894a status=200 duration_ms=132835.75
+2026-01-15 23:20:17,815 [INFO] storybook_api - [REQ_START] id=48879191daa8 method=POST path=/coverback/generate
+2026-01-15 23:20:17,821 [INFO] storybook_api - /coverback/generate called. Genre=Baby Shower, Title=Little Hands Hold
+2026-01-15 23:21:39,770 [INFO] storybook_api - [REQ_END] id=48879191daa8 status=200 duration_ms=81955.46
+2026-01-16 00:03:44,002 [INFO] storybook_api - [REQ_START] id=ba81cd027a52 method=POST path=/images/regenerate
+2026-01-16 00:03:44,119 [INFO] storybook_api - [REQ_END] id=ba81cd027a52 status=422 duration_ms=120.93
+2026-01-16 00:10:19,571 [INFO] storybook_api - [REQ_START] id=cbe5797bf881 method=POST path=/images/regenerate
+2026-01-16 00:10:20,464 [INFO] storybook_api - [LLM_START] req=cbe5797bf881 purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:10:23,898 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:10:30,392 [INFO] storybook_api - [LLM_OK] purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free duration_s=9.92
+2026-01-16 00:10:30,576 [INFO] storybook_api - [LLM_START] req=cbe5797bf881 purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:10:32,807 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:10:47,885 [INFO] storybook_api - [LLM_OK] purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free duration_s=17.31
+2026-01-16 00:10:47,888 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2026-01-16 00:12:13,045 [ERROR] storybook_api - RunPod image generation failed: RunPod job failed.
+2026-01-16 00:12:13,046 [ERROR] storybook_api - [REGEN_IMAGE_FAIL] page=1 error=RunPod job failed.
+2026-01-16 00:12:18,275 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:12:29,245 [INFO] storybook_api - [REQ_END] id=cbe5797bf881 status=200 duration_ms=129694.35
+2026-01-16 00:14:56,538 [INFO] storybook_api - [REQ_START] id=169fb702f6af method=POST path=/images/regenerate
+2026-01-16 00:14:56,590 [INFO] storybook_api - [LLM_START] req=169fb702f6af purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:14:58,885 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:15:03,275 [INFO] storybook_api - [LLM_OK] purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free duration_s=6.68
+2026-01-16 00:15:03,282 [INFO] storybook_api - [LLM_START] req=169fb702f6af purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:15:05,470 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:15:12,844 [INFO] storybook_api - [LLM_OK] purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free duration_s=9.56
+2026-01-16 00:15:12,847 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2026-01-16 00:16:40,229 [ERROR] storybook_api - RunPod image generation failed: RunPod job failed.
+2026-01-16 00:16:40,229 [ERROR] storybook_api - [REGEN_IMAGE_FAIL] page=1 error=RunPod job failed.
+2026-01-16 00:16:41,561 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:16:49,945 [INFO] storybook_api - [REQ_END] id=169fb702f6af status=200 duration_ms=113410.31
+2026-01-16 00:22:53,302 [INFO] storybook_api - [REQ_START] id=645b0dc7fea9 method=POST path=/images/regenerate
+2026-01-16 00:22:54,901 [INFO] storybook_api - [LLM_START] req=645b0dc7fea9 purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:22:56,636 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:23:05,614 [INFO] storybook_api - [LLM_OK] purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free duration_s=10.71
+2026-01-16 00:23:05,703 [INFO] storybook_api - [LLM_START] req=645b0dc7fea9 purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:23:06,512 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:23:13,498 [INFO] storybook_api - [LLM_OK] purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free duration_s=7.79
+2026-01-16 00:23:13,504 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2026-01-16 00:38:14,606 [ERROR] storybook_api - RunPod image generation failed: RunPod job failed.
+2026-01-16 00:38:14,628 [ERROR] storybook_api - [REGEN_IMAGE_FAIL] page=1 error=RunPod job failed.
+2026-01-16 00:38:17,421 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:38:25,861 [INFO] storybook_api - [REQ_END] id=645b0dc7fea9 status=200 duration_ms=932594.22
+2026-01-16 00:45:58,835 [INFO] storybook_api - [REQ_START] id=64564ba8f9a2 method=POST path=/images/regenerate
+2026-01-16 00:45:59,163 [INFO] storybook_api - [LLM_START] req=64564ba8f9a2 purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:46:00,351 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:46:03,258 [INFO] storybook_api - [LLM_OK] purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free duration_s=4.1
+2026-01-16 00:46:03,266 [INFO] storybook_api - [LLM_START] req=64564ba8f9a2 purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 00:46:09,863 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 00:46:18,067 [INFO] storybook_api - [LLM_OK] purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free duration_s=14.8
+2026-01-16 00:46:18,070 [INFO] storybook_api - Generating image for page=1, orientation=Square
+2026-01-16 01:19:02,422 [INFO] storybook_api - [REQ_START] id=fcd9accd9af8 method=POST path=/images/regenerate
+2026-01-16 01:19:02,584 [INFO] storybook_api - [LLM_START] req=fcd9accd9af8 purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 01:19:06,758 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 01:19:10,034 [INFO] storybook_api - [LLM_OK] purpose=regen_story model=meta-llama/llama-3.3-70b-instruct:free duration_s=7.45
+2026-01-16 01:19:10,095 [INFO] storybook_api - [LLM_START] req=fcd9accd9af8 purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free
+2026-01-16 01:19:11,484 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 01:19:23,019 [INFO] storybook_api - [LLM_OK] purpose=regen_prompt model=meta-llama/llama-3.3-70b-instruct:free duration_s=12.92
+2026-01-16 01:19:23,075 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2026-01-16 01:21:36,417 [INFO] storybook_api - [IMG_JOB_DONE] req=fcd9accd9af8 job_id=a7872eec-8a22-4a9b-b023-c2e674302192-e1
+2026-01-16 01:21:38,902 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-16 01:21:43,163 [INFO] storybook_api - [REQ_END] id=fcd9accd9af8 status=200 duration_ms=160744.47
+2026-01-16 10:47:49,270 [INFO] storybook_api - [REQ_START] id=85a69efd3817 method=GET path=/genres
+2026-01-16 10:47:50,137 [INFO] storybook_api - [REQ_END] id=85a69efd3817 status=200 duration_ms=899.49
+2026-01-16 10:47:50,263 [INFO] storybook_api - [REQ_START] id=79c2e2bb9cd0 method=GET path=/genres
+2026-01-16 10:47:50,303 [INFO] storybook_api - [REQ_END] id=79c2e2bb9cd0 status=200 duration_ms=39.99
+2026-01-16 12:15:36,139 [INFO] storybook_api - [REQ_START] id=406a4c5e1e3a method=GET path=/genres
+2026-01-16 12:15:38,140 [INFO] storybook_api - [REQ_END] id=406a4c5e1e3a status=200 duration_ms=2008.17
+2026-01-16 12:15:39,102 [INFO] storybook_api - [REQ_START] id=4ec77e82cdf7 method=GET path=/genres
+2026-01-16 12:15:39,475 [INFO] storybook_api - [REQ_END] id=4ec77e82cdf7 status=200 duration_ms=372.85

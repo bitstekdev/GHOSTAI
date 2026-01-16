@@ -703,7 +703,10 @@ exports.regenerateCharacterImage = async (req, res) => {
           character_details: fixedCharacterDetails
         }
       ],
-      orientation: orientation || story.orientation
+      orientation: orientation || story.orientation,
+      genre: Array.isArray(story.genres)
+        ? story.genres.join(", ")
+        : story.genre || "Family"
     };
 
     // console.log("Payload to FastAPI:", apiPayload);
@@ -726,8 +729,32 @@ exports.regenerateCharacterImage = async (req, res) => {
     const newHtml = pageResp.new_html || pageResp.html || page.html || newStory;
     const newPrompt = pageResp.new_prompt || pageResp.prompt || page.prompt;
 
+    // ------------------------------------------------------------------------------------
+    // TEXT-ONLY REGENERATION (VALID SUCCESS CASE — no image returned)
+    // ------------------------------------------------------------------------------------
     if (!base64) {
-      return res.status(502).json({ success: false, message: "FastAPI returned no image data" });
+      // Save old story version
+      page.oldStory.push({
+        pageNumber: page.pageNumber,
+        text: page.text,
+        prompt: page.prompt,
+        version: `regen-text-${page.oldStory.length + 1}`
+      });
+
+      // Update story content only
+      page.text = newStory;
+      page.html = newHtml;
+      page.prompt = newPrompt;
+      page.status = "text-regenerated";
+
+      await page.save();
+
+      return res.json({
+        success: true,
+        message: "Text regenerated successfully. Image unchanged.",
+        imageUnchanged: true,
+        pageId: page._id
+      });
     }
 
     // ------------------------------------------------------------------------------------

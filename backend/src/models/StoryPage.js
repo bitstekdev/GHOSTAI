@@ -47,7 +47,7 @@ const storyPageSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'generating', 'completed', 'failed', 'regenerated'],
+    enum: ['pending', 'generating', 'completed', 'failed', 'regenerated', 'text-regenerated'],
     default: 'pending'
   }
 }, {

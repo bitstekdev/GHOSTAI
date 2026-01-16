@@ -45,12 +45,13 @@ router.post('/generate-pdf', async (req, res) => {
     const pages = (storyData.pages || []).map(page => ({
       imageUrl: page.characterImage?.s3Url,
       backgroundImageUrl: page.backgroundImage?.s3Url,
+      useOverlay: page.useOverlay,
       html:
         page.html ||
         `<p>${escapeHtml(page.text || '')}</p>`
     }));
 
-    // Generate PDF
+    // Generate PDF with deterministic randomization
     await generateStorybookPdf({
       outputPath: pdfPath,
       orientation,
@@ -59,7 +60,8 @@ router.post('/generate-pdf', async (req, res) => {
       coverTitle: storyData.story?.title || '',
       backCoverImageUrl: storyData.story?.backCoverImage?.s3Url,
       backCoverBlurb: storyData.story?.backCoverBlurb || '',
-      pages
+      pages,
+      textColor: storyData.textColor || 'black'
     });
 
     // Send PDF to client

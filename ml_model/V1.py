@@ -84,16 +84,12 @@ GIST_IMAGE_SYSTEM = "gist_image_system_prompt"
 STORY_SYSTEM = "story_system_prompt"
 HTML_FORMATTER = "html_formatter_system"
 IMAGE_PROMPT_SYSTEM = "image_prompt_system"
-REGEN_STORY_SYSTEM = "regen_story_system"
-REGEN_PROMPT_SYSTEM = "regen_prompt_system"
-REGEN_REWRITE_PROMPT = "regen_rewrite_prompt"
 FLUX_BACKGROUND_USER = "flux_background_user_prompt"
 TITLE_GENERATOR = "title_generator_prompt"
 TAGLINE_GENERATOR = "tagline_generator_prompt"
 BACK_BLURB_SYSTEM = "back_blurb_system"
 BACK_VISUAL_SYSTEM = "back_visual_system"
 COVER_VISUAL_SYSTEM = "cover_visual_system"
-STORY_REWRITE_PROMPT = "story_rewrite_prompt"
 
 # ============================================================
 styles_collection.create_index(
@@ -869,6 +865,67 @@ def load_static_genre_style_map(user_id: str) -> dict:
 
     return build_static_genre_style_map(doc.get("books", []))
 
+def save_writing_style(
+    *,
+    user_id: str,
+    genre: str,
+    story_text: str
+):
+    if not user_id or not story_text:
+        return
+
+    try:
+        prompt = (
+            "Analyze the writing style of the following story.\n\n"
+            "Return JSON ONLY with:\n"
+            "{\n"
+            '  "writing_style": "...",\n'
+            '  "example": "..."\n'
+            "}\n\n"
+            "STORY:\n"
+            f"{story_text[:6000]}"
+        )
+
+        resp = client.chat.completions.create(
+            model="xiaomi/mimo-v2-flash:free",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            timeout=60,
+        )
+
+        parsed = extract_json_from_text(
+            resp.choices[0].message.content.strip()
+        )
+
+        if not parsed:
+            return
+
+        styles_collection.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "generated_at": datetime.utcnow()
+                },
+                "$push": {
+                    "books": {
+                        "genre": normalize_genre(genre),
+                        "writing_style": parsed.get("writing_style", ""),
+                        "example": parsed.get("example", ""),
+                        "source": "generated_story"
+                    }
+                }
+            },
+            upsert=True
+        )
+
+        logger.info(
+            f"[STYLE_SAVED] user={user_id} genre={genre}"
+        )
+
+    except Exception as e:
+        logger.warning(f"[STYLE_SAVE_FAIL] {e}")
+
+
 # ============================================================
 # story_generator_api.py
 # FastAPI Story Page + Prompt Generator
@@ -906,6 +963,104 @@ class StoryResponse(BaseModel):
 # -----------------------------
 # Helpers (extracted + improved from your functions)
 # -----------------------------
+def regen_story_text(story_text: str) -> str:
+    if not story_text:
+        return story_text
+
+    try:
+        resp = call_llm(
+            model=STORY_MODEL,
+            messages=[
+                {"role": "system", "content": get_prompt("regen_story_system")},
+                {"role": "user", "content": render_prompt(
+                    "regen_story_user_prompt",
+                    story_text=story_text
+                )}
+            ],
+            temperature=0.6,
+            timeout=60,
+            purpose="regen_story"
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"[REGEN_STORY_FAIL] {e}")
+        return story_text
+
+def regen_image_prompt(
+    new_story_text: str,
+    old_prompt: str,
+    character_map: dict
+) -> str:
+    if not old_prompt:
+        return old_prompt
+
+    try:
+        resp = call_llm(
+            model=PROMPT_MODEL,
+            messages=[
+                {"role": "system", "content": get_prompt("regen_prompt_system")},
+                {"role": "user", "content": render_prompt(
+                    "regen_prompt_user_prompt",
+                    new_story_text=new_story_text,
+                    old_prompt=old_prompt
+                )}
+            ],
+            temperature=0.7,
+            timeout=60,
+            purpose="regen_prompt"
+        )
+
+        raw = resp.choices[0].message.content.strip()
+        return inject_character_descriptions(raw, character_map)
+
+    except Exception as e:
+        logger.error(f"[REGEN_PROMPT_FAIL] {e}")
+        return old_prompt
+
+
+def regen_image(prompt: str, page_num: int, orientation: str) -> Optional[str]:
+    try:
+        img = generate_image_from_prompt(
+            prompt,
+            NEGATIVE_PROMPT_TEXT,
+            page_num=page_num,
+            orientation=orientation
+        )
+
+        if not img:
+            return None
+
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode()
+
+    except Exception as e:
+        logger.error(f"[REGEN_IMAGE_FAIL] page={page_num} error={e}")
+        return None
+    
+def regenerate_page(
+    story_text: str,
+    old_prompt: str,
+    character_details: str,
+    page_num: int,
+    orientation: str,
+    genre: str
+):
+    character_map = {}
+    for line in character_details.splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            character_map[k.strip()] = v.strip()
+
+    new_story = regen_story_text(story_text)
+    new_prompt = regen_image_prompt(new_story, old_prompt, character_map)
+    image_b64 = regen_image(new_prompt, page_num, orientation)
+
+# ✅ NEW: regenerate HTML
+    new_html = regenerate_html_for_page(new_story, genre)
+
+    return new_story, new_prompt, new_html, image_b64
+
 
 def extract_json_from_text(text: str) -> Optional[Dict]:
     """
@@ -963,100 +1118,11 @@ def enforce_page_line_limit(text: str, max_lines: int) -> str:
     return "\n".join(trimmed).rstrip()
 
 
-def regenerate_page(story_text, old_prompt, character_map, page_num, orientation="Landscape"):
-    global client 
-    """
-    Regenerates one page completely:
-    1) Rewrites the story paragraph (same meaning)
-    2) Rewrites the image prompt based on new story
-    3) Regenerates the image with deterministic consistency
-    """
 
-    if not story_text or not old_prompt:
-        return story_text, old_prompt, None
-
-    # ======================================================
-    # 1) REWRITE STORY TEXT
-    # ======================================================
-    regen_story_system = get_prompt(REGEN_STORY_SYSTEM)
-
-    story_rewrite_prompt = render_prompt(
-        STORY_REWRITE_PROMPT,
-        story_text=story_text
-    )
-
-    regen_prompt_system = get_prompt(REGEN_PROMPT_SYSTEM)
-
-    rewrite_prompt = render_prompt(
-        REGEN_REWRITE_PROMPT,
-        new_story_text=new_story_text,
-        old_prompt=old_prompt
-    )
-
-
-    story_resp = client.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-instruct:free",
-        messages=[
-            {"role": "system", "content": regen_story_system},
-            {"role": "user", "content": story_rewrite_prompt}
-        ],
-        temperature=0.6,
-        timeout=60,
-    )
-
-    new_story_text = story_resp.choices[0].message.content.strip()
-
-    # ======================================================
-    # 2) REWRITE IMAGE PROMPT
-    # ======================================================
-    
-
-    prompt_resp = client.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-instruct:free",
-        messages=[
-            {"role": "system", "content": regen_prompt_system},
-            {"role": "user", "content": rewrite_prompt}
-        ],
-        temperature=0.7,
-        timeout=60,
-    )
-
-    new_prompt_raw = prompt_resp.choices[0].message.content.strip()
-    new_prompt = inject_character_descriptions(new_prompt_raw, character_map)
-
-    # ======================================================
-    # 3) GENERATE IMAGE
-    # ======================================================
-    image = generate_image_from_prompt(
-        new_prompt,
-        NEGATIVE_PROMPT_TEXT,
-        page_num=page_num,
-        orientation=orientation
-    )
-
-    base64_image = None
-
-    if image:
-        from io import BytesIO
-        import base64
-
-        buffer = BytesIO()
-        image.save(buffer, format="PNG")
-        base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-    return new_story_text, new_prompt, base64_image
-
-
-def wrap_regen_page(story_text, old_prompt, character_details, page_num, orientation):
-    character_map = {}
-    for line in character_details.splitlines():
-        if ":" in line:
-            name, desc = line.split(":", 1)
-            character_map[name.strip()] = desc.strip()
-
-    return regenerate_page(story_text, old_prompt, character_map, page_num, orientation)
 
 def inject_character_descriptions(prompt, character_map):
+    if re.search(r'@\w+\s*\[', prompt):
+        return prompt
     """
     Injects @Name[desc] logic with:
     - Unicode normalization
@@ -1379,12 +1445,44 @@ def generate_html_for_pages(story_pages: Dict[str, str], genre: str) -> Dict[str
 
     return html_map
 
+def regenerate_html_for_page(page_text: str, genre: str) -> str:
+    """
+    Regenerates semantic HTML for a single page using the same formatter.
+    """
+    system_prompt = render_prompt(
+        HTML_FORMATTER,
+        genre=genre
+    )
+
+    pages_payload = {
+        "Page 1": page_text
+    }
+
+    resp = client.chat.completions.create(
+        model=STORY_MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": json.dumps(pages_payload, ensure_ascii=False)}
+        ],
+        temperature=0.4,
+        timeout=60,
+    )
+
+    raw = resp.choices[0].message.content.strip()
+    html_map = extract_json_from_text(raw)
+
+    if not html_map or "Page 1" not in html_map:
+        raise RuntimeError("Failed to regenerate HTML")
+
+    return html_map["Page 1"]
+
+
 # --------------------------------------------------
 # PAGE LAYOUT CONFIG (SINGLE SOURCE OF TRUTH)
 # --------------------------------------------------
 PAGE_LINE_LIMITS = {
-    "portrait": 12,
-    "landscape": 8,
+    "portrait": 8,
+    "landscape": 12,
     "square": 10
 }
 
@@ -1404,12 +1502,9 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
 
     genres = parse_genres(genre)
 # Always apply Ma'am-style base
-    writing_styles = [
-        genre_writing_style(g) for g in genres if genre_writing_style(g)
-    ]
-
     writing_styles = []
     examples = []
+    unknown_genres = []
 
     for g in genres:
     # 1️⃣ User uploaded books
@@ -1427,16 +1522,16 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
             style = genre_writing_style(g)
             if style:
                 writing_styles.append(style)
+            else:
+                unknown_genres.append(g)
 
-
-    unknown_genres = []
-
-# ❌ Only fail if ALL are unknown
     if not writing_styles:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown genres: {', '.join(unknown_genres)}"
-        )
+        detail=f"Unknown genres: {', '.join(unknown_genres)}"
+    )
+
+
 
 
     writing_style = " ".join(writing_styles)
@@ -1634,6 +1729,23 @@ class HiDreamPageOut(BaseModel):
 class ImageResponse(BaseModel):
     pages: List[HiDreamPageOut]
     
+class RegenPageInput(BaseModel):
+    page: int
+    text: str
+    prompt: str
+    character_details: str
+
+class RegenRequest(BaseModel):
+    pages: List[RegenPageInput]
+    orientation: Optional[str] = "Landscape"
+    genre: str
+
+class RegenPageOut(BaseModel):
+    page: int
+    new_story: str
+    new_prompt: str
+    image_base64: Optional[str] = None
+    error: Optional[str] = None
 
 
 
@@ -1663,7 +1775,7 @@ def get_deterministic_seed(prompt: str, page_num: int):
                  if w.lower() in {"pavan", "lohith", "shashi", "yash"}]
 
     # sort + add page
-    base = "_".join(sorted(chars)) + f"_page{page_num}"
+    base = "_".join(sorted(chars)) + f"_page{page_num}_{int(time.time())}"
     seed_val = int(hashlib.sha256(base.encode()).hexdigest(), 16) % (2**32)
     return seed_val
 
@@ -1884,7 +1996,7 @@ def call_llm_get_prompts(pages: List[FluxPageIn]) -> Optional[Dict[str, Dict[str
 def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> str:
     payload = {
         "input": {
-            "prompt": prompt,
+            "prompt": prompt ,
             "width": width,
             "height": height,
             "num_inference_steps": 4,
@@ -1912,38 +2024,16 @@ def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> str
             resp.raise_for_status()
 
             data = resp.json()
-
-            # ✅ SUCCESS STATE
             if data.get("status") != "COMPLETED":
                 raise RuntimeError(data.get("error", "FLUX generation failed"))
 
-            result = data.get("output", {}).get("result")
-
-            if not result:
-                raise RuntimeError(f"No result returned: {data}")
-
-            # 🟢 CASE 1 — URL → download → base64
-            if isinstance(result, str) and result.startswith("http"):
-                img_resp = requests.get(result, timeout=30)
-                img_resp.raise_for_status()
-                return base64.b64encode(img_resp.content).decode("utf-8")
-
-            # 🟢 CASE 2 — data:image/...;base64
-            if isinstance(result, str) and result.startswith("data:image"):
-                return result.split(",", 1)[1]
-
-            # 🟢 CASE 3 — raw base64
-            if isinstance(result, str):
-                return result
-
-            raise RuntimeError(f"Unsupported FLUX output format: {result}")
+            return data["output"]["image_url"]
 
         except Exception as e:
             last_error = e
-            time.sleep(2 * (attempt + 1))
+            time.sleep(2 * (attempt + 1))  # backoff
 
     raise RuntimeError(f"FLUX request failed after retries: {last_error}")
-
 # ============================
 # 🎨 Base Title Generator
 # ============================
@@ -2548,6 +2638,9 @@ def process_books(user_id: str):
             text = extract_text_from_docx(Path(path))
         else:
             text = extract_text_from_txt(Path(path))
+            
+        content_hash = hashlib.sha256((Path(path).name + text[:5000]).encode("utf-8")).hexdigest()
+
 
         books_text[book_id] = text[:12000]
 
@@ -2594,20 +2687,43 @@ def process_books(user_id: str):
             "title": data.get("title", ""),
             "genre": normalize_genre(data.get("genre", "")),
             "writing_style": data.get("writing_style", ""),
-            "example": data.get("example", "")
+            "example": data.get("example", ""),
+            "hash": content_hash
         })
 
-    # ---- SAVE TO MONGODB ----
-    styles_collection.update_one(
+    existing = styles_collection.find_one(
         {"user_id": user_id},
-        {"$set": {
-            "user_id": user_id,
-            "generated_at": datetime.utcnow(),
-            "books": books_meta
-        }},
-        upsert=True
-    )
+        {"books.hash": 1}
+        ) or {}
 
+    existing_hashes = {
+        b["hash"] for b in existing.get("books", [])
+        if "hash" in b
+    }
+
+    books_meta = [
+        b for b in books_meta
+        if b.get("hash") not in existing_hashes
+    ]
+
+    # ---- SAVE TO MONGODB ----
+    if books_meta:  # only push if something new exists
+        styles_collection.update_one(
+    {"user_id": user_id},
+    {
+        "$set": {
+            "generated_at": datetime.utcnow()
+        },
+        "$push": {
+            "books": {
+                "$each": books_meta
+            }
+        }
+    },
+    upsert=True
+)
+
+    # ----------------------------
     # ---- CLEAN TEMP FILES ----
     for p in SESSION_UPLOADS[user_id]["files"]:
         os.unlink(p)
@@ -2674,6 +2790,15 @@ def story_generate(req: StoryRequest):
             raise HTTPException(status_code=400, detail="num_pages must be between 1 and 50")
 
         pages = generate_story_and_prompts(req.gist, req.num_characters, req.character_details, req.genre, req.num_pages,req.orientation,req.user_id)
+        # ✅ SAVE WRITING STYLE (ONCE PER STORY)
+        if req.user_id:
+            full_story_text = "\n\n".join([p[0] for p in pages])
+
+        save_writing_style(
+            user_id=req.user_id,
+            genre=req.genre,
+            story_text=full_story_text
+        )
 
         page_objects = [
             PageOutput(
@@ -2715,6 +2840,10 @@ def images_generate(req: ImageRequest):
             if img is None:
                 results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error="Generation returned no image."))
                 continue
+            logger.info(
+                f"[ARTIFACT] req={request_id_ctx.get()} "
+                f"type=image page={page_num} ttl=ephemeral"
+            )
 
             # convert to base64 PNG
             buf = BytesIO()
@@ -2724,60 +2853,43 @@ def images_generate(req: ImageRequest):
 
         except Exception as e:
             results.append(HiDreamPageOut(page=page_num, hidream_image_base64=None, error=str(e)))
-            logger.info(
-    f"[ARTIFACT] req={request_id_ctx.get()} "
-    f"type=image page={page_num} ttl=ephemeral"
-    )
 
 
     return ImageResponse(pages=results, message="HiDream generation completed (Flux background pending).")
 
-class RegenPageInput(BaseModel):
-    page: int
-    text: str
-    prompt: str
-    character_details: str  # REQUIRED
-
-
-class RegenRequest(BaseModel):
-    pages: List[RegenPageInput]
-    orientation: str = "Landscape"
-
-
 @app.post("/images/regenerate")
-def regenerate_images(req: RegenRequest):
+def images_regenerate(req: RegenRequest):
     results = []
 
     for page in req.pages:
-        # 1️⃣ Regenerate story + prompt + image
-        new_story, new_prompt, image_b64 = wrap_regen_page(
-            story_text=page.text,
-            old_prompt=page.prompt,
-            character_details=page.character_details,
-            page_num=page.page,
-            orientation=req.orientation
-        )
+        try:
+            new_story, new_prompt, new_html, image_b64 = regenerate_page(
+                story_text=page.text,
+                old_prompt=page.prompt,
+                character_details=page.character_details,
+                page_num=page.page,
+                orientation=req.orientation,
+            genre=req.genre
+            )
 
-        # 2️⃣ 🔥 Regenerate HTML (SINGLE-PAGE LLM CALL)
-        html_map = generate_html_for_pages(
-            {f"Page {page.page}": new_story},
-            genre="Family"   # or page.genre if you pass it
-        )
 
-        new_html = html_map.get(f"Page {page.page}", "")
+            results.append({
+                "page": page.page,
+                "new_story": new_story,
+                "new_prompt": new_prompt,
+                "new_html": new_html,
+                "image_base64": image_b64
+            })
 
-        # 3️⃣ Collect result
-        results.append({
-            "page": page.page,
-            "new_story": new_story,
-            "new_html": new_html,     # ✅ HTML regenerated
-            "new_prompt": new_prompt,
-            "image_base64": image_b64
-        })
+        except Exception as e:
+            results.append({
+                "page": page.page,
+                "error": str(e)
+            })
 
     return {
         "pages": results,
-        "message": "Regeneration completed (story + prompt + HTML)."
+        "message": "Regeneration completed."
     }
 # ============================
 
