@@ -94,6 +94,7 @@ const PDF_GENRE_STYLES = {
     fontMedium: 'CormorantGaramond-Regular',
     fontBold: 'CormorantGaramond-Bold',
     fontItalic: 'CormorantGaramond-Italic',
+    fontDisplay: 'CormorantGaramond-Bold', // elegant fantasy
     fontSize: 21,
     lineHeight: 34,
     letterSpacing: 0.45,
@@ -103,6 +104,7 @@ const PDF_GENRE_STYLES = {
     fontMedium: 'LibreBaskerville-Regular',
     fontBold: 'LibreBaskerville-Bold',
     fontItalic: 'LibreBaskerville-Italic',
+    fontDisplay: 'LibreBaskerville-Bold', // strong classic
     fontSize: 21,
     lineHeight: 34,
     letterSpacing: 0.25,
@@ -112,6 +114,7 @@ const PDF_GENRE_STYLES = {
     fontMedium: 'CrimsonText-Regular',
     fontBold: 'CrimsonText-Bold',
     fontItalic: 'CrimsonText-Italic',
+    fontDisplay: 'CrimsonText-Bold', // moody
     fontSize: 21,
     lineHeight: 33,
     letterSpacing: 0.35,
@@ -121,6 +124,7 @@ const PDF_GENRE_STYLES = {
     fontMedium: 'SourceSerif4-Regular',
     fontBold: 'SourceSerif4-Bold',
     fontItalic: 'SourceSerif4-Italic',
+    fontDisplay: 'SourceSerif4-Bold', // modern
     fontSize: 21,
     lineHeight: 33,
     letterSpacing: 0.4,
@@ -130,6 +134,7 @@ const PDF_GENRE_STYLES = {
     fontMedium: 'PlayfairDisplay-Regular',
     fontBold: 'PlayfairDisplay-Bold',
     fontItalic: 'PlayfairDisplay-Italic',
+    fontDisplay: 'PlayfairDisplay-Bold', // romantic
     fontSize: 21,
     lineHeight: 34,
     letterSpacing: 0.5,
