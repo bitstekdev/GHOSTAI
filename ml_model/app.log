@@ -1088,3 +1088,88 @@ RuntimeError: Prompt not found: regen_story_system
 2026-01-15 19:56:57,691 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
 2026-01-15 19:57:29,531 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=b8c08ce6-509c-49a9-a053-92e2580c8fe6-e1
 2026-01-15 19:57:29,638 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-15 19:58:04,262 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=3532cf32-14c9-4cc4-a337-e4823b8ed008-e2
+2026-01-15 19:58:04,357 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-15 19:58:39,697 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=2f1ca2e2-d7b9-4967-9fbd-fcd5d2def863-e2
+2026-01-15 19:58:39,815 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-15 19:59:12,008 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=8e83c9d7-3f4c-4bc6-8ca8-cc258692b00f-e2
+2026-01-15 19:59:12,161 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-15 19:59:47,356 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=df9421ad-0202-44a3-b5bb-8ede22f03857-e2
+2026-01-15 19:59:47,465 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-15 20:00:22,468 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=10267efe-62b9-4ae0-a49d-4db715fbfcf7-e1
+2026-01-15 20:00:22,588 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-15 20:00:54,893 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=8bbdd143-a7c0-4450-ba2e-516ff45292ce-e2
+2026-01-15 20:00:55,034 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-15 20:01:30,320 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=7f7e2b74-9e40-4327-b708-57b605613c68-e2
+2026-01-15 20:01:30,601 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-15 20:02:04,197 [INFO] storybook_api - [IMG_JOB_DONE] req=8acf366be3a9 job_id=b7806e3e-cd2d-4c43-9d77-334bf43aef00-e2
+2026-01-15 20:11:21,894 [INFO] storybook_api - [REQ_START] id=d9635aaa28da method=POST path=/faceswap
+2026-01-15 20:11:58,275 [INFO] storybook_api - [REQ_END] id=d9635aaa28da status=200 duration_ms=36381.1
+2026-01-15 20:11:58,284 [INFO] storybook_api - [REQ_START] id=a176581c10ab method=GET path=/genres
+2026-01-15 20:11:58,347 [INFO] storybook_api - [REQ_END] id=a176581c10ab status=200 duration_ms=63.62
+2026-01-15 20:11:58,613 [INFO] storybook_api - [REQ_START] id=4f0403c318bb method=GET path=/genres
+2026-01-15 20:11:58,643 [INFO] storybook_api - [REQ_END] id=4f0403c318bb status=200 duration_ms=29.6
+2026-01-15 20:11:58,723 [INFO] storybook_api - [REQ_START] id=cf2736e70f82 method=GET path=/genres
+2026-01-15 20:11:58,756 [INFO] storybook_api - [REQ_END] id=cf2736e70f82 status=200 duration_ms=33.2
+2026-01-15 20:12:51,371 [INFO] storybook_api - [REQ_START] id=b90e73b45b2c method=POST path=/edit-image
+2026-01-15 20:13:21,128 [INFO] storybook_api - [REQ_END] id=b90e73b45b2c status=200 duration_ms=29757.05
+2026-01-15 20:15:33,173 [INFO] storybook_api - [REQ_START] id=3bbb69dc2ddc method=POST path=/edit-image
+2026-01-15 20:15:55,704 [INFO] storybook_api - [REQ_END] id=3bbb69dc2ddc status=200 duration_ms=22531.87
+2026-01-15 20:15:55,711 [INFO] storybook_api - [REQ_START] id=286e7ce6b0b8 method=GET path=/genres
+2026-01-15 20:15:55,759 [INFO] storybook_api - [REQ_END] id=286e7ce6b0b8 status=200 duration_ms=48.19
+2026-01-15 20:15:55,797 [INFO] storybook_api - [REQ_START] id=3888e559ae4e method=GET path=/genres
+2026-01-15 20:15:55,829 [INFO] storybook_api - [REQ_END] id=3888e559ae4e status=200 duration_ms=31.59
+2026-01-15 20:41:27,843 [INFO] storybook_api - [REQ_START] id=7b40e0b72be8 method=GET path=/genres
+2026-01-15 20:41:27,999 [INFO] storybook_api - [REQ_END] id=7b40e0b72be8 status=200 duration_ms=163.03
+2026-01-15 20:41:28,083 [INFO] storybook_api - [REQ_START] id=7550c9222ceb method=GET path=/genres
+2026-01-15 20:41:28,122 [INFO] storybook_api - [REQ_END] id=7550c9222ceb status=200 duration_ms=39.28
+2026-01-15 20:42:15,279 [INFO] storybook_api - [REQ_START] id=4319b6d9ffc4 method=POST path=/title/generate
+2026-01-15 20:42:19,790 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 20:42:21,333 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 20:42:21,935 [INFO] storybook_api - [REQ_END] id=4319b6d9ffc4 status=200 duration_ms=6657.35
+2026-01-15 20:42:38,802 [INFO] storybook_api - [REQ_START] id=089d6100e30f method=POST path=/images/generate
+2026-01-15 20:42:38,807 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-15 20:43:07,916 [INFO] storybook_api - [REQ_START] id=1ad046a0e8e3 method=GET path=/genres
+2026-01-15 20:43:07,949 [INFO] storybook_api - [REQ_END] id=1ad046a0e8e3 status=200 duration_ms=32.75
+2026-01-15 20:43:08,003 [INFO] storybook_api - [REQ_START] id=03acadd194b7 method=GET path=/genres
+2026-01-15 20:43:08,037 [INFO] storybook_api - [REQ_END] id=03acadd194b7 status=200 duration_ms=34.07
+2026-01-15 20:43:08,114 [INFO] storybook_api - [REQ_START] id=50811a339396 method=GET path=/genres
+2026-01-15 20:43:08,140 [INFO] storybook_api - [REQ_END] id=50811a339396 status=200 duration_ms=25.41
+2026-01-15 20:43:16,427 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=2fa9fc9d-7364-423c-9501-61a24b117c53-e2
+2026-01-15 20:43:16,652 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-15 20:43:49,638 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=15784244-584a-4afd-896c-4d374562580e-e2
+2026-01-15 20:43:49,783 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-15 20:44:22,289 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=5b2415c3-170f-4753-9598-506829a0736a-e1
+2026-01-15 20:44:22,481 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-15 20:44:58,971 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=4e3ae477-5d31-474e-ba8c-f60b4df15a0c-e1
+2026-01-15 20:44:59,165 [INFO] storybook_api - Generating image for page=5, orientation=Landscape
+2026-01-15 20:45:33,464 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=32fef34d-d0c7-4688-b2af-055b3b7dbb3b-e2
+2026-01-15 20:45:33,706 [INFO] storybook_api - Generating image for page=6, orientation=Landscape
+2026-01-15 20:46:07,417 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=aa27ed83-f4bb-4bbe-a85f-8a8068a81a0e-e2
+2026-01-15 20:46:07,558 [INFO] storybook_api - Generating image for page=7, orientation=Landscape
+2026-01-15 20:46:20,684 [INFO] storybook_api - [REQ_START] id=1ee35546bbbd method=POST path=/title/generate
+2026-01-15 20:46:22,467 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 20:46:24,559 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-15 20:46:25,027 [INFO] storybook_api - [REQ_END] id=1ee35546bbbd status=200 duration_ms=4342.08
+2026-01-15 20:47:17,465 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=e28f5edb-8815-468d-8123-f74713c550c2-e2
+2026-01-15 20:47:17,637 [INFO] storybook_api - Generating image for page=8, orientation=Landscape
+2026-01-15 20:47:55,235 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=e6d5939b-ef68-4cb8-b0c3-b152aa96f9e4-e1
+2026-01-15 20:47:55,406 [INFO] storybook_api - Generating image for page=9, orientation=Landscape
+2026-01-15 20:48:31,001 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=3c6b7863-1f3a-4a6b-8f4d-3e439973b0a7-e1
+2026-01-15 20:48:31,368 [INFO] storybook_api - Generating image for page=10, orientation=Landscape
+2026-01-15 20:49:08,567 [INFO] storybook_api - [IMG_JOB_DONE] req=089d6100e30f job_id=61fcd3a1-aa31-42f2-b6d7-bad4975513bb-e2
+2026-01-15 20:49:08,997 [INFO] storybook_api - [REQ_END] id=089d6100e30f status=200 duration_ms=390194.46
+2026-01-15 20:49:16,183 [INFO] storybook_api - [REQ_START] id=535bbf5ed5e9 method=POST path=/images/flux_generate
+2026-01-15 20:49:16,191 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-15 20:51:11,142 [INFO] storybook_api - [REQ_END] id=535bbf5ed5e9 status=200 duration_ms=114958.08
+2026-01-15 20:51:18,638 [INFO] storybook_api - [REQ_START] id=932fdea81e0b method=POST path=/coverback/generate
+2026-01-15 20:51:18,650 [INFO] storybook_api - /coverback/generate called. Genre=Family, Adventure, Title=Days of Wonder
+2026-01-15 20:53:36,915 [INFO] storybook_api - [REQ_END] id=932fdea81e0b status=200 duration_ms=138276.95
+2026-01-16 14:38:36,956 [INFO] storybook_api - [REQ_START] id=8e119feb8a46 method=GET path=/
+2026-01-16 14:38:36,975 [INFO] storybook_api - [REQ_END] id=8e119feb8a46 status=404 duration_ms=25.0
+2026-01-16 14:38:37,493 [INFO] storybook_api - [REQ_START] id=323cd9c2fcf4 method=GET path=/favicon.ico
+2026-01-16 14:38:37,496 [INFO] storybook_api - [REQ_END] id=323cd9c2fcf4 status=404 duration_ms=4.05
+2026-01-16 14:38:40,804 [INFO] storybook_api - [REQ_START] id=efc3894ba2a7 method=GET path=/docs
+2026-01-16 14:38:40,808 [INFO] storybook_api - [REQ_END] id=efc3894ba2a7 status=200 duration_ms=4.39
+2026-01-16 14:38:41,095 [INFO] storybook_api - [REQ_START] id=10dc3be222af method=GET path=/openapi.json
+2026-01-16 14:38:41,442 [INFO] storybook_api - [REQ_END] id=10dc3be222af status=200 duration_ms=346.3

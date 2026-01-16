@@ -391,7 +391,7 @@ exports.getMyStories = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const stories = await Story.find({ user: req.user.id })
+    const stories = await Story.find({ user: req.user.id, isDeleted: { $ne: true } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -424,7 +424,8 @@ exports.getStory = async (req, res, next) => {
   try {
     const story = await Story.findOne({
       _id: req.params.id,
-      user: req.user.id
+      user: req.user.id,
+      isDeleted: { $ne: true }
     })
       .populate('coverImage', '-base64Data')
       .populate('backCoverImage', '-base64Data');
@@ -526,16 +527,16 @@ exports.deleteStory = async (req, res) => {
   const userId = req.user._id;
 
   try {
-    // 1️⃣ Verify story ownership
+    // Verify story ownership
     const story = await Story.findOne({ _id: storyId, user: userId });
     if (!story) {
       return res.status(404).json({ message: "Story not found" });
     }
 
-    // 2️⃣ Find all images related to the story
+    //Find all images related to the story
     const images = await Image.find({ story: storyId });
 
-    // 3️⃣ Delete images from S3
+    // Delete images from S3
     await Promise.all(
       images.map(img =>
         s3Service.deleteFromS3(img.s3Key, img.s3Bucket)
@@ -545,13 +546,13 @@ exports.deleteStory = async (req, res) => {
       )
     );
 
-    // 4️⃣ Delete images from DB
+    // Delete images from DB
     await Image.deleteMany({ story: storyId });
 
-    // 5️⃣ Delete story pages
+    // Delete story pages
     await StoryPage.deleteMany({ story: storyId });
 
-    // 6️⃣ Delete the story
+    // Delete the story
     await Story.deleteOne({ _id: storyId });
 
     return res.status(200).json({
@@ -567,6 +568,32 @@ exports.deleteStory = async (req, res) => {
   }
 };
 
+// @desc  Delete story for user (archive)
+// @route DELETE /api/story/archive/:storyId
+// @access Private
+exports.deleteStoryForUser = async (req, res) => {
+  const { storyId } = req.params;
+  const userId = req.user._id;
+  try {
+    // Verify story ownership
+    const story = await Story.findOne({ _id: storyId, user: userId });
+    if (!story) {
+      return res.status(404).json({ message: "Story not found" });
+    }
+    // Soft delete: mark as deleted
+    story.isDeleted = true;
+    await story.save();
+    return res.status(200).json({
+      message: "Story Deleted successfully"
+    });
+  } catch (error) {
+    console.error("Archive story error:", error);
+    return res.status(500).json({
+      message: "Failed to delete story",
+      error: error.message
+    });
+  }
+};
 
 // @desc    Upload custom genre files AND process them
 // @route   POST /api/story/upload-genre
@@ -622,7 +649,7 @@ exports.customGenre = async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ message: "Custom genre upload failed" });
+    res.status(500).json({ message: "Custom genre upload failed", error: err.message });
   }
 };
 

@@ -428,17 +428,6 @@ const GenerateStory = () => {
       const response = await api.post("/api/v1/story/start", dataToSend);
       const { storyId, data } = response.data;
 
-      // Store conversation ONLY for questionnaire users
-      // if (dataToSend.entryMode === "questionnaire" && data?.conversation) {
-      //   localStorage.setItem(
-      //     "conversationData",
-      //     JSON.stringify({
-      //       storyId,
-      //       conversation: data.conversation,
-      //     })
-      //   );
-      // }
-
       if (dataToSend.entryMode === "questionnaire" && data?.conversation) {
         const all = JSON.parse(localStorage.getItem("conversationData") || "{}");
 
