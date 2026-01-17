@@ -427,7 +427,7 @@ How would you like to continue?
 
       try {
         setLoading(true);
-        addBotMessage("📚 Uploading & training your custom genre...");
+        addBotMessage("📚 Uploading & training your custom genre... (please do not reload or close the page)");
 
         const res = await api.post("/api/v1/story/upload-genre", fd, {
           headers: { "Content-Type": "multipart/form-data" },

@@ -14,6 +14,7 @@ export default function QuestionerPage() {
   const [conversation, setConversation] = useState([]);
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [storyLoading, setStoryLoading] = useState(false);
 
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -106,6 +107,34 @@ export default function QuestionerPage() {
     }
   };
 
+  // Loading state for getting the final prompt
+   const [loadingPhase, setLoadingPhase] = useState(0);
+
+  useEffect(() => {
+    if (!storyLoading) {
+      setLoadingPhase(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingPhase((prev) => (prev + 1) % 6);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [storyLoading]);
+
+  const getLoadingText = () => {
+    const messages = [
+      "✨Thinking...",
+      "💫Crafting your story...",
+      "🌟Weaving the narrative...",
+      "✨Almost there...",
+      "🌟Thank you for your patience...",
+      "💫Putting on the finishing touches..."
+    ];
+    return messages[loadingPhase];
+  };
+
   /* -------------------- Finish -------------------- */
   const answeredCount = conversation.filter((msg) => msg && msg.question && msg.answer).length;
   const canFinishEarly = answeredCount >= MIN_QUESTIONS;
@@ -114,6 +143,7 @@ export default function QuestionerPage() {
   const handleGetPrompt = async () => {
     try {
       setLoading(true);
+      setStoryLoading(true);
 
       // Only send fully answered Q&A pairs to the gist generator
       const cleanedConversation = conversation.filter(
@@ -148,7 +178,7 @@ export default function QuestionerPage() {
           console.warn('Failed to fetch story genres, falling back to empty genres array', fetchErr?.response?.data || fetchErr);
         }
 
-        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist, genres: genresToSend });
+        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist, genres: genresToSend, storyId });
         previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
       } catch (previewErr) {
         console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
@@ -160,6 +190,7 @@ export default function QuestionerPage() {
       console.error("Gist API Error", err?.response?.data || err);
     } finally {
       setLoading(false);
+      setStoryLoading(false);
     }
   };
 
@@ -200,14 +231,15 @@ export default function QuestionerPage() {
               {msg.answer && (
                 <div className="flex justify-end mb-4">
                   <div className="bg-gray-800 rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%]">
-                    <p className="text-sm font-semibold text-gray-400 mb-1">You</p>
+                    <p className="text-sm font-semibold text-gray-400 mb-1">
+                      You
+                    </p>
                     <p className="text-white">{msg.answer}</p>
                   </div>
                 </div>
               )}
             </div>
           ))}
-
           {/* Optimistic pending answer (UI-only) */}
           {pendingAnswer && (
             <div className="flex justify-end mb-4">
@@ -225,40 +257,43 @@ export default function QuestionerPage() {
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
                   <div
                     className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
+                    style={{ animationDelay: "0.1s" }}></div>
                   <div
                     className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
+                    style={{ animationDelay: "0.2s" }}></div>
                 </div>
               </div>
             </div>
           )}
 
           <div ref={chatEndRef} />
+          {/* loading tag lines */}
+          {storyLoading && (
+            <p className="text-purple-500">{getLoadingText()}</p>
+          )}
         </div>
       </div>
 
-     { /* Input Area */}
-        <div className="px-6 py-6 bg-black ">
-          <div className="max-w-3xl mx-auto">
-            {!isMaxReached ? (
-          <>
-            {/* Helpful hint */}
-            {conversation.length > 0 && (
-              <div className="text-sm text-gray-400 mb-3">
-                You can answer up to {MAX_QUESTIONS} questions. After at least {MIN_QUESTIONS} answers, you may finish anytime.
-              </div>
-            )}
+      {/* Input Area */}
+      <div className="px-6 py-6 bg-black ">
+        <div className="max-w-3xl mx-auto">
+          {!isMaxReached ? (
+            <>
+              {/* Helpful hint */}
+              {conversation.length > 0 && (
+                <div className="text-sm text-gray-400 mb-3">
+                  You can answer up to {MAX_QUESTIONS} questions. After at least{" "}
+                  {MIN_QUESTIONS} answers, you may finish anytime.
+                </div>
+              )}
 
-            <div className="relative">
-              {/* Textarea */}
-              <textarea
-                ref={inputRef}
-                autoFocus
-                rows={1}
-                className="
+              <div className="relative">
+                {/* Textarea */}
+                <textarea
+                  ref={inputRef}
+                  autoFocus
+                  rows={1}
+                  className="
                   w-full resize-none
                   bg-[#0f172a]
                   text-white
@@ -270,34 +305,34 @@ export default function QuestionerPage() {
                   focus:ring-2 focus:ring-purple-600/40
                   scrollbar-hide
                 "
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none"
-                }}
-                placeholder="Type your answer..."
-                value={answer}
-                disabled={loading}
-                onChange={(e) => {
-                  setAnswer(e.target.value);
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${Math.min(
-                    e.target.scrollHeight,
-                    120
-                  )}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-              />
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
+                  placeholder="Type your answer..."
+                  value={answer}
+                  disabled={loading}
+                  onChange={(e) => {
+                    setAnswer(e.target.value);
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(
+                      e.target.scrollHeight,
+                      120,
+                    )}px`;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                />
 
-              {/* Send Button  */}
-              <button
-                onClick={handleSend}
-                disabled={loading || !answer.trim()}
-                className="
+                {/* Send Button  */}
+                <button
+                  onClick={handleSend}
+                  disabled={loading || !answer.trim()}
+                  className="
                   absolute right-4 top-1/2 -translate-y-1/2
                   flex items-center justify-center
                   text-gray-400
@@ -305,32 +340,29 @@ export default function QuestionerPage() {
                   transition
                   disabled:opacity-30
                   disabled:cursor-not-allowed
-                "
-              >
-                <Send size={22} />
-              </button>
-            </div>
+                ">
+                  <Send size={22} />
+                </button>
+              </div>
 
-
-
-            {/* Finish Early Button */}
-            {canFinishEarly && (
-              <button
-                onClick={handleGetPrompt}
-                disabled={loading}
-                className="mt-4 w-full bg-purple-700/40 hover:bg-purple-700 py-2 rounded-lg text-sm font-semibold transition"
-              >
-                Finish & Generate Story Now
-              </button>
-            )}
-          </>
+              {/* Finish Early Button */}
+              {canFinishEarly && (
+                <button
+                  onClick={handleGetPrompt}
+                  disabled={storyLoading}
+                  className="mt-4 w-full bg-purple-700/40 hover:bg-purple-700 py-2 rounded-lg text-sm font-semibold transition">
+                  {storyLoading
+                    ? "Generating..."
+                    : "Finish & Generate Story Now"}
+                </button>
+              )}
+            </>
           ) : (
             <button
               onClick={handleGetPrompt}
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition disabled:opacity-50"
-            >
-              {loading ? "Thinking..." : "Get My Story Summary"}
+              disabled={storyLoading}
+              className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition disabled:opacity-50">
+              {storyLoading ? "Generating..." : "Get My Story Summary"}
             </button>
           )}
         </div>
