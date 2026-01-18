@@ -52,18 +52,6 @@ const PlanSelector = ({ plans, selected, onSelect }) => {
             <p className="text-sm text-gray-400 mt-3">
               {plan.description}
             </p>
-
-            {/* Radio */}
-            {/* <div className="mt-6 flex items-center gap-2">
-              <input
-                type="radio"
-                checked={isSelected}
-                readOnly
-              />
-              <span className="text-sm">
-                Select plan
-              </span>
-            </div> */}
           </div>
         );
       })}
