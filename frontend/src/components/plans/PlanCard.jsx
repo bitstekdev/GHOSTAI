@@ -1,52 +1,68 @@
 import { Check, ArrowRight } from "lucide-react";
 
+const LIMIT_LABELS = {
+  maxPages: "Pages",
+  maxBooks: "Books",
+  faceSwaps: "Face swaps",
+  regenerations: "Regenerations",
+  edits: "Edits",
+  erases: "Erases",
+};
+
 const PlanCard = ({ plan, active, onSelect, onAction }) => {
+  const limits = plan.limits || {};
+
   return (
     <div
       onMouseEnter={onSelect}
       onClick={onSelect}
-      className={`relative p-6 sm:p-8 md:p-10 rounded-3xl min-h-[560px] border transition-all duration-500 cursor-pointer
-        ${
-          active
-            ? "bg-polishedPurple border-polishedPurple scale-105 shadow-[0_30px_70px_rgba(147,51,234,0.35)]"
-            : "bg-white/5 border-white/10 hover:scale-[1.02]"
-        }`}
+      className={`
+        relative rounded-2xl p-8 cursor-pointer transition-all duration-300
+        backdrop-blur-xl bg-gradient-to-b from-white/10 to-white/5
+        border border-white/10
+        ${active ? "ring-2 ring-purple-500 shadow-xl" : "hover:border-white/20"}
+      `}
     >
       {/* Badge */}
-      {(plan.isPopular || plan.badge) && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-2 rounded-full text-xs font-bold uppercase">
-          {plan.badge || "Popular"}
+      {plan.badge && (
+        <div className="absolute -top-3 right-6 bg-purple-600 text-white text-xs px-4 py-1 rounded-full font-semibold">
+          {plan.badge}
         </div>
       )}
 
-      {/* Plan Name */}
-      <h3 className="font-serif text-2xl sm:text-3xl mb-4 text-white">
-        {plan.name}
-      </h3>
-
-      {/* Price */}
-      <div className="text-3xl sm:text-4xl font-serif mb-2 text-white">
-        {plan.price === 0 ? "Free" : `₹${plan.price}`}
+      {/* Header */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
+        {plan.description && (
+          <p className="text-white/60 text-sm mt-1">{plan.description}</p>
+        )}
       </div>
 
-      {/* Validity */}
-      {plan.validityDays && plan.price > 0 && (
-        <p className="text-sm text-white/60 mb-4">
-          Valid for {plan.validityDays} days
-        </p>
-      )}
+      {/* Price */}
+      <div className="mb-6">
+        <div className="flex items-end gap-2">
+          <span className="text-4xl font-bold text-white">
+            ₹{plan.price}
+          </span>
+          <span className="text-white/60 text-sm">
+            / {plan.validityDays} days
+          </span>
+        </div>
+      </div>
 
-      {/* Description */}
-      <p className="text-white/60 mb-6">{plan.description}</p>
-
-      {/* Features */}
+      {/* Limits */}
       <ul className="space-y-3 mb-8">
-        {plan.features.map((feature, index) => (
-          <li key={index} className="flex gap-3 text-white/80">
-            <Check className="w-4 h-4 mt-1 text-purple-400 shrink-0" />
-            <span>{feature}</span>
-          </li>
-        ))}
+        {Object.entries(limits)
+          .filter(([, value]) => value > 0)
+          .map(([key, value]) => (
+            <li
+              key={key}
+              className="flex items-center gap-3 text-white/80 text-sm"
+            >
+              <Check className="w-4 h-4 text-purple-400" />
+              {value} {LIMIT_LABELS[key] || key}
+            </li>
+          ))}
       </ul>
 
       {/* CTA */}
@@ -55,14 +71,17 @@ const PlanCard = ({ plan, active, onSelect, onAction }) => {
           e.stopPropagation();
           onAction?.(plan);
         }}
-        className={`w-full py-4 rounded-full font-serif text-lg flex justify-center items-center gap-3 transition-all
+        className={`
+          w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2
+          transition-all
           ${
             active
-              ? "bg-white text-black"
-              : "bg-polishedPurple text-white hover:bg-white hover:text-black"
-          }`}
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-white/10 text-white hover:bg-white/20"
+          }
+        `}
       >
-        Choose Plan <ArrowRight />
+        Choose Plan <ArrowRight className="w-4 h-4" />
       </button>
     </div>
   );

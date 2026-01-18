@@ -21,11 +21,12 @@ import VerifyEmail from "./components/pages/VerifyEmail";
 import QuestionerPage from "./components/pages/QuestionerPage";
 import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
-import CommercingRoot from "./components/pages/CommercingRoot";
 import GeneratorPage from "./components/pages/GeneratorPage";
-import PlansPage from "./components/pages/PlansPage";
-// import BackgroundGenerator from "./components/pages/BackgroundGenerator";
-// import GenerateCovers from "./components/pages/GenerateCovers";
+import InitialPlansPage from "./components/plans/InitialPlansPage.jsx";
+import UpgradePlansPage from "./components/plans/UpgradePlansPage.jsx";
+
+import CartPage from "./components/Cart/CartPage.jsx";
+import AddToCartPage from "./components/Cart/AddToCartPage.jsx";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -84,7 +85,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/generatestory" element={<GenerateStory />} />
           <Route path="/templateselection/:storyId" element={<TemplateSelection />} />
-          <Route path="/flipbook/:storyId" element={<CommercingRoot />} />
+          <Route path="/flipbook/:storyId" element={<FlipBook />} />
           <Route path="/flipbook/mockup" element={<FlipBookMockUp />} />
           <Route path="/characterdump" element={<CharacterDump />} />
           <Route path="/datadump" element={<DataDump />} />
@@ -94,9 +95,13 @@ const App = () => {
           <Route path="/questioner/:storyId" element={<QuestionerPage />} />
           <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
           <Route path="/generatorPage/:storyId" element={<GeneratorPage />} />
-          <Route path="/plans" element={<PlansPage />} />
-          {/* <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} /> */}
-          {/* <Route path="/generatecovers/:storyId" element={<GenerateCovers />} /> */}
+          <Route path="/plans" element={<InitialPlansPage />} />
+          <Route path="/upgradeplan" element={<UpgradePlansPage />} />
+
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/add-to-cart/:storyId" element={<AddToCartPage />} />
+
+
 
           <Route path="*" element={<Navigate to="/generatestory" replace />} />
         </Route>

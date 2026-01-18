@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { ChevronLeft, ChevronRight, Edit, Scissors, Users, Loader, RefreshCcw, History } from "lucide-react";
 import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import FaceSwapModal from "../helperComponents/FaceSwapModel.jsx";
 import EditModal from "../helperComponents/EditModel.jsx";
 import ImageHistoryModal from "../helperComponents/ImageHistoryModal.jsx";
+import { AppContext } from "../../context/AppContext";
 import confetti from "canvas-confetti";
 import "../../styles/story-content.css";
 // ///////////////////////////////DUMMY DATA/////////////////////////////////////
@@ -25,6 +26,7 @@ import Image2 from "../../assets/images/landscape.png";
 
 // const StoryFlipbook = ({ storyId = "693978d16604fe912fe8cd15" }) => {
 const StoryFlipbook = ({ storyId: storyIdProp, onAddToCart, onOrderNow }) => {
+  const { navigateTo } = useContext(AppContext);
   const [currentPage, setCurrentPage] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -786,16 +788,17 @@ pages.forEach((page, index) => {
   const handleAddToCartClick = () => {
     if (!storyData?.story) return;
 
-    onAddToCart?.({
-      id: storyId,
-      title: storyData.story.title,
-      genre: storyData.story.genre,
-      orientation: storyData.story.orientation,
-      coverImage: storyData.story.coverImage,
-      backCoverImage: storyData.story.backCoverImage,
-      backCoverBlurb: storyData.story.backCoverBlurb,
-      pages: storyData.pages,
-    });
+    // onAddToCart?.({
+    //   id: storyId,
+    //   title: storyData.story.title,
+    //   genre: storyData.story.genre,
+    //   orientation: storyData.story.orientation,
+    //   coverImage: storyData.story.coverImage,
+    //   backCoverImage: storyData.story.backCoverImage,
+    //   backCoverBlurb: storyData.story.backCoverBlurb,
+    //   pages: storyData.pages,
+    // });
+    navigateTo(`/add-to-cart/${storyId}`);
   };
 
   const handleOrderNowClick = () => {
