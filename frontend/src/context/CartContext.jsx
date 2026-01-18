@@ -1,61 +1,72 @@
-import React, { useState, createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  getCartApi,
+  addToCartApi,
+  updateCartApi,
+  removeCartApi,
+  clearCartApi,
+} from "../components/Cart/cart.api";
 
-// ==================== CART CONTEXT ====================
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const addToCart = (story) => {
-    const existingItem = cart.find(item => item.id === story.id);
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === story.id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { 
-        id: story.id, 
-        story, 
-        quantity: 1, 
-        price: 29.99 
-      }]);
-    }
+  const fetchCart = async () => {
+    setLoading(true);
+    const res = await getCartApi();
+    setCart(res.data.cart || []);
+    setLoading(false);
   };
 
-  const removeFromCart = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const addToCart = async (payload) => {
+    await addToCartApi(payload);
+    fetchCart();
   };
 
-  const updateQuantity = (id, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-    } else {
-      setCart(cart.map(item => 
-        item.id === id 
-          ? { ...item, quantity }
-          : item
-      ));
-    }
+  const updateQuantity = async (storyId, planId, quantity) => {
+    await updateCartApi({ storyId, planId, quantity });
+    fetchCart();
   };
 
-  const clearCart = () => {
+  const removeItem = async (storyId, planId) => {
+    await removeCartApi({ storyId, planId });
+    fetchCart();
+  };
+
+  const clearCart = async () => {
+    await clearCartApi();
     setCart([]);
   };
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+
+  const totalPrice = cart.reduce(
+    (sum, i) => sum + i.planId.price * i.quantity,
+    0
+  );
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        loading,
+        addToCart,
+        updateQuantity,
+        removeItem,
+        clearCart,
+        totalItems,
+        totalPrice,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within CartProvider');
-  return context;
-};
+export const useCart = () => useContext(CartContext);

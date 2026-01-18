@@ -108,7 +108,7 @@ const navigateTo = (path, opts) => {
 //----------------get profile---------------------
 const getProfile = async () => {
   try {
-    const res = await api.get(`${backendUrl}/api/auth/me`);
+    const res = await api.get(`/api/auth/me`);
     setUserData(res.data.data);
     return res.data.data;
   } catch (err) {
@@ -123,7 +123,7 @@ const getProfile = async () => {
 const updateProfile = async (profile) => {
   try {
     const res = await api.put(
-      `${backendUrl}/api/auth/update-profile`,
+      `/api/auth/update-profile`,
       profile
     );
     setUserData(res.data.data);
@@ -137,7 +137,7 @@ const updateProfile = async (profile) => {
 const changePassword = async (security) => {
   try {
     const res = await api.post(
-      `${backendUrl}/api/auth/change-password`,
+      `/api/auth/change-password`,
       {
         currentPassword: security.currentPassword,
         newPassword: security.newPassword,
@@ -162,7 +162,7 @@ const fetchAddresses = async () => {
   try {
     setLoadingAddresses(true);
     setAddressError("");
-    const { data } = await api.get(`${backendUrl}/api/v1/address`);
+    const { data } = await api.get(`/api/v1/address`);
     if (data.success) {
       // console.log("Fetched addresses:", data.data);
       setAddresses(data.data);
@@ -180,7 +180,7 @@ const fetchAddresses = async () => {
 
 const createAddress = async (addressData) => {
   try {
-    const { data } = await api.post(`${backendUrl}/api/v1/address`, {
+    const { data } = await api.post(`/api/v1/address`, {
       recipientName: addressData.name,
       phone: addressData.phone,
       address: addressData.address,
@@ -199,7 +199,7 @@ const createAddress = async (addressData) => {
 //--------------logout---------------------
   const logout = async () => {
     try {
-      await api.post(`${backendUrl}/api/auth/logout`, {});
+      await api.post(`/api/auth/logout`, {});
       setIsAuthenticated(false);
       setUserData(null);
       nav('/signin');
@@ -213,6 +213,13 @@ const createAddress = async (addressData) => {
       return { success: false };
     }
   };
+
+
+  //subscription plans api 
+  const getPlansByContext = async (context = "all") => {
+  const res = await api.get(`/api/v1/subscriptions/plans/byShowOnContext?context=${context}`);
+  return res.data.plans;
+};
 
 
 
@@ -243,6 +250,7 @@ const createAddress = async (addressData) => {
     addresses,
     loadingAddresses,
     addressError,
+    getPlansByContext
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RefreshCcw, CreditCard, Truck, Info } from "lucide-react";
+import { RefreshCcw, CreditCard, Truck, Info, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Joyride from "react-joyride";
 import { AppContext } from "../../context/AppContext";
@@ -171,6 +171,13 @@ const Dashboard = () => {
         </h1>
 
         {/* Tour Trigger Button */}
+        <div className="flex items-center gap-4">
+          <button
+          onClick={() => navigate("/cart")}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors mr-4"
+          title="Go to Cart">
+          <ShoppingCart size={18} />
+        </button>
         <button
           onClick={startOnboardingTour}
           className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors"
@@ -178,6 +185,7 @@ const Dashboard = () => {
           <Info size={18} />
           <span className="hidden md:inline">Start Tour</span>
         </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
