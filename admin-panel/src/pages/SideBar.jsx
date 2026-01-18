@@ -39,7 +39,7 @@ export default function Sidebar({
   // Menu list + routing paths
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { id: "create", label: "Create Plans", icon: PenTool, path: "/generatestory" },
+    { id: "create", label: "Create Plans", icon: PenTool, path: "/createplans" },
     { id: "plans", label: "Plans", icon: Crown, path: "/plans" },
     { id: "orders", label: "Orders ", icon: History, path: "/orderhistory" },
   ];

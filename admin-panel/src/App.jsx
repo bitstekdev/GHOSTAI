@@ -90,6 +90,8 @@ import Dashboard from "./pages/Dashboard";
 import OrderHistory from "./pages/OrderHistory";
 import VerifyEmail from "./pages/VerifyEmail";
 import PlansPage from "./pages/PlansPage";
+import CreatePlans from "./pages/CreatePlans";
+
 
 // Route guards
 import ProtectedRoute from "./Routes/ProtectedRoute";
@@ -144,6 +146,7 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/createplans" element={<CreatePlans />} />
           <Route path="/orderhistory" element={<OrderHistory />} />
           <Route path="/plans" element={<PlansPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
