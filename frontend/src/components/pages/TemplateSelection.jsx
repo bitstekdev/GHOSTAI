@@ -14,8 +14,8 @@ const TemplateSelection = () => {
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
-  const incomingPreviews = location.state?.previews || null;
-  const [previewImages, setPreviewImages] = useState(incomingPreviews);
+  // const incomingPreviews = location.state?.previews || null;
+  const [previewImages, setPreviewImages] = useState(null);
 
   const templates = [
     { name: "Landscape", size: "1536x1024", aspect: "landscape" },
@@ -32,13 +32,27 @@ const TemplateSelection = () => {
         const response = await api.get(`/api/v1/story/${storyIdParam}`);
         if (import.meta.env.DEV) console.log("Story data loaded");
         setStoryData(response.data.data.story);
+        
+        // Set preview images if available
+        if (response.data.data.story?.previewImages) {
+            const previewsArray = response.data.data.story.previewImages;
+
+            const previewMap = previewsArray.reduce((acc, img) => {
+              if (img.orientation) {
+                acc[img.orientation] = img;
+              }
+              return acc;
+            }, {});
+
+            setPreviewImages(previewMap);
+          }
+
       } catch (error) {
         console.error("Error fetching story data:", error);
       }
     };
 
     fetchStoryData();
-    if (incomingPreviews) setPreviewImages(incomingPreviews);
   }, []);
 
   
@@ -80,8 +94,14 @@ const TemplateSelection = () => {
       {/* <button className="bg-red-700" onClick={fetchdata}>test btn</button> */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6">
         <div className="p-4 md:p-6">
-          <h1 className="text-lg md:text-4xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Genre</h1>
-          <p className="text-white text-sm md:text-base">{(Array.isArray(storyData?.genres) && storyData.genres.length) ? storyData.genres.join(', ') : storyData?.genre || '—'}</p>
+          <h1 className="text-lg md:text-4xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">
+            Genre
+          </h1>
+          <p className="text-white text-sm md:text-base">
+            {Array.isArray(storyData?.genres) && storyData.genres.length
+              ? storyData.genres.join(", ")
+              : storyData?.genre || "—"}
+          </p>
 
           <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">
             Character
@@ -89,49 +109,58 @@ const TemplateSelection = () => {
           <div className="flex flex-wrap gap-2">
             {storyData?.characterDetails?.map((char, index) => (
               <span
-                key={index-1}
+                key={index - 1}
                 className="bg-gray-700 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm">
                 {char.name}
               </span>
             ))}
           </div>
           {/* <h2 className="text-xl font-bold text-purple-400 mt-6 mb-2">Gist <small>(you can edit this prompt)</small> </h2> */}
-          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">Prompt <small className="text-xs md:text-sm text-white font-light">(you can edit this prompt)</small> </h2>
+          <h2 className="text-lg md:text-xl font-bold text-purple-400 mt-4 md:mt-6 mb-2">
+            Prompt{" "}
+            <small className="text-xs md:text-sm text-white font-light">
+              (you can edit this prompt)
+            </small>{" "}
+          </h2>
           <textarea
             className="text-gray-300 text-xs md:text-sm leading-relaxed border border-gray-700 rounded-lg w-full p-3 md:p-4 bg-gray-800 min-h-[120px]"
             rows={5}
             value={storyData?.gist}
             onChange={(e) => {
-            setStoryData((prev) => ({ ...prev, gist: e.target.value }));
-            // auto-resize: reset height then set to scrollHeight
-            e.target.style.height = "auto";
-            e.target.style.height = `${e.target.scrollHeight}px`;
-          }}
+              setStoryData((prev) => ({ ...prev, gist: e.target.value }));
+              // auto-resize: reset height then set to scrollHeight
+              e.target.style.height = "auto";
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
           />
 
-            {/* loading indicator */}
-            {loading && (
-              <div className="mt-4 md:mt-6">
-                <p className="text-center text-purple-300 text-xs md:text-sm mb-2">
-                  Generating scenes…✨ wait for 1 to 2 minutes.
-                </p>
-                <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-[scroll_1.5s_linear_infinite]"></div>
-                </div>
+          {/* loading indicator */}
+          {loading && (
+            <div className="mt-4 md:mt-6">
+              <p className="text-center text-purple-300 text-xs md:text-sm mb-2">
+                Generating scenes…✨ wait for 1 to 2 minutes.
+              </p>
+              <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-[scroll_1.5s_linear_infinite]"></div>
               </div>
-            )}
+            </div>
+          )}
 
-
-          <button className="w-full bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white py-3 md:py-3.5 rounded-lg mt-4 md:mt-6 transition-colors text-sm md:text-base font-semibold"
-           onClick={handleSubmit}
-           disabled={loading}
-          >
+          <button
+            className="w-full bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white py-3 md:py-3.5 rounded-lg mt-4 md:mt-6 transition-colors text-sm md:text-base font-semibold"
+            onClick={handleSubmit}
+            disabled={loading}>
             {loading ? "Generating..." : "Generate Story"}
           </button>
         </div>
 
         <div className="p-4 md:p-0">
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 ">Book Templates <small className="text-xs md:text-sm text-white font-light">(select one template)</small></h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 ">
+            Book Templates{" "}
+            <small className="text-xs md:text-sm text-white font-light">
+              (select one template)
+            </small>
+          </h2>
 
           <div className="relative">
             <div className="overflow-hidden">
@@ -151,15 +180,18 @@ const TemplateSelection = () => {
                         template.aspect === "portrait"
                           ? "aspect-[2/3]"
                           : template.aspect === "square"
-                          ? "aspect-square"
-                          : "aspect-[3/2]"
+                            ? "aspect-square"
+                            : "aspect-[3/2]"
                       } 
                         bg-gray-800 flex items-center justify-center mx-auto
                         max-h-[50vh] md:max-h-[70vh] w-auto relative`}
                       style={{ height: "auto" }}>
-                      {previewImages && previewImages[template.aspect] ? (
+                      {previewImages &&
+                      previewImages[template.aspect] &&
+                      previewImages[template.aspect].s3Url && 
+                      previewImages[template.aspect].s3Url !== "reviewed" ? (
                         <img
-                          src={`data:image/png;base64,${previewImages[template.aspect].base64 || previewImages[template.aspect]}`}
+                          src={previewImages[template.aspect].s3Url}
                           alt={template.name}
                           className="w-full h-full object-cover absolute inset-0"
                         />
@@ -171,14 +203,21 @@ const TemplateSelection = () => {
                         />
                       )}
                       <div className="text-center relative z-10 bg-black/60 px-4 py-3 rounded-lg backdrop-blur-sm">
-                     <div className="flex items-center justify-center gap-2">
-                          <p className="text-white font-bold text-sm md:text-base">{template.name}</p>
+                        <div className="flex items-center justify-center gap-2">
+                          <p className="text-white font-bold text-sm md:text-base">
+                            {template.name}
+                          </p>
                           {selectedTemplate === idx && (
-                            <BadgeCheck size={18} className="text-green-400 md:w-5 md:h-5" />
+                            <BadgeCheck
+                              size={18}
+                              className="text-green-400 md:w-5 md:h-5"
+                            />
                           )}
-                     </div>
+                        </div>
 
-                        <p className="text-gray-400 text-xs md:text-sm">{template.size}</p>
+                        <p className="text-gray-400 text-xs md:text-sm">
+                          {template.size}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -197,7 +236,7 @@ const TemplateSelection = () => {
             <button
               onClick={() =>
                 setSelectedTemplate(
-                  Math.min(templates.length - 1, selectedTemplate + 1)
+                  Math.min(templates.length - 1, selectedTemplate + 1),
                 )
               }
               disabled={loading}
@@ -213,7 +252,9 @@ const TemplateSelection = () => {
                 disabled={loading}
                 onClick={() => setSelectedTemplate(idx)}
                 className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all touch-manipulation ${
-                  selectedTemplate === idx ? "bg-purple-500 scale-110" : "bg-gray-600"
+                  selectedTemplate === idx
+                    ? "bg-purple-500 scale-110"
+                    : "bg-gray-600"
                 }`}
               />
             ))}

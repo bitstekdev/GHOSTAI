@@ -1,0 +1,4 @@
+2026-01-18 13:27:42,871 [INFO] storybook_api - [REQ_START] id=8e8cc7548538 method=GET path=/docs
+2026-01-18 13:27:43,158 [INFO] storybook_api - [REQ_END] id=8e8cc7548538 status=200 duration_ms=286.44
+2026-01-18 13:27:43,657 [INFO] storybook_api - [REQ_START] id=7ff0001f8d3a method=GET path=/openapi.json
+2026-01-18 13:27:43,996 [INFO] storybook_api - [REQ_END] id=7ff0001f8d3a status=200 duration_ms=338.97

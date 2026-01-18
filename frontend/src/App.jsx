@@ -21,8 +21,6 @@ import VerifyEmail from "./components/pages/VerifyEmail";
 import QuestionerPage from "./components/pages/QuestionerPage";
 import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
-// import BackgroundGenerator from "./components/pages/BackgroundGenerator";
-// import GenerateCovers from "./components/pages/GenerateCovers";
 import CommercingRoot from "./components/pages/CommercingRoot";
 import GeneratorPage from "./components/pages/GeneratorPage";
 import PlansPage from "./components/pages/PlansPage";
