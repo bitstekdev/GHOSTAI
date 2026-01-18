@@ -54,7 +54,9 @@ exports.signup = async (req, res, next) => {
     await user.save();
 
     // Send verification email
-    await sendVerificationEmail(user, emailToken);
+    // await sendVerificationEmail(user, emailToken);
+    await sendVerificationEmail(user, emailToken, req);
+
 
     res.status(201).json({
       success: true,
@@ -222,7 +224,9 @@ exports.resendVerification = async (req, res, next) => {
     await user.save();
 
     // Send email
-    await sendVerificationEmail(user, emailToken);
+    // await sendVerificationEmail(user, emailToken);
+    await sendVerificationEmail(user, emailToken, req);
+
 
     res.status(200).json({
       success: true,
@@ -255,7 +259,8 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Send email
-    await sendPasswordResetEmail(user, resetToken);
+    // await sendPasswordResetEmail(user, resetToken);
+    await sendPasswordResetEmail(user, resetToken, req);
 
     res.status(200).json({
       success: true,
