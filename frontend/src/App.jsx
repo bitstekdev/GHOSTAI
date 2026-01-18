@@ -25,6 +25,7 @@ import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
 // import GenerateCovers from "./components/pages/GenerateCovers";
 import CommercingRoot from "./components/pages/CommercingRoot";
 import GeneratorPage from "./components/pages/GeneratorPage";
+import PlansPage from "./components/pages/PlansPage";
 // import BackgroundGenerator from "./components/pages/BackgroundGenerator";
 // import GenerateCovers from "./components/pages/GenerateCovers";
 
@@ -95,6 +96,7 @@ const App = () => {
           <Route path="/questioner/:storyId" element={<QuestionerPage />} />
           <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
           <Route path="/generatorPage/:storyId" element={<GeneratorPage />} />
+          <Route path="/plans" element={<PlansPage />} />
           {/* <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} /> */}
           {/* <Route path="/generatecovers/:storyId" element={<GenerateCovers />} /> */}
 
