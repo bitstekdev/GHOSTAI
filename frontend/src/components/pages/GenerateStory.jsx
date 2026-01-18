@@ -38,6 +38,7 @@ const GenerateStory = () => {
   const [currentCharacter, setCurrentCharacter] = useState(null);
   const [showIntro, setShowIntro] = useState(true);
   const [showFirstQuestion, setShowFirstQuestion] = useState(false);
+  const [storyLoading, setStoryLoading] = useState(false);
 
   // Use tour context
   const {
@@ -221,7 +222,7 @@ const GenerateStory = () => {
 
       case "characterName":
         setCurrentCharacter(prev => ({ ...prev, name: input }));
-        addBotMessage(`Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "yogesh : indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`);
+        addBotMessage(`Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`);
         setCurrentStep("characterDetails");
         break;
 
@@ -335,6 +336,37 @@ How would you like to continue?
     setCurrentStep("confirm");
   };
 
+
+  // Loading state for getting the final prompt----------------------
+   const [loadingPhase, setLoadingPhase] = useState(0);
+
+  useEffect(() => {
+    if (!storyLoading) {
+      setLoadingPhase(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingPhase((prev) => (prev + 1) % 6);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [storyLoading]);
+
+  const getLoadingText = () => {
+    const messages = [
+      "✨Thinking...",
+      "💫Crafting your story...",
+      "🌟Weaving the narrative...",
+      "✨Almost there...",
+      "🌟Thank you for your patience...",
+      "💫Putting on the finishing touches..."
+    ];
+    return messages[loadingPhase];
+  };
+
+
+// Submit handler to start story generation
   const handleSubmit = async (payload) => {
     const dataToSend = payload || formData;
 
@@ -384,25 +416,31 @@ How would you like to continue?
         );
       }
 
-      addBotMessage("Redirecting you now... 🎉");
+      setStoryLoading(true);
+      
       setTimeout(async () => {
+        addBotMessage("Redirecting you now... 🎉");
         if (dataToSend.entryMode === "questionnaire") {
           navigateTo(`/questioner/${storyId}`);
         } else {
+          addBotMessage("Generating Story");
           // For gist users: generate previews before navigating so TemplateSelection can display them
           try {
             const previewRes = await api.post('/api/v1/images/gist/preview-images', {
               gist: dataToSend.gist,
-              genres: dataToSend.genres || []
+              genres: dataToSend.genres || [],
+              storyId
             });
 
-            const previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
-            navigateTo(`/templateselection/${storyId}`, { state: { previews } });
+            navigateTo(`/templateselection/${storyId}`);
           } catch (previewErr) {
             console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
+            // addBotMessage(`❌${previewErr?.response?.data?.message}`);
             // fallback: navigate without previews
             navigateTo(`/templateselection/${storyId}`);
-          }
+          } finally {
+            setStoryLoading(false);
+          }  
         }
       }, 1200);
     } catch (error) {
@@ -647,7 +685,11 @@ How would you like to continue?
                 </div>
               )}
 
-              <div ref={messagesEndRef} />
+               {/* loading tag lines */}
+          {storyLoading && (
+            <p className="text-purple-500 mb-10">{getLoadingText()}</p>
+          )}
+          <div ref={messagesEndRef} />
             </div>
           )}
         </div>

@@ -162,7 +162,7 @@ const fetchAddresses = async () => {
   try {
     setLoadingAddresses(true);
     setAddressError("");
-    const { data } = await api.get(`${backendUrl}/api/address`);
+    const { data } = await api.get(`${backendUrl}/api/v1/address`);
     if (data.success) {
       // console.log("Fetched addresses:", data.data);
       setAddresses(data.data);
@@ -180,7 +180,7 @@ const fetchAddresses = async () => {
 
 const createAddress = async (addressData) => {
   try {
-    const { data } = await api.post(`${backendUrl}/api/address`, {
+    const { data } = await api.post(`${backendUrl}/api/v1/address`, {
       recipientName: addressData.name,
       phone: addressData.phone,
       address: addressData.address,

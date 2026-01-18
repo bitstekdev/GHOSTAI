@@ -15,6 +15,7 @@ export default function QuestionerPage() {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [storyLoading, setStoryLoading] = useState(false);
+  const [planError, setPlanError] = useState(null);
 
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -167,6 +168,7 @@ export default function QuestionerPage() {
 
       // Generate previews via FastAPI through backend (no storage)
       let previews = null;
+      // let previewFailed = false;
       try {
         // Fetch story to obtain the selected learned style(s)
         let genresToSend = [];
@@ -181,8 +183,17 @@ export default function QuestionerPage() {
         const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist, genres: genresToSend, storyId });
         previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
       } catch (previewErr) {
+        // previewFailed = true;
         console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
+        // setPlanError(previewErr?.response?.data?.message || "failed");
       }
+
+      // if (previewFailed) {
+      //   setLoading(false);
+      //   setStoryLoading(false);
+      //   return; 
+      // }
+
 
       if (storyId) setStoryId(storyId);
       navigateTo(`/templateselection/${storyId}`, { state: { previews } });
@@ -271,6 +282,13 @@ export default function QuestionerPage() {
           {storyLoading && (
             <p className="text-purple-500">{getLoadingText()}</p>
           )}
+          {/* {planError && (
+        <div className="mt-4 p-4 bg-red-800/30 border border-red-600 rounded-lg">
+          <p className="text-red-300">
+            ⚠️ {planError}. Please upgrade your plan to access this feature.
+          </p>
+        </div>
+          )}   */}
         </div>
       </div>
 

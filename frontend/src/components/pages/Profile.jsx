@@ -38,7 +38,6 @@ const [profileMsg, setProfileMsg] = useState("");
   });
 
 const { getProfile, updateProfile, changePassword, fetchAddresses, createAddress, addresses, loadingAddresses, addressError, backendUrl } = useContext(AppContext);
-console.log("Backend URL in Profile:", addresses);
 
 // ----------- Fetch Profile Data & Addresses------------
 useEffect(() => {
@@ -108,7 +107,7 @@ useEffect(() => {
   // Update address
 const updateAddress = async (id, payload) => {
   try {
-    const { data } = await api.put(`${backendUrl}/api/address/${id}`, payload);
+    const { data } = await api.put(`${backendUrl}/api/v1/address/${id}`, payload);
     return data;
   } catch (error) {
     return {
@@ -122,7 +121,7 @@ const updateAddress = async (id, payload) => {
 // Delete address
 const deleteAddress = async (id) => {
   try {
-    const { data } = await api.delete(`${backendUrl}/api/address/${id}`);
+    const { data } = await api.delete(`${backendUrl}/api/v1/address/${id}`);
     return data;
   } catch (error) {
     return {

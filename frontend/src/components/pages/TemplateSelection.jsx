@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import api from "../../services/axiosInstance";
 import { AppContext } from "../../context/AppContext";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import { ProgressStep3 } from '../helperComponents/Steps.jsx'
 import storyImage from "../../assets/images/story-image-1.jpg";
@@ -13,8 +13,6 @@ const TemplateSelection = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(0);
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
-  // const incomingPreviews = location.state?.previews || null;
   const [previewImages, setPreviewImages] = useState(null);
 
   const templates = [
