@@ -99,7 +99,7 @@ const orderSchema = new mongoose.Schema(
       number: String,
       pdfUrl: String,
       generatedAt: Date
-    }
+    },
   },
   { timestamps: true }
 );

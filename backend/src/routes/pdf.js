@@ -6,6 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 
+const Story = require("./models/Story")
 const { generateStorybookPdf } = require('../pdf/fonts/generateStorybookPdf');
 
 // ======================================================
@@ -24,6 +25,8 @@ if (!fs.existsSync(tempDir)) {
 
 router.post('/generate-pdf', async (req, res) => {
   const { storyData } = req.body;
+
+//  const storyData = await Story.findOne(_id : storyId); 
 
   if (!storyData) {
     return res.status(400).json({ error: 'Missing storyData' });

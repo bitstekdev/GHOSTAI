@@ -1,65 +1,69 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  config.withCredentials = true;
-  return config;
-});
+/* =========================
+   Request Interceptor
+========================= */
+api.interceptors.request.use(
+  (config) => {
+    config.withCredentials = true;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+/* =========================
+   Refresh Token Handling
+========================= */
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+const processQueue = (error) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve();
   });
-
   failedQueue = [];
 };
 
+/* =========================
+   Response Interceptor
+========================= */
 export const setupAxiosInterceptors = (onLogout) => {
   const interceptor = api.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
 
-      // If 401 and not already retried, try to refresh token
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      if (
+        error.response?.status === 401 &&
+        !originalRequest._retry
+      ) {
         if (isRefreshing) {
-          // If already refreshing, queue this request
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
-          })
-            .then(() => api(originalRequest))
-            .catch((err) => Promise.reject(err));
+          }).then(() => api(originalRequest));
         }
 
         originalRequest._retry = true;
         isRefreshing = true;
 
         try {
-          await api.post('/api/auth/refresh-token');
-          processQueue(null);
+          await api.post("/api/auth/refresh-token");
+          processQueue();
           isRefreshing = false;
-          // Retry original request
           return api(originalRequest);
         } catch (refreshError) {
-          processQueue(refreshError, null);
+          processQueue(refreshError);
           isRefreshing = false;
-          // Refresh failed, trigger logout
-          if (onLogout) {
-            onLogout();
-          }
+          onLogout?.();
           return Promise.reject(refreshError);
         }
       }
@@ -68,7 +72,6 @@ export const setupAxiosInterceptors = (onLogout) => {
     }
   );
 
-  // Return cleanup function
   return () => {
     api.interceptors.response.eject(interceptor);
   };
