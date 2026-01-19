@@ -228,6 +228,80 @@ const createAddress = async (addressData) => {
 
 
 
+// -------------------
+// Subscription States
+// -------------------
+const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+const [activeSubscription, setActiveSubscription] = useState(null);
+const [usageLeft, setUsageLeft] = useState(null);
+const [subscriptionHistory, setSubscriptionHistory] = useState([]);
+const [loadingSubscription, setLoadingSubscription] = useState(false);
+
+// fetch subscription status
+const fetchSubscriptionStatus = async () => {
+  console.log("Fetching subscription status...");
+  try {
+    setLoadingSubscription(true);
+    const { data } = await api.get("/api/v1/user-subscriptions/status");
+    setSubscriptionStatus(data);
+    return data;
+  } catch (err) {
+    console.error("Failed to fetch subscription status", err);
+    setSubscriptionStatus(null);
+    return null;
+  } finally {
+    setLoadingSubscription(false);
+  }
+};
+// fetch active subscription
+const fetchActiveSubscription = async () => {
+  try {
+    const { data } = await api.get("/api/v1/user-subscriptions/active");
+    setActiveSubscription(data);
+    return data;
+  } catch (err) {
+    console.error("Failed to fetch active subscription", err);
+    setActiveSubscription(null);
+    return null;
+  }
+};
+// fetch usage left
+const fetchUsageLeft = async () => {
+  try {
+    const { data } = await api.get("/api/v1/user-subscriptions/usage");
+    setUsageLeft(data);
+    return data;
+  } catch (err) {
+    console.error("Failed to fetch usage left", err);
+    setUsageLeft(null);
+    return null;
+  }
+};
+// fetch subscription history
+const fetchSubscriptionHistory = async () => {
+  try {
+    const { data } = await api.get("/api/v1/user-subscriptions/history");
+    if (data.success) {
+      setSubscriptionHistory(data.history);
+      return data.history;
+    }
+  } catch (err) {
+    console.error("Failed to fetch subscription history", err);
+    setSubscriptionHistory([]);
+    return [];
+  }
+};
+
+// On mount, check if user is logged in and fetch subscription data
+// useEffect(() => {
+// if (!isAuthenticated && !userData) {
+//   // fetch subscription data
+//   fetchSubscriptionStatus();
+//   fetchActiveSubscription();
+//   fetchUsageLeft();
+//   fetchSubscriptionHistory();
+// }
+// }, [isAuthenticated, userData]);
 
 
 
@@ -255,7 +329,18 @@ const createAddress = async (addressData) => {
     addresses,
     loadingAddresses,
     addressError,
-    getPlansByContext
+    getPlansByContext,
+    //subscription----
+    subscriptionStatus,
+    activeSubscription,
+    usageLeft,
+    subscriptionHistory,
+    loadingSubscription,
+    fetchSubscriptionStatus,
+    fetchActiveSubscription,
+    fetchUsageLeft,
+    fetchSubscriptionHistory,
+
   };
 
   return (

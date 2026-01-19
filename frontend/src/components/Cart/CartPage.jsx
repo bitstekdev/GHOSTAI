@@ -20,7 +20,7 @@ const Cart = () => {
     totalPrice,
     clearCart,
   } = useCart();
-  console.log("cart items:", cart);
+//   console.log("cart items:", cart);
 
   // EMPTY CART
   if (!cart.length) {

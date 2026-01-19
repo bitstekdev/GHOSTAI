@@ -360,7 +360,8 @@ How would you like to continue?
       "🌟Weaving the narrative...",
       "✨Almost there...",
       "🌟Thank you for your patience...",
-      "💫Putting on the finishing touches..."
+      "💫Putting on the finishing touches...",
+      "✨Finalizing..."
     ];
     return messages[loadingPhase];
   };

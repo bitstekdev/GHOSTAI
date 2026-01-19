@@ -14,6 +14,7 @@ const TemplateSelection = () => {
   const [storyData, setStoryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [previewImages, setPreviewImages] = useState(null);
+  const [error, setError] = useState(null);
 
   const templates = [
     { name: "Landscape", size: "1536x1024", aspect: "landscape" },
@@ -80,7 +81,9 @@ const TemplateSelection = () => {
       navigateTo(`/titlegenerator/${storyIdParam}`);
       if (import.meta.env.DEV) console.log("Story generation started");
     } catch (error) {
-      console.error("Error generating story:", error);
+      console.error("Error generating story:", error.response.data.message);
+      setError(error?.response?.data?.message || "An error occurred");
+      navigateTo(`/plans`, { state: { from: "templateSelection", storyId: storyIdParam, errorMsg: error?.response?.data?.message || "An error occurred" } });
     } finally {
       setLoading(false);
     }

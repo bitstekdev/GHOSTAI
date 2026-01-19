@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowUpRight, X } from 'lucide-react';
+import { ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Joyride from 'react-joyride';
 import api from '../../services/axiosInstance';
@@ -227,7 +227,15 @@ const handleRename = (story) => {
       
       {/* Stories in Progress */}
       <div className="stories-in-progress-section mb-12">
+        <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white mb-6">Stories in Progress</h2>
+        <button
+          onClick={() => navigate("/cart")}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors mr-4"
+          title="Go to Cart">
+          <ShoppingCart size={18} />
+        </button>
+        </div>
         <div className="space-y-3">
           {storiesInProgress.length === 0 && (
             <p className="text-gray-400">No stories in progress right now.</p>
