@@ -98,6 +98,7 @@ const subscriptionRoutes = require('./routes/subscription.routes');
 const userSubscriptionRoutes = require('./routes/userSubscription.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
 const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
 
 const app = express();
 
@@ -138,6 +139,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
+
 /* ======================================================
    HEALTH CHECK
 ====================================================== */
@@ -155,13 +157,13 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/v1/story', storyRoutes);
 app.use('/api/v1/images', imageRoutes);
-app.use('/api/v1/cover', coverRoutes);
+// app.use('/api/v1/cover', coverRoutes);
 app.use('/api/v1/address', addressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/user-subscriptions', userSubscriptionRoutes);
 app.use('/api/v1/purchase', purchaseRoutes);
 app.use('/api/v1/cart', cartRoutes);
-
+app.use('/api/v1/order', orderRoutes);
 /* ======================================================
    PDF ROUTES (SPECIAL HANDLING)
 ====================================================== */

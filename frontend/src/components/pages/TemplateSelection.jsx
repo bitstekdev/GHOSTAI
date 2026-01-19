@@ -8,7 +8,7 @@ import storyImage from "../../assets/images/story-image-1.jpg";
 
 const TemplateSelection = () => {
   const params = useParams();
-  const { navigateTo } = useContext(AppContext);
+  const { navigateTo, fetchActiveSubscription } = useContext(AppContext);
   const [ storyIdParam, setStoryIdParam] = useState(params.storyId || null);
   const [selectedTemplate, setSelectedTemplate] = useState(0);
   const [storyData, setStoryData] = useState(null);
@@ -77,7 +77,7 @@ const TemplateSelection = () => {
         numPages: storyData?.numOfPages,
         orientation: templates[selectedTemplate].name,
       });
-
+      fetchActiveSubscription();
       navigateTo(`/titlegenerator/${storyIdParam}`);
       if (import.meta.env.DEV) console.log("Story generation started");
     } catch (error) {
@@ -156,6 +156,8 @@ const TemplateSelection = () => {
         </div>
 
         <div className="p-4 md:p-0">
+
+          <div className="flex items-center gap-4">
           <h2 className="text-xl md:text-2xl font-bold text-white mb-4 ">
             Book Templates{" "}
             <small className="text-xs md:text-sm text-white font-light">
@@ -163,6 +165,10 @@ const TemplateSelection = () => {
             </small>
           </h2>
 
+          <h2 className="text-white text-sm md:text-base mb-2">
+            <span className="text-purple-500"> Selected: </span>{templates[selectedTemplate].name}
+          </h2>
+          </div>
           <div className="relative">
             <div className="overflow-hidden">
               <div

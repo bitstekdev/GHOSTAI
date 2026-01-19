@@ -895,7 +895,7 @@ pages.forEach((page, index) => {
                 <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] px-1 rounded">V2</span>
               </button> */}
 
-              <button
+              {/* <button
                 onClick={downloadPDF}
                 className="flex flex-col items-center text-xs text-white hover:text-green-400 transition">
                 <svg
@@ -913,7 +913,7 @@ pages.forEach((page, index) => {
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 Download PDF
-              </button>
+              </button> */}
             </div>
 
             {/* BOOK WRAPPER */}

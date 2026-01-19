@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api, { setupAxiosInterceptors } from "../services/axiosInstance";
@@ -237,9 +237,21 @@ const [usageLeft, setUsageLeft] = useState(null);
 const [subscriptionHistory, setSubscriptionHistory] = useState([]);
 const [loadingSubscription, setLoadingSubscription] = useState(false);
 
-// fetch subscription status
-const fetchSubscriptionStatus = async () => {
-  console.log("Fetching subscription status...");
+
+// fetch active subscription
+const fetchActiveSubscription = useCallback(async () => {
+  try {
+    const { data } = await api.get("/api/v1/user-subscriptions/active");
+    setActiveSubscription(data);
+    return data;
+  } catch (err) {
+    console.error("Failed to fetch active subscription", err);
+    setActiveSubscription(null);
+    return null;
+  }
+}, []);
+
+const fetchSubscriptionStatus = useCallback(async () => {
   try {
     setLoadingSubscription(true);
     const { data } = await api.get("/api/v1/user-subscriptions/status");
@@ -252,21 +264,9 @@ const fetchSubscriptionStatus = async () => {
   } finally {
     setLoadingSubscription(false);
   }
-};
-// fetch active subscription
-const fetchActiveSubscription = async () => {
-  try {
-    const { data } = await api.get("/api/v1/user-subscriptions/active");
-    setActiveSubscription(data);
-    return data;
-  } catch (err) {
-    console.error("Failed to fetch active subscription", err);
-    setActiveSubscription(null);
-    return null;
-  }
-};
-// fetch usage left
-const fetchUsageLeft = async () => {
+}, []);
+
+const fetchUsageLeft = useCallback(async () => {
   try {
     const { data } = await api.get("/api/v1/user-subscriptions/usage");
     setUsageLeft(data);
@@ -276,9 +276,9 @@ const fetchUsageLeft = async () => {
     setUsageLeft(null);
     return null;
   }
-};
-// fetch subscription history
-const fetchSubscriptionHistory = async () => {
+}, []);
+
+const fetchSubscriptionHistory = useCallback(async () => {
   try {
     const { data } = await api.get("/api/v1/user-subscriptions/history");
     if (data.success) {
@@ -290,18 +290,8 @@ const fetchSubscriptionHistory = async () => {
     setSubscriptionHistory([]);
     return [];
   }
-};
+}, []);
 
-// On mount, check if user is logged in and fetch subscription data
-// useEffect(() => {
-// if (!isAuthenticated && !userData) {
-//   // fetch subscription data
-//   fetchSubscriptionStatus();
-//   fetchActiveSubscription();
-//   fetchUsageLeft();
-//   fetchSubscriptionHistory();
-// }
-// }, [isAuthenticated, userData]);
 
 
 

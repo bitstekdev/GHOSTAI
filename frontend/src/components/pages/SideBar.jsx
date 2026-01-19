@@ -45,9 +45,12 @@ export default function Sidebar({
     setSidebarShown(shouldShow);
   }, [shouldShow, setSidebarShown]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!activeSubscription) {
     fetchActiveSubscription();
-  }, []);
+  }
+}, [activeSubscription, fetchActiveSubscription]);
+
 
   // Determine plan info
   const planInfo = activeSubscription ? {
@@ -222,7 +225,7 @@ export default function Sidebar({
               Current Plan
             </div>
             <div className="text-sm font-medium">
-              {planInfo.plan?.name || "Free Plan"}
+              {planInfo.plan?.name || "Plan Expired"}
             </div>
           </div>
 

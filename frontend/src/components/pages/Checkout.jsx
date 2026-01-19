@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   CreditCard,
   ChevronLeft,
@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import api from "../../services/axiosInstance";
 import { useCart } from "../../context/CartContext";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { AppContext } from "../../context/AppContext";
+import { useParams, useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const { storyId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { navigateTo } = useContext(AppContext);
   const { cart, totalPrice, clearCart } = useCart();
 
   // Determine checkout mode: 'single' or 'cart'
@@ -178,35 +179,24 @@ const Checkout = () => {
         name: "Ghostverse.ai",
         description: checkoutMode === "single" ? "Story Purchase" : "Cart Purchase",
         order_id: razorpayOrder.id,
-        handler: async function (response) {
-          try {
-            // Verify payment
-            const verifyResponse = await api.post("/api/v1/order/verify", {
-              orderId: razorpayOrder.id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-            });
+       handler: async function (response) {
+  try {
+    // Verify payment
+    const verifyResponse = await api.post("/api/v1/purchase/verify", {
+      orderId: razorpayOrder.id,   
+      paymentId: response.razorpay_payment_id,
+      signature: response.razorpay_signature,
+    });
 
-            if (verifyResponse.data.success) {
-              // Clear cart if cart checkout
-              if (checkoutMode === "cart") {
-                clearCart();
-              }
-              
-              // Navigate to success page
-              navigate("/payment-success", {
-                state: {
-                  orderId,
-                  amount: razorpayOrder.amount / 100,
-                  mode: checkoutMode,
-                },
-              });
-            }
-          } catch (error) {
-            console.error("Payment verification failed:", error);
-            alert("Payment verification failed. Please contact support.");
-          }
-        },
+    if (verifyResponse.data.success) {
+      navigateTo("/orderhistory");
+    }
+  } catch (error) {
+    console.error("Payment verification failed:", error);
+    alert("Payment verification failed. Please contact support.");
+  }
+},
+          
         prefill: {
           name: formData.fullName,
           email: formData.email,

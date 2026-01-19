@@ -82,15 +82,6 @@ const InitialPlansPage = () => {
             });
 
             if (verifyResponse.data.success) {
-              // Navigate to success page
-              // navigate("/subscription-success", {
-              //   state: {
-              //     subscriptionId,
-              //     planName: plan.name,
-              //     amount: order.amount / 100,
-              //     validityDays: plan.validityDays,
-              //   },
-              // });
               fetchUsageLeft();
               navigateTo(from ? `${from}/${storyId}` : "/");
             }

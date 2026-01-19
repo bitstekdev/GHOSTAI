@@ -96,21 +96,36 @@ exports.createPurchaseOrderFromCart = async (req, res) => {
 exports.verifyPurchasePayment = async (req, res) => {
   try {
     const { orderId, paymentId, signature } = req.body;
+    // console.log("Verifying purchase payment:", req.body);
 
+    // Verify signature
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${orderId}|${paymentId}`)
       .digest("hex");
 
     if (expectedSignature !== signature) {
+      console.error("Signature mismatch:", { expectedSignature, signature });
       return res.status(400).json({ message: "Invalid signature" });
     }
 
+    // Find order by Razorpay order ID
     const order = await Order.findOne({
       "razorpay.orderId": orderId,
     });
 
-    order.status = "paid";
+    if (!order) {
+      console.error("Order not found for Razorpay ID:", orderId);
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Idempotent check
+    if (order.status === "processing") {
+      return res.json({ success: true });
+    }
+
+    // Update order
+    order.status = "processing";
     order.razorpay.paymentId = paymentId;
     order.razorpay.signature = signature;
     await order.save();
@@ -120,9 +135,12 @@ exports.verifyPurchasePayment = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
+    console.error("Payment verification error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 // WEBHOOK FOR PURCHASE PAYMENT VERIFICATION----------
 exports.purchaseWebhook = async (req, res) => {
@@ -151,11 +169,11 @@ exports.purchaseWebhook = async (req, res) => {
         .populate("items.story")
         .populate("items.plan");
 
-      if (!order || order.status === "paid") {
+      if (!order || order.status === "processing") {
         return res.json({ received: true });
       }
 
-      order.status = "paid";
+      order.status = "processing";
       await order.save();
 
       // 📧 Send confirmation email
@@ -200,7 +218,7 @@ exports.downloadInvoice = async (req, res) => {
     const order = await Order.findOne({
       _id: orderId,
       user: req.user.id,
-      status: "paid",
+      status: "processing",
     })
       .populate("items.story")
       .populate("items.plan");

@@ -39,3 +39,28 @@
 2026-01-20 00:44:34,180 [INFO] storybook_api - [ARTIFACT] req=6aba3741eb17 type=story pages=2 ttl=24h
 2026-01-20 00:44:34,865 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-01-20 00:44:37,511 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-20 00:44:37,530 [INFO] storybook_api - [REQ_END] id=6aba3741eb17 status=200 duration_ms=24754.37
+2026-01-20 02:57:30,137 [INFO] storybook_api - [REQ_START] id=74a2db6e1659 method=POST path=/images/generate
+2026-01-20 02:57:30,523 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2026-01-20 03:13:05,991 [INFO] storybook_api - [REQ_START] id=4c80de9297c4 method=POST path=/story/generate
+2026-01-20 03:13:07,887 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:13:11,534 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:13:17,644 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:13:23,498 [INFO] storybook_api - [ARTIFACT] req=4c80de9297c4 type=story pages=2 ttl=24h
+2026-01-20 03:13:23,499 [INFO] storybook_api - [ARTIFACT] req=4c80de9297c4 type=story pages=2 ttl=24h
+2026-01-20 03:13:28,435 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:13:31,110 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-20 03:13:31,129 [INFO] storybook_api - [REQ_END] id=4c80de9297c4 status=200 duration_ms=25146.92
+2026-01-20 03:15:10,893 [INFO] storybook_api - [REQ_START] id=331499dd616c method=POST path=/story/generate
+2026-01-20 03:15:12,372 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:15:17,417 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:15:35,927 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:15:48,961 [INFO] storybook_api - [ARTIFACT] req=331499dd616c type=story pages=2 ttl=24h
+2026-01-20 03:15:48,962 [INFO] storybook_api - [ARTIFACT] req=331499dd616c type=story pages=2 ttl=24h
+2026-01-20 03:15:50,630 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:15:52,719 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-20 03:15:52,730 [INFO] storybook_api - [REQ_END] id=331499dd616c status=200 duration_ms=41838.22
+2026-01-20 03:24:16,148 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-20 03:24:16,222 [INFO] storybook_api - Generating image for page=2, orientation=Portrait
+2026-01-20 03:50:59,613 [ERROR] storybook_api - RunPod image generation failed: TTL exceeded: RunPod image generation timed out.
+2026-01-20 03:50:59,676 [INFO] storybook_api - Generating image for page=3, orientation=Portrait
