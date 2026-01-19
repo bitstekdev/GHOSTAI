@@ -1,160 +1,6 @@
-// import { useEffect, useState, useContext } from "react";
-// import { AppContext } from '../../context/AppContext'
-// import logoImg from "../../assets/images/logo.gif";
-// import api from "../../services/axiosInstance";
-// import { PenTool } from "lucide-react";
-// import { useParams } from "react-router-dom";
-// import { ProgressStep2 } from '../helperComponents/Steps.jsx'
-
-// export default function QuestionerPage() {
-//   const params = useParams();
-//   const {navigateTo, storyId, setStoryId} = useContext(AppContext)
-//   const [storyIdParam, setStoryIdParam] = useState(params.storyId || null);
-//   const [conversation, setConversation] = useState([]);
-//   const [answer, setAnswer] = useState("");
-//   const [currentQuestion, setCurrentQuestion] = useState(null);
-//   const [loading, setLoading] = useState(false);
-
-//   // Load initial conversation from localStorage
-//   useEffect(() => {
-//     const saved = JSON.parse(localStorage.getItem("conversationData"));
-//     if (saved) {
-//       setStoryId(saved.storyId);
-//       setConversation(saved.conversation);
-//       setCurrentQuestion(saved.conversation[saved.conversation.length - 1]);
-//     }
-//   }, []);
-
-//   // Save updated conversation to localStorage
-//   const updateLocalStorage = (updatedConv) => {
-//     localStorage.setItem(
-//       "conversationData",
-//       JSON.stringify({ storyIdParam, conversation: updatedConv })
-//     );
-//   };
-
-//   const handleNext = async () => {
-//     if (!answer.trim()) return;
-
-//     setLoading(true);
-
-//     try {
-//       const response = await api.post("/api/v1/story/next", {
-//         storyId: storyIdParam,
-//         conversation,
-//         answer,
-//       });
-
-//       const result = response.data.data;
-
-//       const updatedConv = result.conversation;
-
-//       setConversation(updatedConv);
-//       updateLocalStorage(updatedConv);
-//       setCurrentQuestion(updatedConv[updatedConv.length - 1]);
-//       setAnswer("");
-//     } catch (err) {
-//       console.error("Next Question Error:", err);
-//     }finally {
-//        setLoading(false);
-//     }
-//   };
-
-//   const isFinished = conversation.length >= 15;
-//   // const isFinished = conversation.length >= 2;
-
-//   const handleGetPrompt = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await api.post("/api/v1/story/gist", {
-//         storyId: storyIdParam,
-//         conversation,
-//       });
-//       setStoryId(response.data.storyId);
-//     //   console.log("Prompt Response", response.data);
-//       navigateTo(`/templateselection/${response.data.storyId}`);
-//     } catch (err) {
-//       console.error("Gist API Error", err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   if (!currentQuestion) return <div className="text-white p-8">Thinking...</div>;
-
-//   return (
-//     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
-//       <ProgressStep2 />
-//       {/* Logo */}
-//       <div className="flex items-center justify-center mb-10">
-//         <img src={logoImg} alt="GHOST.ai" className="h-15" />
-//         <span className="text-2xl font-bold">Ghostverse.ai</span>
-//       </div>
-
-//       {/* Title */}
-//       <h1 className="text-3xl font-bold mb-6 flex items-center">
-//         <span className="text-purple-400 mr-2 text-4xl"><PenTool /></span>
-//         Fill out the Answers
-//       </h1>
-
-//       {/* Question Card */}
-//       <div className="w-full max-w-2xl bg-[#111] p-6 rounded-xl shadow-lg border border-purple-600/30">
-//         <p className="text-lg mb-4 text-gray-300">{currentQuestion.question}</p>
-
-//         <textarea
-//           rows={2}
-//           className="w-full p-3 rounded-md bg-black border border-purple-500/40 text-white focus:border-purple-500 outline-none"
-//           placeholder="ex: your answer"
-//           value={answer}
-//           onChange={(e) => {
-//             setAnswer(e.target.value);
-//             // auto-resize: reset height then set to scrollHeight
-//             e.target.style.height = "auto";
-//             e.target.style.height = `${e.target.scrollHeight}px`;
-//           }}
-//         />
-
-//         {!isFinished ? (
-//           <button
-//             onClick={handleNext}
-//             disabled={loading}
-//             className="mt-6 w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition"
-//           >
-//             {loading ? "Thinking..." : "Next"}
-//           </button>
-//         ) : (
-//           <button
-//             onClick={handleGetPrompt}
-//             className="mt-6 w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition"
-//           >
-//             {loading ? "Thinking..." : "Get My Story Summary"}
-//           </button>
-//         )}
-//       </div>
-
-//       {/* Progress Bar */}
-//             <div className="w-full max-w-2xl mt-6">
-//             <div className="flex justify-between text-sm mb-1 text-gray-400">
-//                 {/* <span>Question {conversation.length} of 15</span> */}
-//                 <span>Question {conversation.length} of 15</span>
-//                 <span>{Math.round((conversation.length / 15) * 100)}%</span>
-//             </div>
-
-//             <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-//                 <div
-//                 className="h-full bg-purple-600 transition-all duration-300"
-//                 style={{ width: `${(conversation.length / 15) * 100}%` }}
-//                 ></div>
-//             </div>
-//             </div>
-
-//     </div>
-//   );
-// }
-
 import { useEffect, useState, useContext, useRef } from "react";
 import { AppContext } from "../../context/AppContext";
-import logoImg from "../../assets/images/logo.gif";
+import { getConversationByStoryId, saveConversationByStoryId } from "../../utils//conversationStorage.js";
 import api from "../../services/axiosInstance";
 import { useParams } from "react-router-dom";
 import { Send } from "lucide-react";
@@ -168,46 +14,80 @@ export default function QuestionerPage() {
   const [conversation, setConversation] = useState([]);
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [storyLoading, setStoryLoading] = useState(false);
+  const [planError, setPlanError] = useState(null);
 
   const chatEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const [pendingAnswer, setPendingAnswer] = useState(null);
+
+  // Questionnaire limits
+  const MIN_QUESTIONS = 5;
+  const MAX_QUESTIONS = 15;
 
   /* -------------------- Load from localStorage -------------------- */
+  // useEffect(() => {
+  //   const saved = JSON.parse(localStorage.getItem("conversationData"));
+  //   if (saved?.conversation) {
+  //     setConversation(saved.conversation);
+  //   }
+  // }, []);
+  // load conversation for this storyId from DB
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("conversationData"));
-    if (saved?.conversation) {
-      setConversation(saved.conversation);
+  const loadConversation = async () => {
+    try {
+      setLoading(true);
+      console.log("Loading conversation for storyId:", storyIdParam);
+      const res = await api.get(`/api/v1/story/${storyIdParam}/conversation`);
+      console.log("Conversation response:", res.data);
+
+      const conv = res.data?.data?.conversation || [];
+
+      setConversation(conv);
+      saveConversationByStoryId(storyIdParam, conv);
+    } catch (err) {
+      console.error("Failed to load conversation", err);
+
+      // fallback to cache
+      const cached = getConversationByStoryId(storyIdParam);
+      if (cached) {
+        setConversation(cached);
+      }
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  if (storyIdParam) {
+    loadConversation();
+  }
+}, [storyIdParam]);
 
   /* -------------------- Auto Scroll -------------------- */
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
-  const updateLocalStorage = (updatedConv) => {
-    localStorage.setItem(
-      "conversationData",
-      JSON.stringify({ storyIdParam, conversation: updatedConv })
-    );
-  };
+  // Keep focus on the input when conversation updates or loading changes
+  useEffect(() => {
+    if (!loading) {
+      inputRef.current?.focus();
+    }
+  }, [conversation, loading]);
+
 
   /* -------------------- Next Question -------------------- */
   const handleSend = async () => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || loading) return;
 
-    const userAnswer = answer;
-    const lastQuestion = conversation[conversation.length - 1];
-    const updatedConvWithAnswer = [
-      ...conversation.slice(0, -1),
-      { ...lastQuestion, answer: userAnswer }
-    ];
-    
-    setConversation(updatedConvWithAnswer);
+    const userAnswer = answer.trim();
+    // optimistic UI: show pending answer while waiting for backend 
+    setPendingAnswer(userAnswer);
     setAnswer("");
     setLoading(true);
 
     try {
-      const cleanedConversation = updatedConvWithAnswer.filter((msg) => msg && msg.question);
+      const cleanedConversation = conversation.filter((msg) => msg && msg.question);
       const response = await api.post("/api/v1/story/next", {
         storyId: storyIdParam,
         conversation: cleanedConversation,
@@ -215,33 +95,113 @@ export default function QuestionerPage() {
       });
 
       const result = response.data.data;
+
+      // Backend is the single source of truth for conversation state
       setConversation(result.conversation);
-      updateLocalStorage(result.conversation);
+      saveConversationByStoryId(storyIdParam, result.conversation);
+      setPendingAnswer(null);
     } catch (err) {
       console.error("Next Question Error:", err?.response?.data || err);
+      setPendingAnswer(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // Loading state for getting the final prompt
+   const [loadingPhase, setLoadingPhase] = useState(0);
+
+  useEffect(() => {
+    if (!storyLoading) {
+      setLoadingPhase(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingPhase((prev) => (prev + 1) % 6);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [storyLoading]);
+
+  const getLoadingText = () => {
+    const messages = [
+      "✨Thinking...",
+      "💫Crafting your story...",
+      "🌟Weaving the narrative...",
+      "✨Almost there...",
+      "🌟Thank you for your patience...",
+      "💫Putting on the finishing touches..."
+    ];
+    return messages[loadingPhase];
+  };
+
   /* -------------------- Finish -------------------- */
   const answeredCount = conversation.filter((msg) => msg && msg.question && msg.answer).length;
-  const isFinished = answeredCount >= 15;
+  const canFinishEarly = answeredCount >= MIN_QUESTIONS;
+  const isMaxReached = answeredCount >= MAX_QUESTIONS;
 
   const handleGetPrompt = async () => {
     try {
       setLoading(true);
+      setStoryLoading(true);
+
+      // Only send fully answered Q&A pairs to the gist generator
+      const cleanedConversation = conversation.filter(
+        (msg) => msg && msg.question && msg.answer
+      );
+
       const response = await api.post("/api/v1/story/gist", {
         storyId: storyIdParam,
-        conversation
+        conversation: cleanedConversation
       });
 
-      setStoryId(response.data.storyId);
-      navigateTo(`/templateselection/${response.data.storyId}`);
+      // Robustly extract gist and storyId from multiple possible response shapes
+      const storyId = response.data?.storyId || response.data?.data?.storyId || response.data?.data?._id || null;
+      const gist = response.data?.data?.gist || response.data?.gist || null;
+
+      if (!gist || gist.length < 20) {
+        console.error("Invalid gist returned", response.data);
+        setLoading(false);
+        return;
+      }
+
+      // Generate previews via FastAPI through backend (no storage)
+      let previews = null;
+      // let previewFailed = false;
+      try {
+        // Fetch story to obtain the selected learned style(s)
+        let genresToSend = [];
+        try {
+          const storyRes = await api.get(`/api/v1/story/${storyIdParam}`);
+          const storyObj = storyRes.data?.data?.story || storyRes.data?.data || storyRes.data;
+          genresToSend = storyObj?.genres || [];
+        } catch (fetchErr) {
+          console.warn('Failed to fetch story genres, falling back to empty genres array', fetchErr?.response?.data || fetchErr);
+        }
+
+        const previewRes = await api.post(`/api/v1/images/gist/preview-images`, { gist, genres: genresToSend, storyId });
+        previews = previewRes.data?.previews?.images || previewRes.data?.previews || null;
+      } catch (previewErr) {
+        // previewFailed = true;
+        console.error('Preview generation failed:', previewErr?.response?.data || previewErr);
+        // setPlanError(previewErr?.response?.data?.message || "failed");
+      }
+
+      // if (previewFailed) {
+      //   setLoading(false);
+      //   setStoryLoading(false);
+      //   return; 
+      // }
+
+
+      if (storyId) setStoryId(storyId);
+      navigateTo(`/templateselection/${storyId}`, { state: { previews } });
     } catch (err) {
-      console.error("Gist API Error", err);
+      console.error("Gist API Error", err?.response?.data || err);
     } finally {
       setLoading(false);
+      setStoryLoading(false);
     }
   };
 
@@ -282,13 +242,24 @@ export default function QuestionerPage() {
               {msg.answer && (
                 <div className="flex justify-end mb-4">
                   <div className="bg-gray-800 rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%]">
-                    <p className="text-sm font-semibold text-gray-400 mb-1">You</p>
+                    <p className="text-sm font-semibold text-gray-400 mb-1">
+                      You
+                    </p>
                     <p className="text-white">{msg.answer}</p>
                   </div>
                 </div>
               )}
             </div>
           ))}
+          {/* Optimistic pending answer (UI-only) */}
+          {pendingAnswer && (
+            <div className="flex justify-end mb-4">
+              <div className="bg-gray-800 rounded-2xl rounded-tr-sm px-5 py-3 max-w-[80%] opacity-80">
+                <p className="text-sm font-semibold text-gray-400 mb-1">You</p>
+                <p className="text-white">{pendingAnswer}</p>
+              </div>
+            </div>
+          )}
 
           {loading && (
             <div className="flex justify-start">
@@ -297,31 +268,50 @@ export default function QuestionerPage() {
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
                   <div
                     className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
+                    style={{ animationDelay: "0.1s" }}></div>
                   <div
                     className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
+                    style={{ animationDelay: "0.2s" }}></div>
                 </div>
               </div>
             </div>
           )}
 
           <div ref={chatEndRef} />
+          {/* loading tag lines */}
+          {storyLoading && (
+            <p className="text-purple-500">{getLoadingText()}</p>
+          )}
+          {/* {planError && (
+        <div className="mt-4 p-4 bg-red-800/30 border border-red-600 rounded-lg">
+          <p className="text-red-300">
+            ⚠️ {planError}. Please upgrade your plan to access this feature.
+          </p>
+        </div>
+          )}   */}
         </div>
       </div>
 
-     { /* Input Area */}
-        <div className="px-6 py-6 bg-black ">
-          <div className="max-w-3xl mx-auto">
-            {!isFinished ? (
-          <div className="relative">
-            {/* Textarea */}
-              <textarea
-                autoFocus
-                rows={1}
-                className="
+      {/* Input Area */}
+      <div className="px-6 py-6 bg-black ">
+        <div className="max-w-3xl mx-auto">
+          {!isMaxReached ? (
+            <>
+              {/* Helpful hint */}
+              {conversation.length > 0 && (
+                <div className="text-sm text-gray-400 mb-3">
+                  You can answer up to {MAX_QUESTIONS} questions. After at least{" "}
+                  {MIN_QUESTIONS} answers, you may finish anytime.
+                </div>
+              )}
+
+              <div className="relative">
+                {/* Textarea */}
+                <textarea
+                  ref={inputRef}
+                  autoFocus
+                  rows={1}
+                  className="
                   w-full resize-none
                   bg-[#0f172a]
                   text-white
@@ -333,34 +323,34 @@ export default function QuestionerPage() {
                   focus:ring-2 focus:ring-purple-600/40
                   scrollbar-hide
                 "
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none"
-                }}
-                placeholder="Type your answer..."
-                value={answer}
-                disabled={loading}
-                onChange={(e) => {
-                  setAnswer(e.target.value);
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${Math.min(
-                    e.target.scrollHeight,
-                    120
-                  )}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-              />
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
+                  placeholder="Type your answer..."
+                  value={answer}
+                  disabled={loading}
+                  onChange={(e) => {
+                    setAnswer(e.target.value);
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(
+                      e.target.scrollHeight,
+                      120,
+                    )}px`;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                />
 
-              {/* Send Button  */}
-              <button
-                onClick={handleSend}
-                disabled={loading || !answer.trim()}
-                className="
+                {/* Send Button  */}
+                <button
+                  onClick={handleSend}
+                  disabled={loading || !answer.trim()}
+                  className="
                   absolute right-4 top-1/2 -translate-y-1/2
                   flex items-center justify-center
                   text-gray-400
@@ -368,18 +358,29 @@ export default function QuestionerPage() {
                   transition
                   disabled:opacity-30
                   disabled:cursor-not-allowed
-                "
-              >
-                <Send size={22} />
-              </button>
-            </div>
+                ">
+                  <Send size={22} />
+                </button>
+              </div>
+
+              {/* Finish Early Button */}
+              {canFinishEarly && (
+                <button
+                  onClick={handleGetPrompt}
+                  disabled={storyLoading}
+                  className="mt-4 w-full bg-purple-700/40 hover:bg-purple-700 py-2 rounded-lg text-sm font-semibold transition">
+                  {storyLoading
+                    ? "Generating..."
+                    : "Finish & Generate Story Now"}
+                </button>
+              )}
+            </>
           ) : (
             <button
               onClick={handleGetPrompt}
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition disabled:opacity-50"
-            >
-              {loading ? "Thinking..." : "Get My Story Summary"}
+              disabled={storyLoading}
+              className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition disabled:opacity-50">
+              {storyLoading ? "Generating..." : "Get My Story Summary"}
             </button>
           )}
         </div>

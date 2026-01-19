@@ -20,7 +20,7 @@ const BackgroundGenerator = () => {
         storyId: storyId,
       });
 
-      console.log("Background generation response:", res.data);
+      if (import.meta.env.DEV) console.log("Background generation requested");
 
       // After generation go to next page
       navigateTo(`/generatecovers/${storyId}`);

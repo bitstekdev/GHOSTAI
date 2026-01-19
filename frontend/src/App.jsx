@@ -21,8 +21,12 @@ import VerifyEmail from "./components/pages/VerifyEmail";
 import QuestionerPage from "./components/pages/QuestionerPage";
 import TemplateSelection from "./components/pages/TemplateSelection";
 import TitleGeneratorPage from "./components/pages/TitleGeneratorPage";
-import BackgroundGenerator from "./components/pages/BackgroundGenerator";
-import GenerateCovers from "./components/pages/GenerateCovers";
+import GeneratorPage from "./components/pages/GeneratorPage";
+import InitialPlansPage from "./components/plans/InitialPlansPage.jsx";
+import UpgradePlansPage from "./components/plans/UpgradePlansPage.jsx";
+
+import CartPage from "./components/Cart/CartPage.jsx";
+import AddToCartPage from "./components/Cart/AddToCartPage.jsx";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -90,8 +94,14 @@ const App = () => {
           <Route path="/orderhistory" element={<OrderHistory />} />
           <Route path="/questioner/:storyId" element={<QuestionerPage />} />
           <Route path="/titlegenerator/:storyId" element={<TitleGeneratorPage />} />
-          <Route path="/backgroundgenerator/:storyId" element={<BackgroundGenerator />} />
-          <Route path="/generatecovers/:storyId" element={<GenerateCovers />} />
+          <Route path="/generatorPage/:storyId" element={<GeneratorPage />} />
+          <Route path="/plans" element={<InitialPlansPage />} />
+          <Route path="/upgradeplan" element={<UpgradePlansPage />} />
+
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/add-to-cart/:storyId" element={<AddToCartPage />} />
+
+
 
           <Route path="*" element={<Navigate to="/generatestory" replace />} />
         </Route>

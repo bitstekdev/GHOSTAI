@@ -34,9 +34,10 @@ exports.generateCover = async (req, res, next) => {
     }));
 
     // Call FastAPI
+    const storyGenreString = Array.isArray(story.genres) ? story.genres.join(', ') : story.genre;
     const result = await fastApiService.generateCoverAndBack(
       pageData,
-      story.genre,
+      storyGenreString,
       story.orientation,
       story.title,
       qrUrl || story.qrUrl

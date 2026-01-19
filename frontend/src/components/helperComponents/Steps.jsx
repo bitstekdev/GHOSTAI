@@ -50,7 +50,7 @@ const ProgressStep1 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             5
           </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
+          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generating</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -59,16 +59,6 @@ const ProgressStep1 = () => {
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             6
-          </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-
-        <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
-            7
           </div>
           <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
         </div>
@@ -127,7 +117,7 @@ const ProgressStep2 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             5
           </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
+          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generating</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -136,16 +126,6 @@ const ProgressStep2 = () => {
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             6
-          </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-
-        <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
-            7
           </div>
           <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
         </div>
@@ -204,7 +184,7 @@ const ProgressStep3 = () => {
           <div className="w-10 h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">
             5
           </div>
-          <span className="text-gray-500 font-medium text-sm hidden sm:inline">Background</span>
+          <span className="text-gray-500 font-medium text-sm hidden sm:inline">Generating</span>
         </div>
 
         <ChevronRight className="text-gray-600" size={20} />
@@ -213,16 +193,6 @@ const ProgressStep3 = () => {
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">
             6
-          </div>
-          <span className="text-gray-500 font-medium text-sm hidden sm:inline">Covers</span>
-        </div>
-
-        <ChevronRight className="text-gray-600" size={20} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold">
-            7
           </div>
           <span className="text-gray-500 font-medium text-sm hidden sm:inline">Your Book</span>
         </div>
@@ -281,7 +251,7 @@ const ProgressStep4 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             5
           </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
+          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generating</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -290,16 +260,6 @@ const ProgressStep4 = () => {
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             6
-          </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-
-        <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
-            7
           </div>
           <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
         </div>
@@ -358,7 +318,7 @@ const ProgressStep5 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm sm:text-base ring-2 sm:ring-4 ring-purple-500/30">
             5
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generating</span>
         </div>
 
         <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
@@ -367,16 +327,6 @@ const ProgressStep5 = () => {
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
             6
-          </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-
-        <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
-            7
           </div>
           <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
         </div>
@@ -435,84 +385,7 @@ const ProgressStep6 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
             ✓
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
-        </div>
-
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 6 - Active */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm sm:text-base ring-2 sm:ring-4 ring-purple-500/30">
-            6
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-        
-        <ChevronRight className="text-gray-600 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Inactive */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center font-bold text-sm sm:text-base">
-            7
-          </div>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
-        </div>
-      </div>
-    </div>
-  );
-
-};
-// Step 7: Results Page
-const ProgressStep7 = () => {
-  return (
-    <div className="w-full py-3 px-2 sm:py-4 sm:px-4">
-      <div className="max-w-6xl mx-auto flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto">
-        {/* Step 1 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Story Details</span>
-        </div>
-
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 2 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Questionnaire</span>
-        </div>
-
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 3 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Summary</span>
-        </div>
-
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 4 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generate Story</span>
-        </div>
-
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 5 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Background</span>
+          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Generating</span>
         </div>
 
         <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
@@ -522,18 +395,8 @@ const ProgressStep7 = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
             ✓
           </div>
-          <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Covers</span>
-        </div>
-        
-        <ChevronRight className="text-purple-500 flex-shrink-0" size={16} />
-
-        {/* Step 7 - Completed */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
-            ✓
-          </div>
           <span className="text-white font-medium text-xs sm:text-sm hidden md:inline whitespace-nowrap">Your Book</span>
-      </div>
+        </div>
     </div>  
     </div>
   );
@@ -541,4 +404,4 @@ const ProgressStep7 = () => {
 
 
 
-export {ProgressStep1, ProgressStep2, ProgressStep3, ProgressStep4, ProgressStep5, ProgressStep6, ProgressStep7};
+export {ProgressStep1, ProgressStep2, ProgressStep3, ProgressStep4, ProgressStep5, ProgressStep6};

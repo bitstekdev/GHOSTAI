@@ -1,8 +1,10 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
+const ImageJob = require('../models/ImageJob');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
+const { runBookCreationJob } = require('../jobs/imageFunction');
 
 // Remove outer HTML/doctype wrappers returned by the generator
 const stripHtmlWrapper = (html) => {
@@ -15,350 +17,90 @@ const stripHtmlWrapper = (html) => {
     .trim();
 };
 
-// @desc    Generate character images for story pages
-// @route   POST /api/images/generate-characters/:storyId
+// Helper: push the current image state into history with a descriptive label
+const pushCurrentToHistory = (imageDoc, label = 'update') => {
+  if (!imageDoc) return;
+  imageDoc.oldImages.push({
+    s3Key: imageDoc.s3Key,
+    s3Url: imageDoc.s3Url,
+    version: `${label}-${Date.now()}`
+  });
+};
+
+// @desc    Create book image generation job
+// @route   POST /api/images/create-book/:storyId
 // @access  Private
-exports.generateCharacterImages = async (req, res, next) => {
+exports.createBook = async (req, res, next) => {
   try {
     const { storyId } = req.params;
     const { title } = req.body;
 
-    // Verify story ownership
-    const story = await Story.findOne({
-      _id: storyId,
-      user: req.user.id
+     // PREVENT duplicate jobs for same story
+    const existingJob = await ImageJob.findOne({
+      story: storyId,
+      status: { $in: ["queued", "processing"] }
     });
 
-    if (!story) {
-      return res.status(404).json({
+    if (existingJob) {
+      return res.status(409).json({
         success: false,
-        message: 'Story not found'
+        message: "Book generation already in progress",
+        jobId: existingJob._id
       });
     }
 
-    const updateTitle = await Story.findByIdAndUpdate(
+    const job = await ImageJob.create({
+      story: storyId,
+      user: req.user.id,
+      status: "queued"
+    });
+
+    const payload = {
       storyId,
-      { title: title },
+      userId: req.user.id,
+      title
+    };
+
+    process.nextTick(() => {
+      runBookCreationJob(job._id, payload);
+    });
+
+    // Update story: step + jobId
+    const updateStory = await Story.findByIdAndUpdate(
+      storyId,
+      {
+        step: 5,
+        currentJob: job._id,
+        status: "generating"
+      },
       { new: true }
     );
 
-    // Get all pages
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
+    if (!updateStory) {
+      return res.status(404).json({
+        success: false,
+        message: "Story not found"
+      });
+    }
 
-    // Prepare data for FastAPI
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text,
-      prompt: p.prompt
-    }));
-
-    // Call FastAPI to generate images
-    const result = await fastApiService.generateImages(pageData, story.orientation);
-
-    // Upload images to S3 and create Image documents
-    const imagePromises = result.pages.map(async (pageResult) => {
-      if (!pageResult.hidream_image_base64 || pageResult.error) {
-        console.error(`Page ${pageResult.page} generation failed:`, pageResult.error);
-        return null;
-      }
-
-      // Convert base64 to buffer
-      const imageBuffer = Buffer.from(pageResult.hidream_image_base64, 'base64');
-
-        // Upload to S3
-        const s3Result = await s3Service.uploadToS3(
-          imageBuffer,
-          `stories/${storyId}/characters`,
-          `page-${pageResult.page}.png`,
-          'image/png'
-        );
-
-        // Create Image document
-        const image = await Image.create({
-          story: storyId,
-          storyPage: pages[pageResult.page - 1]._id,
-          imageType: 'character',
-          // base64Data: pageResult.hidream_image_base64,
-          s3Key: s3Result.key,
-          s3Url: s3Result.url,
-          s3Bucket: s3Result.bucket,
-          prompt: pages[pageResult.page - 1].prompt,
-          mimeType: 'image/png',
-          size: imageBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-        
-      try {
-        // Update StoryPage with image reference
-        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          characterImage: image._id,
-          status: 'completed'
-        });
-
-        console.log(`Page ${pageResult.page} image generated and stored successfully.`);
-
-        return image;
-      } catch (error) {
-         await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          characterImage: image._id,
-          status: 'failed'
-        });
-        console.error(`Error processing page ${pageResult.page}:`, error);
-        return null;
-      }
-    });
-
-    const images = await Promise.all(imagePromises);
-    const successfulImages = images.filter(img => img !== null);
-
-      // Generate background images and cover images
-    // try {
-    // const backgroundImages = await generateBackgroundImages(storyId);
-    // console.log("Background Images Generated:", backgroundImages);
-    // const coverImages = await generateCover(storyId);
-    // console.log("Cover Images Generated:", coverImages);
-    // } catch (coverBgError) {
-    //   console.error("Error generating cover/background images:", coverBgError);
-    // }
-
-    res.status(200).json({
+    res.status(202).json({
       success: true,
-      message: 'Character images generated successfully',
-      storyId: storyId,
-      data: {
-        totalPages: pages.length,
-        successfulGenerations: successfulImages.length,
-        images: successfulImages
-      }
+      storyId,
+      jobId: job._id
     });
-  } catch (error) {
-    next(error);
+
+  } catch (err) {
+    next(err);
   }
 };
 
-// @desc    Generate background images for story pages
-// @route   POST /api/images/generate-backgrounds/
+// @desc    Get image job status
+// @route   GET /api/images/job-status/:jobId
 // @access  Private
-exports.generateBackgroundImages = async (req, res, next) => {
-// const generateBackgroundImages = async (storyId) => {
-  try {
-    const { storyId } = req.body;
-
-    const story = await Story.findOne({
-      _id: storyId,
-    });
-
-    if (!story) {
-      return {
-        success: false,
-        message: 'Story not found'
-      };
-    }
-
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
-
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text
-    }));
-
-    // Call FastAPI SDXL endpoint
-    const result = await fastApiService.generateSDXLBackgrounds(pageData, story.orientation);
-
-    const imagePromises = result.pages.map(async (pageResult) => {
-      if (!pageResult.sdxl_background_base64 || pageResult.error) {
-        console.error(`Page ${pageResult.page} background failed:`, pageResult.error);
-        return null;
-      }
-
-      try {
-        const imageBuffer = Buffer.from(pageResult.sdxl_background_base64, 'base64');
-
-        const s3Result = await s3Service.uploadToS3(
-          imageBuffer,
-          `stories/${storyId}/backgrounds`,
-          `page-${pageResult.page}.png`,
-          'image/png'
-        );
-
-        const image = await Image.create({
-          story: storyId,
-          storyPage: pages[pageResult.page - 1]._id,
-          imageType: 'background',
-          s3Key: s3Result.key,
-          s3Url: s3Result.url,
-          s3Bucket: s3Result.bucket,
-          prompt: pageResult.sdxl_prompt,
-          mimeType: 'image/png',
-          size: imageBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'sdxl'
-          }
-        });
-
-        await StoryPage.findByIdAndUpdate(pages[pageResult.page - 1]._id, {
-          backgroundImage: image._id,
-          sdxlPrompt: pageResult.sdxl_prompt
-        });
-        console.log(`Page ${pageResult.page} image generated and stored successfully.`);
-
-      } catch (error) {
-        console.error(`Error processing background ${pageResult.page}:`, error);
-        return null;
-      }
-    });
-
-    const images = await Promise.all(imagePromises);
-    const successfulImages = images.filter(img => img !== null);
-    
-     res.status(200).json({
-      success: true,
-      message: 'Background images generated successfully',
-      data: {
-        totalPages: pages.length,
-        successfulGenerations: successfulImages.length,
-        images: successfulImages
-      }
-    });
-  } catch (error) {
-    console.error('Error generating background images:', error);
-    next(error);
-  }
-};
-
-
-// @desc    Generate cover and back cover for a story
-// @route   POST /api/cover/generate/
-// @access  Private
-exports.generateCover = async (req, res, next) => {
-// const generateCover = async (storyId) => {
-  const { storyId } = req.body;
-  try {
-    
-    const story = await Story.findOne({
-      _id: storyId,
-    });
-
-    if (!story) {
-      return {
-        success: false,
-        message: 'Story not found'
-      };
-    }
-
-    // Get all pages
-    const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
-
-    const pageData = pages.map(p => ({
-      page: p.pageNumber,
-      text: p.text,
-      prompt: p.prompt
-    }));
-
-    const qr_url = process.env.BACK_QR_URL || 'https://talescraftco.com/';
-
-    // Call FastAPI coverback/generate endpoint
-    const result = await fastApiService.generateCoverAndBack(
-      pageData,
-      story.genre,
-      story.orientation,
-      story.title,
-      qr_url
-    );
-
-    if (result.pages && result.pages[0]) {
-      const coverData = result.pages[0];
-
-      // Upload cover image to S3
-      let coverImage = null;
-      if (coverData.cover_image_base64) {
-        const coverBuffer = Buffer.from(coverData.cover_image_base64, 'base64');
-
-        const s3CoverResult = await s3Service.uploadToS3(
-          coverBuffer,
-          `stories/${storyId}/covers`,
-          'cover.png',
-          'image/png'
-        );
-
-        coverImage = await Image.create({
-          story: storyId,
-          imageType: 'cover',
-          s3Key: s3CoverResult.key,
-          s3Url: s3CoverResult.url,
-          s3Bucket: s3CoverResult.bucket,
-          prompt: coverData.cover_prompt,
-          mimeType: 'image/png',
-          size: coverBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-
-        story.coverImage = coverImage._id;
-      }
-
-      // Upload back cover image to S3
-      let backCoverImage = null;
-      if (coverData.back_image_base64) {
-        const backBuffer = Buffer.from(coverData.back_image_base64, 'base64');
-
-        const s3BackResult = await s3Service.uploadToS3(
-          backBuffer,
-          `stories/${storyId}/covers`,
-          'back-cover.png',
-          'image/png'
-        );
-
-        backCoverImage = await Image.create({
-          story: storyId,
-          imageType: 'backCover',
-          s3Key: s3BackResult.key,
-          s3Url: s3BackResult.url,
-          s3Bucket: s3BackResult.bucket,
-          prompt: coverData.back_prompt,
-          mimeType: 'image/png',
-          size: backBuffer.length,
-          metadata: {
-            orientation: story.orientation,
-            model: 'hidream'
-          }
-        });
-
-        story.backCoverImage = backCoverImage._id;
-      }
-
-      // Update story with blurb and QR URL
-      if (coverData.back_blurb) {
-        story.backCoverBlurb = coverData.back_blurb;
-      }
-      if (qr_url) {
-        story.qrUrl = qr_url;
-      }
-      const response = await story.save();
-      console.log('Story save result:', response);
-
-      console.log('Cover and back cover generated successfully.', story);
-    
-      res.status(200).json({
-      success: true,
-      message: 'Cover and back cover images generated successfully',
-      data: {
-        totalPages: pages.length,
-      }
-    });
-    } else {
-      throw new Error('Failed to generate cover images');
-    }
-  } catch (error) {
-    console.error('Error generating cover images:', error);
-    next(error);
-  }
+exports.getJobStatus = async (req, res) => {
+  const job = await ImageJob.findById(req.params.jobId);
+  console.log("Get Job Status");
+  res.json(job);
 };
 
 
@@ -389,10 +131,17 @@ exports.faceSwap = async (req, res) => {
     console.log("FaceSwap - Target Buffer Length:", targetBuffer.length);
 
 
+    // Normalize index values: UI sends -1, "", undefined, NaN → all become 0 (model semantics)
+    const normalizeIndex = (val) => {
+      const n = Number(val);
+      if (Number.isInteger(n) && n >= 0) return n;
+      return 0; // fallback for -1, NaN, undefined, empty strings
+    };
+
     // Prepare options
     const options = {
-      source_index: parseInt(req.body.source_index),
-      target_index: parseInt(req.body.target_index),
+      source_index: normalizeIndex(req.body.source_index),
+      target_index: normalizeIndex(req.body.target_index),
       upscale: parseInt(req.body.upscale || 0),
       codeformer_fidelity: parseFloat(req.body.codeformer_fidelity || 0.5),
       background_enhance: req.body.background_enhance !== "false",
@@ -409,9 +158,9 @@ exports.faceSwap = async (req, res) => {
     );
 
     console.log("✅ FaceSwap FastAPI response keys:", Object.keys(swapResult));
-    
+
     const swappedBase64 = swapResult.image_base64;
-    
+
     console.log("📏 Base64 length:", swappedBase64?.length);
 
     if (!swappedBase64) {
@@ -422,13 +171,8 @@ exports.faceSwap = async (req, res) => {
       });
     }
 
-    // Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'faceswap');
 
     // Upload new swapped image to S3
     const buffer = Buffer.from(swappedBase64, "base64");
@@ -462,7 +206,7 @@ exports.faceSwap = async (req, res) => {
         imageId: imageDoc._id,
         imageUrl: imageDoc.s3Url
       });
-      
+
     } catch (s3Error) {
       console.error("❌ S3 upload failed:", s3Error);
       throw new Error(`S3 upload failed: ${s3Error.message}`);
@@ -504,7 +248,7 @@ exports.editImage = async (req, res) => {
 
 
 
-    console.log("Edit Image - Target Buffer Length:", targetBuffer.length); 
+    console.log("Edit Image - Target Buffer Length:", targetBuffer.length);
     // 3️⃣ Call FastAPI for swapping
     const editResult = await fastApiService.editImage(
       targetBuffer,
@@ -520,13 +264,8 @@ exports.editImage = async (req, res) => {
       });
     }
 
-    // 4️⃣ Save the old image into oldImages[]
-    imageDoc.oldImages.push({
-      // base64Data: imageDoc.base64Data,
-      s3Url: imageDoc.s3Url,
-      s3Key: imageDoc.s3Key,
-      version: `v${imageDoc.oldImages.length + 1}`
-    });
+    // 4️⃣ Save the current image into history before updating
+    pushCurrentToHistory(imageDoc, 'edit');
 
     // 5️⃣ Upload new swapped image to S3
     const buffer = Buffer.from(editedBase64, "base64");
@@ -546,7 +285,7 @@ exports.editImage = async (req, res) => {
     imageDoc.size = buffer.length;
     imageDoc.metadata = {
       ...imageDoc.metadata,
-      model: "faceswap",
+      model: "edit",
       generationTime: Date.now(),
     };
 
@@ -589,8 +328,8 @@ exports.regenerateCharacterImage = async (req, res) => {
       return res.status(404).json({ success: false, message: "Page not found" });
     }
 
-     const story = page.story;
-     const existingImage = page.characterImage;
+    const story = page.story;
+    const existingImage = page.characterImage;
 
     // fromat character details
     const fixedCharacterDetails = characterDetails.map(cd => `${cd.name}: ${cd.details}`).join('\n');
@@ -605,7 +344,10 @@ exports.regenerateCharacterImage = async (req, res) => {
           character_details: fixedCharacterDetails
         }
       ],
-      orientation: orientation || story.orientation
+      orientation: orientation || story.orientation,
+      genre: Array.isArray(story.genres)
+        ? story.genres.join(", ")
+        : story.genre || "Family"
     };
 
     // console.log("Payload to FastAPI:", apiPayload);
@@ -628,8 +370,32 @@ exports.regenerateCharacterImage = async (req, res) => {
     const newHtml = pageResp.new_html || pageResp.html || page.html || newStory;
     const newPrompt = pageResp.new_prompt || pageResp.prompt || page.prompt;
 
+    // ------------------------------------------------------------------------------------
+    // TEXT-ONLY REGENERATION (VALID SUCCESS CASE — no image returned)
+    // ------------------------------------------------------------------------------------
     if (!base64) {
-      return res.status(502).json({ success: false, message: "FastAPI returned no image data" });
+      // Save old story version
+      page.oldStory.push({
+        pageNumber: page.pageNumber,
+        text: page.text,
+        prompt: page.prompt,
+        version: `regen-text-${page.oldStory.length + 1}`
+      });
+
+      // Update story content only
+      page.text = newStory;
+      page.html = newHtml;
+      page.prompt = newPrompt;
+      page.status = "text-regenerated";
+
+      await page.save();
+
+      return res.json({
+        success: true,
+        message: "Text regenerated successfully. Image unchanged.",
+        imageUnchanged: true,
+        pageId: page._id
+      });
     }
 
     // ------------------------------------------------------------------------------------
@@ -649,14 +415,10 @@ exports.regenerateCharacterImage = async (req, res) => {
     await page.save();
 
     // ------------------------------------------------------------------------------------
-    //  SAVE OLD IMAGE DATA IN image.oldImages[]
+    //  SAVE CURRENT IMAGE INTO HISTORY BEFORE UPDATING
     // ------------------------------------------------------------------------------------
     if (existingImage) {
-      existingImage.oldImages.push({
-        s3Key: existingImage.s3Key,
-        s3Url: existingImage.s3Url,
-        version: `regen-${existingImage.oldImages.length + 1}`
-      });
+      pushCurrentToHistory(existingImage, 'regenerate');
     }
 
     // ------------------------------------------------------------------------------------
@@ -718,7 +480,6 @@ exports.regenerateCharacterImage = async (req, res) => {
 // @route   GET /api/images/page/:pageId
 // @access  Private
 exports.getPageImages = async (req, res, next) => {
-  generateCover()
   try {
     const { pageId } = req.params;
 
@@ -760,12 +521,91 @@ exports.getPageImages = async (req, res, next) => {
 };
 
 
+// @desc    Revert image to a previous version
+// @route   POST /api/images/revert
+// @access  Private
+exports.revertImage = async (req, res) => {
+  try {
+    const { imageId, versionIndex } = req.body;
+
+    if (!imageId || versionIndex === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "imageId and versionIndex are required"
+      });
+    }
+
+    const image = await Image.findById(imageId);
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: "Image not found"
+      });
+    }
+
+    const old = image.oldImages[versionIndex];
+
+    if (!old) {
+      return res.status(404).json({
+        success: false,
+        message: "Requested version does not exist"
+      });
+    }
+
+    // If already at this version, do nothing
+    if (old.s3Key === image.s3Key) {
+      return res.json({
+        success: true,
+        message: "Image already at requested version",
+        image
+      });
+    }
+
+    // Preserve current image before swapping so it can be reverted again
+    image.oldImages.push({
+      s3Key: image.s3Key,
+      s3Url: image.s3Url,
+      version: `revert-from-${old.version}`
+    });
+
+    // Swap to selected old image
+    image.s3Key = old.s3Key;
+    image.s3Url = old.s3Url;
+
+    // Remove the restored version from history to avoid duplication
+    image.oldImages.splice(versionIndex, 1);
+
+    image.metadata = {
+      ...image.metadata,
+      model: "revert",
+      revertedFromVersion: old.version,
+      revertedAt: Date.now()
+    };
+
+    await image.save();
+
+    return res.json({
+      success: true,
+      message: "Image reverted successfully",
+      image
+    });
+
+  } catch (err) {
+    console.error("Revert Image Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
 // test route 
 exports.testRoute = async (req, res, next) => {
   const storyId = "6935bf795b1ae90ed9afc6a5"
   try {
-   const result = await generateCover(storyId)
-   console.log("Test Route Cover Result:", result);
+    const result = await generateCover(storyId)
+    console.log("Test Route Cover Result:", result);
     res.status(200).json({
       success: true,
       result,
@@ -774,5 +614,118 @@ exports.testRoute = async (req, res, next) => {
   }
   catch (error) {
     next(error);
+  }
+};
+
+// @desc    Generate gist preview images (no storage)
+// @route   POST /api/images/gist/preview-images
+// @access  Private
+exports.gistPreviewImages = async (req, res, next) => {
+  try {
+    const { gist, genre, genres } = req.body;
+    console.log("Gist Preview Images Request:", req.body);
+    console.log("User ID:", req.user.id);
+
+    if (!gist) {
+      return res.status(400).json({
+        success: false,
+        message: 'gist is required'
+      });
+    }
+
+    // Accept either `genres` (array) or `genre` (string). Normalize to array.
+    let genresToSend = ['Family'];
+    if (Array.isArray(genres) && genres.length > 0) {
+      genresToSend = genres;
+    } else if (genre) {
+      genresToSend = [genre];
+    }
+
+    const previews = await fastApiService.generateGistPreviewImages({
+      userId: req.user.id,
+      genres: genresToSend,
+      gist
+    });
+
+    return res.json({
+      success: true,
+      previews
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Promote a selected preview image: upload to S3 and create Image doc
+// @route   POST /api/images/promote-preview
+// @access  Private
+exports.promotePreviewImage = async (req, res, next) => {
+  try {
+    const {
+      storyId,
+      imageType,
+      orientation,
+      base64,
+      prompt
+    } = req.body;
+
+    if (!storyId || !imageType || !base64) {
+      return res.status(400).json({
+        success: false,
+        message: 'storyId, imageType, and base64 are required'
+      });
+    }
+
+    const buffer = Buffer.from(base64, 'base64');
+
+    // Upload to S3
+    const s3Result = await s3Service.uploadToS3(
+      buffer,
+      `stories/${storyId}/${imageType}`,
+      `${imageType}-${Date.now()}.png`,
+      'image/png'
+    );
+
+    // If replacing cover, update existing document safely
+    if (imageType === 'cover') {
+      const existingCover = await Image.findOne({ story: storyId, imageType: 'cover' });
+      if (existingCover) {
+        pushCurrentToHistory(existingCover, 'replace-cover');
+        existingCover.s3Key = s3Result.key;
+        existingCover.s3Url = s3Result.url;
+        existingCover.s3Bucket = s3Result.bucket;
+        existingCover.size = buffer.length;
+        existingCover.prompt = prompt || existingCover.prompt;
+        existingCover.mimeType = 'image/png';
+        existingCover.metadata = Object.assign({}, existingCover.metadata, { orientation, model: 'hidream' });
+        await existingCover.save();
+        return res.json({ success: true, image: existingCover });
+      }
+    }
+
+    // Create canonical Image
+    const image = await Image.create({
+      story: storyId,
+      imageType,
+      s3Key: s3Result.key,
+      s3Url: s3Result.url,
+      s3Bucket: s3Result.bucket,
+      prompt,
+      mimeType: 'image/png',
+      size: buffer.length,
+      metadata: {
+        model: 'hidream',
+        orientation
+      }
+    });
+
+    return res.json({
+      success: true,
+      image
+    });
+
+  } catch (err) {
+    next(err);
   }
 };

@@ -12,6 +12,7 @@ const TitleSelection = () => {
 
   const [aiTitles, setAiTitles] = useState([]); // MUST be array
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [status, setStatus] = useState("processing");
 
   const [loadingTitles, setLoadingTitles] = useState(false);
   const [creatingBook, setCreatingBook] = useState(false);
@@ -19,16 +20,21 @@ const TitleSelection = () => {
 
   useEffect(() => {
     fetchStoryData();
-    console.log("Story ID:", storyData);
+    if (import.meta.env.VITE_DEV) console.log("Story ID:", storyId);
   }, []);
 
   const fetchStoryData = async () => {
     try {
-      // const res = await api.get(`/api/v1/story/6939cb6e18374ba322e05efa`);
       const res = await api.get(`/api/v1/story/${storyId}`);
       const story = res.data.data.story;
       setStoryData(story);
       setSelectedTitle(story.title || "");
+      if(story.status === "failed") {
+        setStatus("failed");
+        setInterval(() => {
+          setStatus("processing");
+        }, 6000);
+      }
     } catch (err) {
       console.error("Fetch story failed:", err);
     }
@@ -36,7 +42,6 @@ const TitleSelection = () => {
 
   // Generate AI Titles
   const handleGenerateTitles = async () => {
-    console.log("Generating titles for story ID:", storyId);
     try {
       setLoadingTitles(true);
       setAiTitles([]);
@@ -44,15 +49,14 @@ const TitleSelection = () => {
       const res = await api.post("/api/v1/story/titles/generate", {
         storyId,
         selectedTitle,
-        // story: storyData?.gist, 
-        genre: storyData?.genre
+        // story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : [])
       });
 
       // Titles must be an array! 
       // setAiTitles(res.data.titles || []);
       setAiTitles(res.data.data.titles || []);
       setRegenerate(true);
-      
       // console.log("AI Titles Response:", res.data);
     } catch (err) {
       console.error("AI Title fetch failed:", err);
@@ -69,8 +73,8 @@ const TitleSelection = () => {
 
       const res = await api.post("/api/v1/story/titles/regenerate", {
         storyId,
-        story: storyData?.gist, 
-        genre: storyData?.genre,
+        story: storyData?.gist,
+        genres: storyData?.genres || (storyData?.genre ? [storyData.genre] : []),
         previousTitles: aiTitles,
         selectedTitle,
       });
@@ -91,15 +95,12 @@ const TitleSelection = () => {
     try {
       setCreatingBook(true);
 
-      // YOU WILL ADD API CALL HERE
-      // console.log("Final Title Submitted:", selectedTitle);
-
-      const res = await api.post(`/api/v1/images/generate-characters/${storyData._id}`, {
+      const res = await api.post(`/api/v1/images/generate-book/${storyData._id}`, {
         title: selectedTitle,
       });
 
-      console.log("Book creation response:", res.data);
-      navigateTo(`/backgroundgenerator/${res.data.storyId}`);
+      if (import.meta.env.DEV) console.log("Book creation succeeded");
+      navigateTo(`/generatorPage/${res.data.storyId}?jobId=${res.data.jobId}`);
 
     } catch (err) {
       console.error(err);
@@ -112,6 +113,12 @@ const TitleSelection = () => {
   return (
      <div className="min-h-screen w-full bg-black text-white flex flex-col items-center px-6 py-10">
       <ProgressStep4 />
+      {/* error */}
+      {status === "failed" && (
+          <p className="text-red-400 mt-6">
+            Something went wrong. Please try again later.
+          </p>
+        )}
     <div className="p-6 py-10 relative max-w-3xl w-full text-white">
       {/* MAIN HEADING */}
       <h1 className="text-3xl font-bold text-purple-400 mb-4">
@@ -220,7 +227,7 @@ const TitleSelection = () => {
         disabled={creatingBook}
       >
         {creatingBook ? (
-         <p>loading</p>
+         <p>loading.....</p>
         ) : (
           "Create My Book"
         )}

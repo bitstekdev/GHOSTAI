@@ -14,6 +14,7 @@ const {
   getMe,
   updateProfile
 } = require('../controllers/authController');
+const { googleAuth } = require('../controllers/authController');
 const { completeOnboardingTour } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const {
@@ -27,6 +28,7 @@ router.post('/signup', validateSignup, signup);
 router.post('/login', validateLogin, login);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification', resendVerification);
+router.post('/google', googleAuth);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/change-password', protect, validateChangePassword, changePassword);

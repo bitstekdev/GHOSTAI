@@ -2,6 +2,8 @@ import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api, { setupAxiosInterceptors } from "../services/axiosInstance";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebase";
 
 export const AppContext = createContext();
 
@@ -54,8 +56,47 @@ function AppContextProvider(props) {
     }
   };
 
-const navigateTo = (path) => {
-  nav(path);
+  // ------------------- Google Sign-in (frontend-only for now) -------------------
+  const googleSignin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Send idToken to backend to create/verify session and set cookies
+      const res = await api.post(
+        '/api/auth/google',
+        { idToken },
+        { withCredentials: true }
+      );
+
+      if (res?.data?.success) {
+        setIsAuthenticated(true);
+        setUserData(res.data.user);
+        nav('/generatestory');
+        return { success: true };
+      }
+      return { success: false, message: res?.data?.message };
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const navigateTo = (path, opts) => {
+  try {
+    if (opts && opts.state) {
+      nav(path, { state: opts.state });
+    } else {
+      nav(path);
+    }
+  } catch (e) {
+    // fallback
+    nav(path);
+  }
+
   window.scrollTo({
     top: 10,
     behavior: "smooth",
@@ -64,46 +105,10 @@ const navigateTo = (path) => {
 
 
 
-
-//   -------------------Signin-------------------
-
-const signin = async (data) => {
-  try {
-    setLoading(true);
-    const response = await api.post(`/api/auth/login`, data);
-
-    setIsAuthenticated(true);
-    setUserData(response.data.data.user);
-
-    return { success: true, message: response.data.message };
-  } catch (error) {
-    setIsAuthenticated(false);
-    const status = error.response?.status;
-    const payload = error.response?.data;
-    if (status === 403 && payload?.requiresEmailVerification) {
-      return {
-        success: false,
-        requiresEmailVerification: true,
-        message: payload.message || "Please verify your email before logging in.",
-      };
-    }
-    const errors = payload?.errors;
-    const message =
-      (Array.isArray(errors) && errors[0]?.msg) ||
-      payload?.message ||
-      "Something went wrong!";
-    return { success: false, message };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
 //----------------get profile---------------------
 const getProfile = async () => {
   try {
-    const res = await api.get(`${backendUrl}/api/auth/me`);
+    const res = await api.get(`/api/auth/me`);
     setUserData(res.data.data);
     return res.data.data;
   } catch (err) {
@@ -118,7 +123,7 @@ const getProfile = async () => {
 const updateProfile = async (profile) => {
   try {
     const res = await api.put(
-      `${backendUrl}/api/auth/update-profile`,
+      `/api/auth/update-profile`,
       profile
     );
     setUserData(res.data.data);
@@ -132,7 +137,7 @@ const updateProfile = async (profile) => {
 const changePassword = async (security) => {
   try {
     const res = await api.post(
-      `${backendUrl}/api/auth/change-password`,
+      `/api/auth/change-password`,
       {
         currentPassword: security.currentPassword,
         newPassword: security.newPassword,
@@ -157,8 +162,9 @@ const fetchAddresses = async () => {
   try {
     setLoadingAddresses(true);
     setAddressError("");
-    const { data } = await api.get(`${backendUrl}/api/address`);
+    const { data } = await api.get(`/api/v1/address`);
     if (data.success) {
+      // console.log("Fetched addresses:", data.data);
       setAddresses(data.data);
       return { success: true, data: data.data };
     }
@@ -174,7 +180,7 @@ const fetchAddresses = async () => {
 
 const createAddress = async (addressData) => {
   try {
-    const { data } = await api.post(`${backendUrl}/api/address`, {
+    const { data } = await api.post(`/api/v1/address`, {
       recipientName: addressData.name,
       phone: addressData.phone,
       address: addressData.address,
@@ -193,7 +199,7 @@ const createAddress = async (addressData) => {
 //--------------logout---------------------
   const logout = async () => {
     try {
-      await api.post(`${backendUrl}/api/auth/logout`, {});
+      await api.post(`/api/auth/logout`, {});
       setIsAuthenticated(false);
       setUserData(null);
       nav('/signin');
@@ -209,6 +215,13 @@ const createAddress = async (addressData) => {
   };
 
 
+  //subscription plans api 
+  const getPlansByContext = async (context = "all") => {
+  const res = await api.get(`/api/v1/subscriptions/plans/byShowOnContext?context=${context}`);
+  return res.data.plans;
+};
+
+
 
 
 
@@ -220,7 +233,7 @@ const createAddress = async (addressData) => {
   const value = {
     backendUrl,
     navigateTo,
-    signin,
+    googleSignin,
     getProfile,
     updateProfile,
     changePassword,
@@ -237,6 +250,7 @@ const createAddress = async (addressData) => {
     addresses,
     loadingAddresses,
     addressError,
+    getPlansByContext
   };
 
   return (

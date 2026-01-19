@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const admin = require('../config/firebaseAdmin');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -14,6 +15,13 @@ const {
   sendWelcomeEmail
 } = require('../services/emailService');
 require('dotenv').config();
+
+const COOKIE_OPTS = {
+  httpOnly: true,
+  path: '/',
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+};
 
 
 // @desc    Register user
@@ -46,7 +54,9 @@ exports.signup = async (req, res, next) => {
     await user.save();
 
     // Send verification email
-    await sendVerificationEmail(user, emailToken);
+    // await sendVerificationEmail(user, emailToken);
+    await sendVerificationEmail(user, emailToken, req);
+
 
     res.status(201).json({
       success: true,
@@ -81,14 +91,19 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    // console.log("user found:", user.email);
+
     // Check if password matches
     const isPasswordMatch = await user.comparePassword(password);
+    // console.log("ispassword match:", isPasswordMatch);
     if (!isPasswordMatch) {
+      // console.log("password mismatch");
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
+    // console.log("password matched");
 
     // Check if email is verified
     if (!user.isEmailVerified) {
@@ -111,21 +126,9 @@ exports.login = async (req, res, next) => {
     user.lastLogin = Date.now();
     await user.save();
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      path: "/",
-      secure: true,
-      sameSite: "None",
-      maxAge: 60 * 60 * 1000, // 24 hour
-    });
+    res.cookie('accessToken', accessToken, { ...COOKIE_OPTS, maxAge: 60 * 60 * 1000 });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      path: "/",
-      secure: true,
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    res.cookie('refreshToken', refreshToken, { ...COOKIE_OPTS, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.status(200).json({
       success: true,
@@ -221,7 +224,9 @@ exports.resendVerification = async (req, res, next) => {
     await user.save();
 
     // Send email
-    await sendVerificationEmail(user, emailToken);
+    // await sendVerificationEmail(user, emailToken);
+    await sendVerificationEmail(user, emailToken, req);
+
 
     res.status(200).json({
       success: true,
@@ -254,7 +259,8 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Send email
-    await sendPasswordResetEmail(user, resetToken);
+    // await sendPasswordResetEmail(user, resetToken);
+    await sendPasswordResetEmail(user, resetToken, req);
 
     res.status(200).json({
       success: true,
@@ -409,13 +415,7 @@ exports.refreshToken = async (req, res, next) => {
 
     const newAccessToken = generateAccessToken(user._id);
 
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      path: "/",
-      maxAge: 60 * 60 * 1000,
-    });
+    res.cookie('accessToken', newAccessToken, { ...COOKIE_OPTS, maxAge: 60 * 60 * 1000 });
 
     return res.status(200).json({
       success: true,
@@ -446,16 +446,8 @@ exports.logout = async (req, res, next) => {
     }
 
     // Clear cookies with same options as when they were set
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: true,     
-      sameSite: "None"
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,     
-      sameSite: "None",
-    });
+    res.clearCookie('accessToken', COOKIE_OPTS);
+    res.clearCookie('refreshToken', COOKIE_OPTS);
 
     res.status(200).json({
       success: true,
@@ -534,5 +526,71 @@ exports.updateProfile = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+// @desc    Google Sign-In
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleAuth = async (req, res, next) => {
+  try {
+    
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ success: false, message: 'ID token missing' });
+    }
+
+    if (!admin || !admin.auth) {
+      console.error('Firebase Admin not initialized. Make sure env vars are set.');
+      return res.status(500).json({ success: false, message: 'Server misconfiguration' });
+    }
+
+    // 1. Verify Firebase token
+    const decoded = await admin.auth().verifyIdToken(idToken);
+
+    const email = decoded.email;
+    const name = decoded.name || 'Google User';
+
+    // 2. Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        password: crypto.randomBytes(32).toString('hex'),
+        isEmailVerified: true,
+      });
+    }
+
+    // 3. Generate tokens
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    user.refreshTokens.push({
+      token: refreshToken,
+      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    });
+    user.lastLogin = Date.now();
+    await user.save();
+
+    // 4. Set cookies
+    res.cookie('accessToken', accessToken, { ...COOKIE_OPTS, maxAge: 60 * 60 * 1000 });
+
+    res.cookie('refreshToken', refreshToken, { ...COOKIE_OPTS, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Google login successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        onboardingTourCompleted: user.onboardingTourCompleted,
+      },
+    });
+  } catch (err) {
+    console.error('Google auth error:', err);
+    return res.status(401).json({ success: false, message: 'Invalid Google token' });
   }
 };
