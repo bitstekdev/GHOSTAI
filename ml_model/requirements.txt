@@ -26,7 +26,11 @@ pdfminer.six
 Pillow
 python-docx
 pdfplumber
-
+boto3
 pymongo
 jinja2
+
+rembg
+rembg[cpu]
+runpod
 
