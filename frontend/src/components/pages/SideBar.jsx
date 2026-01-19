@@ -8,10 +8,12 @@ import {
   BookMarked,
   Lock,
   ChevronDown,
+  ChevronUp,
   ChevronRight,
   User,
   History,
-  LogOut
+  LogOut,
+  BookKey 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logoImg from "../../assets/images/Ghostlogo1.png";
@@ -25,17 +27,34 @@ export default function Sidebar({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
+
   const navigate = useNavigate();
-  const { logout } = useContext(AppContext);
+  const { logout, activeSubscription, fetchActiveSubscription  } = useContext(AppContext);
 
 
   // Sidebar visible if manually opened OR hovered
   const shouldShow = isOpen || isHovered;
 
   useEffect(() => {
+  if (!shouldShow) setPlanOpen(false);
+}, [shouldShow]);
+
+
+  useEffect(() => {
     setSidebarShown(shouldShow);
   }, [shouldShow, setSidebarShown]);
 
+  useEffect(() => {
+    fetchActiveSubscription();
+  }, []);
+
+  // Determine plan info
+  const planInfo = activeSubscription ? {
+    plan: activeSubscription.subscription,
+  } : null;
+
+  console.log("Active Subscription in Sidebar:", activeSubscription);
   // Menu list + routing paths
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -168,6 +187,68 @@ export default function Sidebar({
             );
           })}
         </nav>
+
+
+{/* CURRENT PLAN SECTION */}
+{planInfo && (
+  <>
+    {/* COLLAPSED SIDEBAR → ICON ONLY */}
+    {!shouldShow && (
+      <div className="mx-auto mb-4 flex justify-center">
+        <button
+          onClick={() => {
+            setIsOpen(true);
+            setPlanOpen(true);
+          }}
+          className="p-3 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition"
+          title="Current Plan"
+        >
+          <BookKey size={22} />
+        </button>
+      </div>
+    )}
+
+    {/* EXPANDED SIDEBAR → FULL CARD */}
+    {shouldShow && (
+      <div className="mx-3 mb-4 rounded-xl border border-gray-700 bg-gray-900/80 text-gray-200">
+        
+        {/* HEADER */}
+        <button
+          onClick={() => setPlanOpen(!planOpen)}
+          className="w-full flex items-center justify-between p-3"
+        >
+          <div>
+            <div className="text-[11px] uppercase tracking-wide text-gray-400">
+              Current Plan
+            </div>
+            <div className="text-sm font-medium">
+              {planInfo.plan?.name || "Free Plan"}
+            </div>
+          </div>
+
+          {planOpen ? (
+            <ChevronUp size={16} className="text-gray-400" />
+          ) : (
+            <ChevronDown size={16} className="text-gray-400" />
+          )}
+        </button>
+
+        {/* EXPANDABLE CONTENT */}
+        {planOpen && (
+          <div className="border-t border-gray-700 px-3 pb-3">
+            <button
+              onClick={() => navigate("/upgradeplan")}
+              className="mt-3 w-full rounded-lg border border-gray-600 bg-gray-800 py-2 text-sm text-gray-200 hover:bg-gray-700 transition"
+            >
+              Upgrade Plan
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+  </>
+)}
+
 
 
         {/* LOGOUT BUTTON - ANCHORED AT BOTTOM */}

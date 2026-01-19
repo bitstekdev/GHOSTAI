@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import PlansGrid  from "./PlansGrid";
 
 const InitialPlansPage = () => {
-  const { getPlansByContext, getProfile, navigateTo } = useContext(AppContext);
+  const { getPlansByContext, getProfile, navigateTo, fetchUsageLeft} = useContext(AppContext);
   const [plans, setPlans] = useState([]);
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ const InitialPlansPage = () => {
 
   // Razorpay payment processing state--------------------------
  const handlePlanAction = async (plan) => {
-    console.log("Selected plan:", plan);
+    // console.log("Selected plan:", plan);
     
     if (processingPayment) return;
 
@@ -91,6 +91,7 @@ const InitialPlansPage = () => {
               //     validityDays: plan.validityDays,
               //   },
               // });
+              fetchUsageLeft();
               navigateTo(from ? `${from}/${storyId}` : "/");
             }
           } catch (error) {

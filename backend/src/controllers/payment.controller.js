@@ -46,7 +46,7 @@ exports.createOrder = async (req, res) => {
     faceSwaps: 0,
     regenerations: 0,
     edits: 0,
-    erases: 0
+    characterTraining: 0
   },
 
   bonusCredits: {
@@ -55,7 +55,7 @@ exports.createOrder = async (req, res) => {
     faceSwaps: 0,
     regenerations: 0,
     edits: 0,
-    erases: 0
+    characterTraining: 0
   },
     razorpay: { orderId: order.id }
   });

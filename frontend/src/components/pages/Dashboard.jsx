@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RefreshCcw, CreditCard, Truck, Info, ShoppingCart } from "lucide-react";
+import { RefreshCcw, CreditCard, Truck, Info, ShoppingCart, MoreVertical  } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Joyride from "react-joyride";
 import { AppContext } from "../../context/AppContext";
@@ -8,14 +8,17 @@ import { useTourContext } from "../../context/TourContext";
 import { dashboardTourSteps, tourStyles } from "../../config/tourSteps";
 
 const Dashboard = () => {
-  const { userData } = React.useContext(AppContext);
+  const { userData, usageLeft, fetchUsageLeft } = React.useContext(AppContext);
   const navigate = useNavigate();
+  console.log("Usage Left in Dashboard:", usageLeft);
 
   const [allStories, setAllStories] = useState([]);
   const [storiesInProgress, setStoriesInProgress] = useState([]);
   const [completedStories, setCompletedStories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showUsageModal, setShowUsageModal] = useState(false);
+
 
   // Use tour context
   const {
@@ -73,6 +76,7 @@ const Dashboard = () => {
     };
 
     fetchStories();
+    fetchUsageLeft();
   }, []);
 
   // Auto-start tour for first-time users on Dashboard
@@ -173,18 +177,18 @@ const Dashboard = () => {
         {/* Tour Trigger Button */}
         <div className="flex items-center gap-4">
           <button
-          onClick={() => navigate("/cart")}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors mr-4"
-          title="Go to Cart">
-          <ShoppingCart size={18} />
-        </button>
-        <button
-          onClick={startOnboardingTour}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors"
-          title="Show dashboard tour">
-          <Info size={18} />
-          <span className="hidden md:inline">Start Tour</span>
-        </button>
+            onClick={() => navigate("/cart")}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors mr-4"
+            title="Go to Cart">
+            <ShoppingCart size={18} />
+          </button>
+          <button
+            onClick={startOnboardingTour}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-lg transition-colors"
+            title="Show dashboard tour">
+            <Info size={18} />
+            <span className="hidden md:inline">Start Tour</span>
+          </button>
         </div>
       </div>
 
@@ -214,15 +218,45 @@ const Dashboard = () => {
             {storiesInProgress.length}
           </p>
         </div>
-
-        <div className="credits-card bg-gray-800 rounded-xl p-6 border border-gray-700">
+        <div className="credits-card bg-gray-800 rounded-xl p-6 border border-gray-700 relative hover:cursor-pointer hover:border-purple-500"
+        onClick={() => setShowUsageModal((prev) => !prev)}
+        >
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-white text-sm">Credits</h3>
-            <CreditCard size={20} className="text-gray-400" />
+
+            <button
+              onClick={() => setShowUsageModal((prev) => !prev)}
+              className="text-gray-400 hover:text-white">
+              <CreditCard size={18}  />
+            </button>
           </div>
+
           <p className="text-5xl font-bold text-white">
-            {userData?.credits || 0}
+            {usageLeft?.credits || 0}
           </p>
+
+          {/* Usage Modal */}
+          {showUsageModal && (
+            <div className="absolute top-12 right-4 z-50 w-64 bg-gray-900 border border-gray-700 rounded-lg shadow-lg p-4">
+              <h4 className="text-sm font-semibold text-white mb-3">
+                Usage Remaining
+              </h4>
+
+              <ul className="text-sm text-gray-300 space-y-1">
+                <li>📄 Max Pages: {usageLeft?.remaining?.maxPages ?? 0}</li>
+                <li>📚 Max Books: {usageLeft?.remaining?.maxBooks ?? 0}</li>
+                <li>🖼 Face Swaps: {usageLeft?.remaining?.faceSwaps ?? 0}</li>
+                <li>
+                  🔁 Regenerations: {usageLeft?.remaining?.regenerations ?? 0}
+                </li>
+                <li>✏️ Edits: {usageLeft?.remaining?.edits ?? 0}</li>
+                <li>
+                  🧑‍🎨 Character Training:{" "}
+                  {usageLeft?.remaining?.characterTraining ?? 0}
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">

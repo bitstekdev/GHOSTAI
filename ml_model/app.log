@@ -6,3 +6,36 @@
 2026-01-19 20:22:10,291 [INFO] storybook_api - [ARTIFACT] req=d2200fd6b726 type=story pages=2 ttl=24h
 2026-01-19 20:22:11,818 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-01-19 20:22:13,794 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-19 20:22:13,813 [INFO] storybook_api - [REQ_END] id=d2200fd6b726 status=200 duration_ms=47767.7
+2026-01-19 20:30:00,449 [INFO] storybook_api - [REQ_START] id=996dfa14ff94 method=POST path=/story/generate
+2026-01-19 20:30:07,066 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:30:13,749 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:30:27,945 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:30:36,419 [INFO] storybook_api - [ARTIFACT] req=996dfa14ff94 type=story pages=2 ttl=24h
+2026-01-19 20:30:36,424 [INFO] storybook_api - [ARTIFACT] req=996dfa14ff94 type=story pages=2 ttl=24h
+2026-01-19 20:30:46,069 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:30:47,852 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-19 20:30:47,865 [INFO] storybook_api - [REQ_END] id=996dfa14ff94 status=200 duration_ms=47419.44
+2026-01-19 23:26:43,864 [INFO] storybook_api - [REQ_START] id=3ac086094bd9 method=POST path=/gist/preview-images
+2026-01-19 23:26:46,097 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:26:51,955 [INFO] storybook_api - [IMG_JOB_START] req=3ac086094bd9 job_id=58395e8b-abad-4716-b5e9-c4355e8e9074-e1
+2026-01-19 23:31:55,413 [INFO] storybook_api - [IMG_JOB_START] req=3ac086094bd9 job_id=04c57264-affc-4740-98c8-b081858de4c0-e2
+2026-01-19 23:34:38,973 [INFO] storybook_api - [REQ_START] id=44094d93c466 method=POST path=/story/generate
+2026-01-19 23:34:40,174 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:34:45,098 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:34:55,775 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:35:04,957 [INFO] storybook_api - [ARTIFACT] req=44094d93c466 type=story pages=2 ttl=24h
+2026-01-19 23:35:04,958 [INFO] storybook_api - [ARTIFACT] req=44094d93c466 type=story pages=2 ttl=24h
+2026-01-19 23:35:07,344 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:35:09,493 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery
+2026-01-19 23:35:09,511 [INFO] storybook_api - [REQ_END] id=44094d93c466 status=200 duration_ms=30538.49
+2026-01-19 23:36:56,913 [INFO] storybook_api - [IMG_JOB_START] req=3ac086094bd9 job_id=d4725e4b-d42d-4615-a8a2-a21943f6da97-e1
+2026-01-19 23:41:57,245 [INFO] storybook_api - [REQ_END] id=3ac086094bd9 status=200 duration_ms=913388.71
+2026-01-20 00:44:12,783 [INFO] storybook_api - [REQ_START] id=6aba3741eb17 method=POST path=/story/generate
+2026-01-20 00:44:14,114 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:44:18,864 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:44:26,744 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:44:34,178 [INFO] storybook_api - [ARTIFACT] req=6aba3741eb17 type=story pages=2 ttl=24h
+2026-01-20 00:44:34,180 [INFO] storybook_api - [ARTIFACT] req=6aba3741eb17 type=story pages=2 ttl=24h
+2026-01-20 00:44:34,865 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:44:37,511 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery

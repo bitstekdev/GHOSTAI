@@ -4,9 +4,11 @@ import api from "../../services/axiosInstance";
 import PlansGrid  from "./PlansGrid";
 
 const UpgradePlansPage = () => {
-  const { getPlansByContext } = useContext(AppContext);
+  const { getPlansByContext, navigateTo, fetchUsageLeft, getProfile } = useContext(AppContext);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [profile, setProfile] = useState({});
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -21,7 +23,22 @@ const UpgradePlansPage = () => {
       }
     };
 
+      const fetchProfile = async () => {
+      try {
+       const  profileData = await getProfile();
+       console.log("Fetched profile:", profileData);
+       setProfile({
+          name: profileData.name,
+          email: profileData.email,
+          phone: profileData.phone,
+        });
+      } catch (err) {
+        console.error("Failed to load profile", err);
+      }
+    };
+    
     fetchPlans();
+    fetchProfile();
   }, [getPlansByContext]);
 
    // Razorpay payment processing state--------------------------
@@ -36,6 +53,7 @@ const UpgradePlansPage = () => {
       // Step 1: Create Razorpay order
       const orderResponse = await api.post("/api/v1/subscriptions/order", {
         planId: plan._id,
+        isUpgrade: true,
       });
 
       const { order, subscriptionId } = orderResponse.data;
@@ -57,19 +75,13 @@ const UpgradePlansPage = () => {
               signature: response.razorpay_signature,
               subscriptionId: subscriptionId,
               planId: plan._id,
-              isUpgrade: false, // Set to true if upgrading existing subscription
+              isUpgrade: true, // Set to true if upgrading existing subscription
             });
 
             if (verifyResponse.data.success) {
               // Navigate to success page
-              navigate("/subscription-success", {
-                state: {
-                  subscriptionId,
-                  planName: plan.name,
-                  amount: order.amount / 100,
-                  validityDays: plan.validityDays,
-                },
-              });
+              fetchUsageLeft();
+              navigateTo("/dashboard");
             }
           } catch (error) {
             console.error("Payment verification failed:", error);
@@ -79,9 +91,9 @@ const UpgradePlansPage = () => {
           }
         },
         prefill: {
-          name: "", // Can prefill with user data if available
-          email: "",
-          contact: "",
+          name: profile.name, 
+          email: profile.email,
+          contact: profile.phone,
         },
         theme: {
           color: "#7c3aed",

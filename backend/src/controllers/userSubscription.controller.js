@@ -104,6 +104,7 @@ exports.getUsageLeft = async (req, res) => {
   if (!limits) {
     return res.json({
       unlimited: true,
+      credits: null, // unlimited credits
       expiresAt: sub.expiresAt
     });
   }
@@ -112,26 +113,33 @@ exports.getUsageLeft = async (req, res) => {
   const bonus = sub.bonusCredits || {};
   const remaining = {};
 
+  let credits = 0; // total remaining credits
+
   Object.keys(limits).forEach(key => {
     if (limits[key] === null) {
       remaining[key] = null; // unlimited feature
       return;
     }
 
-    remaining[key] = Math.max(
+    const left = Math.max(
       limits[key] + (bonus[key] || 0) - (usage[key] || 0),
       0
     );
+
+    remaining[key] = left;
+    credits += left; 
   });
 
   res.json({
     unlimited: false,
+    credits,          
     remaining,
     used: usage,
     bonus,
     expiresAt: sub.expiresAt
   });
 };
+
 
 
 

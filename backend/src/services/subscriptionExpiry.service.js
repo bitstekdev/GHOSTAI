@@ -10,12 +10,21 @@ exports.expireOutdatedSubscriptions = async () => {
   const result = await UserSubscription.updateMany(
     {
       status: "active",
-      expiresAt: { $lte: now }
+      expiresAt: { $ne: null, $lte: now }
     },
     {
-      $set: { status: "expired" }
+      $set: {
+        status: "expired",
+        updatedAt: now
+      }
     }
   );
-  console.log(`✅ Checked for outdated subscriptions at ${now.toISOString()}`);
+
+  console.log(
+    `Expired ${result.modifiedCount || 0} subscriptions at ${now.toISOString()}`
+  );
+
   return result.modifiedCount || 0;
 };
+
+

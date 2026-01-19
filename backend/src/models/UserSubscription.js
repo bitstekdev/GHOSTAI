@@ -10,7 +10,7 @@ const usageSchema = new mongoose.Schema(
     faceSwaps: { type: Number, default: 0 },
     regenerations: { type: Number, default: 0 },
     edits: { type: Number, default: 0 },
-    erases: { type: Number, default: 0 }
+    characterTraining: { type: Number, default: 0 }
   },
   { _id: false }
 );
@@ -25,7 +25,7 @@ const bonusCreditsSchema = new mongoose.Schema(
     faceSwaps: { type: Number, default: 0 },
     regenerations: { type: Number, default: 0 },
     edits: { type: Number, default: 0 },
-    erases: { type: Number, default: 0 }
+    characterTraining: { type: Number, default: 0 }
   },
   { _id: false }
 );
