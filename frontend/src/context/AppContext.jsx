@@ -181,9 +181,14 @@ const fetchAddresses = async () => {
 const createAddress = async (addressData) => {
   try {
     const { data } = await api.post(`/api/v1/address`, {
-      recipientName: addressData.name,
-      phone: addressData.phone,
-      address: addressData.address,
+      fullName: addressData.fullName,
+      email: addressData.email,
+      phoneNumber: addressData.phoneNumber,
+      houseNumber: addressData.houseNumber,
+      streetName: addressData.streetName,
+      city: addressData.city,
+      state: addressData.state,
+      zipCode: addressData.zipCode,
     });
     if (data.success) {
       setAddresses([...addresses, data.data]);

@@ -27,6 +27,7 @@ import UpgradePlansPage from "./components/plans/UpgradePlansPage.jsx";
 
 import CartPage from "./components/Cart/CartPage.jsx";
 import AddToCartPage from "./components/Cart/AddToCartPage.jsx";
+import Checkout from "./components/pages/Checkout.jsx";
 
 // Route guards
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
@@ -100,6 +101,9 @@ const App = () => {
 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/add-to-cart/:storyId" element={<AddToCartPage />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/:storyId" element={<Checkout />} />
+
 
 
 

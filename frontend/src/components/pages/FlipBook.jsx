@@ -787,33 +787,12 @@ pages.forEach((page, index) => {
   // ============================
   const handleAddToCartClick = () => {
     if (!storyData?.story) return;
-
-    // onAddToCart?.({
-    //   id: storyId,
-    //   title: storyData.story.title,
-    //   genre: storyData.story.genre,
-    //   orientation: storyData.story.orientation,
-    //   coverImage: storyData.story.coverImage,
-    //   backCoverImage: storyData.story.backCoverImage,
-    //   backCoverBlurb: storyData.story.backCoverBlurb,
-    //   pages: storyData.pages,
-    // });
     navigateTo(`/add-to-cart/${storyId}`);
   };
 
   const handleOrderNowClick = () => {
     if (!storyData?.story) return;
-
-    onOrderNow?.({
-      id: storyId,
-      title: storyData.story.title,
-      genre: storyData.story.genre,
-      orientation: storyData.story.orientation,
-      coverImage: storyData.story.coverImage,
-      backCoverImage: storyData.story.backCoverImage,
-      backCoverBlurb: storyData.story.backCoverBlurb,
-      pages: storyData.pages,
-    });
+    navigateTo(`/checkout/${storyId}`);
   };
 
   return (
