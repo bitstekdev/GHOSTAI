@@ -1,3 +1,5 @@
+// storyController
+
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
