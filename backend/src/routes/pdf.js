@@ -6,7 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 
-const Story = require("./models/Story")
+const Story = require("../models/Story")
 const { generateStorybookPdf } = require('../pdf/fonts/generateStorybookPdf');
 
 // ======================================================
