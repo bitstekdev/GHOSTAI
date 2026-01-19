@@ -2,10 +2,70 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const addressSchema = new mongoose.Schema({
-  name:String,
-  phone:String,
-  address: String,
+  fullName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true
+  },
+  phoneNumber: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  houseNumber: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  streetName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  city: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  state: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  zipCode: {
+    type: String,
+    required: true,
+    trim: true
+  }
 });
+
+const cartSchema = new mongoose.Schema(
+  {
+    storyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Story",
+      required: true
+    },
+    planId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+      required: true
+    },
+    quantity: {
+      type: Number,
+      default: 1,
+      min: 1
+    }
+  },
+  { _id: false }
+);
+
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -33,6 +93,8 @@ const userSchema = new mongoose.Schema({
     select: false
   },
   address: [addressSchema],
+
+  cart: [cartSchema],
 
   isEmailVerified: {
     type: Boolean,

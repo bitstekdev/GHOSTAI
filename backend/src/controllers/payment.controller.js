@@ -8,22 +8,55 @@ const { upgradeSubscription } = require("../services/subscriptionUpgrade.service
 
 // CREATE ORDER
 exports.createOrder = async (req, res) => {
-  const { planId } = req.body;
+  const { planId, isUpgrade = false } = req.body;
 
   const plan = await SubscriptionPlan.findById(planId);
   if (!plan || !plan.isActive) {
     return res.status(400).json({ message: "Invalid plan" });
   }
 
+  // Safety: upgrade requires existing active subscription
+  if (isUpgrade) {
+    const activeSub = await UserSubscription.findOne({
+      user: req.user.id,
+      status: "active",
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!activeSub) {
+      return res.status(400).json({
+        message: "No active subscription to upgrade"
+      });
+    }
+  }
+
   const order = await razorpay.orders.create({
     amount: plan.price * 100,
     currency: plan.currency,
-    receipt: `rcpt_${Date.now()}`
+    receipt: `sub_${Date.now()}`
   });
 
   const sub = await UserSubscription.create({
     user: req.user.id,
     plan: plan._id,
+    status: "pending",
+    usage: {
+    maxPages: 0,
+    maxBooks: 0,
+    faceSwaps: 0,
+    regenerations: 0,
+    edits: 0,
+    erases: 0
+  },
+
+  bonusCredits: {
+    maxPages: 0,
+    maxBooks: 0,
+    faceSwaps: 0,
+    regenerations: 0,
+    edits: 0,
+    erases: 0
+  },
     razorpay: { orderId: order.id }
   });
 
@@ -42,10 +75,9 @@ exports.verifyPayment = async (req, res) => {
     signature,
     subscriptionId,
     planId,
-    isUpgrade
+    isUpgrade = false
   } = req.body;
 
-  // Verify Razorpay signature
   const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${orderId}|${paymentId}`)
@@ -55,40 +87,23 @@ exports.verifyPayment = async (req, res) => {
     return res.status(400).json({ message: "Invalid payment signature" });
   }
 
-  // 2️⃣ ⚠️ SAFETY CHECK — ADD THIS HERE
-  if (isUpgrade === true) {
-    const activeSub = await UserSubscription.findOne({
-      user: req.user.id,
-      status: "active",
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (!activeSub) {
-      return res.status(400).json({
-        message: "No active subscription to upgrade"
-      });
-    }
-
-    // 3️⃣ 🔁 NOW SAFE TO UPGRADE
+  // UPGRADE FLOW
+  if (isUpgrade) {
     await upgradeSubscription({
       userId: req.user.id,
       newPlanId: planId,
-      razorpayDetails: {
-        orderId,
-        paymentId,
-        signature
-      }
+      razorpayDetails: { orderId, paymentId, signature }
     });
 
-    return res.json({
-      success: true,
-      upgraded: true
-    });
+    return res.json({ success: true, upgraded: true });
   }
 
-  // 4️⃣ 🆕 NORMAL PURCHASE FLOW
-  const sub = await UserSubscription.findById(subscriptionId)
-    .populate("plan");
+  // NORMAL PURCHASE FLOW
+  const sub = await UserSubscription.findOne({
+    _id: subscriptionId,
+    user: req.user.id,
+    status: "pending"
+  }).populate("plan");
 
   if (!sub) {
     return res.status(404).json({ message: "Subscription not found" });
@@ -105,19 +120,14 @@ exports.verifyPayment = async (req, res) => {
 
   await sub.save();
 
-  res.json({
-    success: true,
-    upgraded: false
-  });
+  res.json({ success: true, upgraded: false });
 };
 
 
 // WEBHOOK FOR RAZORPAY EVENTS
 exports.razorpayWebhook = async (req, res) => {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
     const signature = crypto
-      .createHmac("sha256", secret)
+    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
       .update(req.body)
       .digest("hex");
 
@@ -128,16 +138,10 @@ exports.razorpayWebhook = async (req, res) => {
     const event = JSON.parse(req.body.toString());
 
     if (event.event === "payment.failed") {
-      const orderId = event.payload.payment.entity.order_id;
-
       await UserSubscription.findOneAndUpdate(
-        { "razorpay.orderId": orderId },
+      { "razorpay.orderId": event.payload.payment.entity.order_id },
         { status: "failed" }
       );
-    }
-
-    if (event.event === "subscription.captured") {
-        // create order function==========================================================
     }
 
     res.json({ received: true });

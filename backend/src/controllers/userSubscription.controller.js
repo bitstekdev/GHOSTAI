@@ -1,44 +1,27 @@
 const UserSubscription = require("../models/UserSubscription");
 
 exports.getSubscriptionStatus = async (req, res) => {
-  const subscription = await UserSubscription.findOne({
+  const sub = await UserSubscription.findOne({
     user: req.user.id,
     status: "active"
-  }).populate("plan");
+  });
 
-  if (!subscription) {
+  if (!sub) {
     return res.json({
       hasSubscription: false,
       expired: true
     });
   }
 
-  const expired = subscription.expiresAt < new Date();
-  const remaining = {};
-
-  Object.keys(subscription.plan.limits).forEach(key => {
-    remaining[key] =
-      (subscription.plan.limits[key] || 0) +
-      (subscription.bonusCredits?.[key] || 0) -
-      (subscription.usage[key] || 0);
-  });
+  const expired = sub.expiresAt <= new Date();
 
   res.json({
     hasSubscription: true,
     expired,
-    subscription: {
-      id: subscription._id,
-      planId: subscription.plan._id,
-      planName: subscription.plan.name,
-      code: subscription.plan.code,
-      expiresAt: subscription.expiresAt,
-      limits: subscription.plan.limits,
-      usage: subscription.usage,
-      bonusCredits: subscription.bonusCredits,
-      remaining
-    }
+    expiresAt: sub.expiresAt
   });
 };
+
 
 
 
@@ -50,20 +33,29 @@ exports.getActiveSubscription = async (req, res) => {
   }).populate("plan");
 
   if (!sub) {
-    return res.json({ active: false });
+    return res.json({
+      active: false,
+      message: "No active subscription"
+    });
   }
 
   res.json({
     active: true,
-    plan: {
+    subscription: {
+      id: sub._id,
+      planId: sub.plan._id,
       name: sub.plan.name,
       code: sub.plan.code,
-      expiresAt: sub.expiresAt,
+      price: sub.plan.price,
+      badge: sub.plan.badge,
       isPopular: sub.plan.isPopular,
-      badge: sub.plan.badge
+      startedAt: sub.startedAt,
+      expiresAt: sub.expiresAt,
+      validityDays: sub.plan.validityDays
     }
   });
 };
+
 
 
 exports.getPurchaseHistory = async (req, res) => {
@@ -98,25 +90,50 @@ exports.getUsageLeft = async (req, res) => {
   }).populate("plan");
 
   if (!sub) {
-    return res.status(402).json({
+    return res.status(403).json({
       message: "No active subscription"
     });
   }
 
+  // Convert Mongoose subdoc → plain object
+  const limits = sub.plan.limits?.toObject
+    ? sub.plan.limits.toObject()
+    : sub.plan.limits;
+
+  // Unlimited plan
+  if (!limits) {
+    return res.json({
+      unlimited: true,
+      expiresAt: sub.expiresAt
+    });
+  }
+
+  const usage = sub.usage || {};
+  const bonus = sub.bonusCredits || {};
   const remaining = {};
 
-  Object.keys(sub.plan.limits).forEach(key => {
-    remaining[key] =
-      (sub.plan.limits[key] || 0) +
-      (sub.bonusCredits?.[key] || 0) -
-      (sub.usage[key] || 0);
+  Object.keys(limits).forEach(key => {
+    if (limits[key] === null) {
+      remaining[key] = null; // unlimited feature
+      return;
+    }
+
+    remaining[key] = Math.max(
+      limits[key] + (bonus[key] || 0) - (usage[key] || 0),
+      0
+    );
   });
 
   res.json({
+    unlimited: false,
     remaining,
+    used: usage,
+    bonus,
     expiresAt: sub.expiresAt
   });
 };
+
+
 
 
 

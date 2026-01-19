@@ -5,6 +5,8 @@ const ImageJob = require('../models/ImageJob');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
 const { runBookCreationJob } = require('../jobs/imageFunction');
+const { consumeUsage, getActiveSubscriptionOrFail, assertCanConsume } = require("../services/subscriptionUsage.service.js");
+
 
 // Remove outer HTML/doctype wrappers returned by the generator
 const stripHtmlWrapper = (html) => {

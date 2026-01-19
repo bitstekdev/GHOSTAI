@@ -1,0 +1,8 @@
+2026-01-19 20:21:26,058 [INFO] storybook_api - [REQ_START] id=d2200fd6b726 method=POST path=/story/generate
+2026-01-19 20:21:29,352 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:21:34,336 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:21:56,565 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:22:10,289 [INFO] storybook_api - [ARTIFACT] req=d2200fd6b726 type=story pages=2 ttl=24h
+2026-01-19 20:22:10,291 [INFO] storybook_api - [ARTIFACT] req=d2200fd6b726 type=story pages=2 ttl=24h
+2026-01-19 20:22:11,818 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:22:13,794 [INFO] storybook_api - [STYLE_SAVED] user=693c20d9cef2f9280426f66d genre=Mystery

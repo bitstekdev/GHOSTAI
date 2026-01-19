@@ -65,7 +65,7 @@ const subscriptionPlanSchema = new mongoose.Schema(
 
     showOnContext: {
       type: [String],
-      enum: ["initial", "purchase", "generate", "upgrade", "all"],
+      enum: ["initial", "purchase", "upgrade", "all"],
       default: ["all"]
     },
 

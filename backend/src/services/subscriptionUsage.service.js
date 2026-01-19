@@ -1,24 +1,24 @@
 const UserSubscription = require("../models/UserSubscription");
 
 exports.consumeUsage = async (subscription, key, count = 1) => {
-  const baseLimit = subscription.plan.limits[key];
-  const bonus = subscription.bonusCredits?.[key] || 0;
+  console.log('Consuming usage for', key, 'count', count);
+  const limits = subscription.plan?.limits;
+
+  // Unlimited
+  if (!limits || limits[key] === null) return;
+
   const used = subscription.usage[key] || 0;
+  const bonus = subscription.bonusCredits?.[key] || 0;
+  const totalAllowed = limits[key] + bonus;
 
-  // Unlimited access
-  if (baseLimit === null) {
-    return;
-  }
-
-  const totalAllowed = baseLimit + bonus;
-
-  if (totalAllowed > 0 && used + count > totalAllowed) {
+  if (used + count > totalAllowed) {
     throw new Error(`Usage limit exceeded for ${key}`);
   }
 
   subscription.usage[key] = used + count;
   await subscription.save();
 };
+
 
 
 exports.getActiveSubscriptionOrFail = async (userId) => {
@@ -29,9 +29,33 @@ exports.getActiveSubscriptionOrFail = async (userId) => {
   }).populate("plan");
 
   if (!sub) {
-    throw new Error("No active subscription");
+    const err = new Error("No active subscription");
+    err.statusCode = 403;
+    throw err;
   }
 
   return sub;
 };
+
+
+
+exports.assertCanConsume = (subscription, key, count = 1) => {
+  const limits = subscription.plan?.limits;
+  // console.log('Asserting usage for', key, 'count', count, 'limits', limits);
+
+  // Unlimited plan
+  if (!limits || limits[key] === null) return true;
+
+  const used = subscription.usage?.[key] || 0;
+  const bonus = subscription.bonusCredits?.[key] || 0;
+
+  const remaining = limits[key] + bonus - used;
+
+  if (remaining < count) {
+    throw new Error(`Insufficient ${key}`);
+  }
+
+  return true;
+};
+
 

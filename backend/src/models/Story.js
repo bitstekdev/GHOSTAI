@@ -24,6 +24,20 @@ const characterDetailsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const previewImageSchema = new mongoose.Schema(
+  {
+    orientation: {
+      type: String,
+      enum: ["portrait", "landscape", "square"],
+    },
+    s3Url: String,
+    s3Key: String,
+    width: Number,
+    height: Number,
+  },
+  { _id: false }
+);
+
 const storySchema = new mongoose.Schema(
   {
     user: {
@@ -93,6 +107,7 @@ const storySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Image",
     },
+    previewImages: [previewImageSchema],
     isDeleted: {
       type: Boolean,
       default: false,

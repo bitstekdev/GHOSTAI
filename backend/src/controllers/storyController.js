@@ -3,7 +3,7 @@ const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
 const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
-const { consumeUsage, getActiveSubscriptionOrFail } = require("../services/subscriptionUsage.service");
+const { consumeUsage, getActiveSubscriptionOrFail, assertCanConsume } = require("../services/subscriptionUsage.service");
 
 
 // @desc    Start story (hybrid: questionnaire or direct gist)
@@ -245,8 +245,10 @@ exports.createStory = async (req, res, next) => {
     // await new Promise(resolve => setTimeout(resolve, 20000));
     
 
-    // // numPages comes from req.body
-    // await consumeUsage(subscription, "maxPages", numPages);
+      // PRE-CHECK USAGE
+    const subscription = await getActiveSubscriptionOrFail(req.user.id);
+    assertCanConsume(subscription, "maxBooks", 1);
+    // await consumeUsage(subscription, "maxBooks", 1);
 
     const storyResult = await fastApiService.generateStory(
       gist,
@@ -431,8 +433,8 @@ exports.getStory = async (req, res, next) => {
       user: req.user.id,
       isDeleted: { $ne: true }
     })
-      .populate('coverImage', '-base64Data')
-      .populate('backCoverImage', '-base64Data');
+      .populate('coverImage')
+      .populate('backCoverImage');
 
     if (!story) {
       return res.status(404).json({
@@ -445,15 +447,12 @@ exports.getStory = async (req, res, next) => {
       .sort({ pageNumber: 1 })
       .populate({
       path: 'characterImage',
-      select: '-base64Data'
       })
       .populate({
       path: 'backgroundImage',
-      select: '-base64Data'
       })
       .populate({
       path: 'finalCompositeImage',
-      select: '-base64Data'
       });
 
     res.status(200).json({
@@ -663,7 +662,7 @@ exports.customGenre = async (req, res) => {
 exports.getCustomGenres = async (req, res) => {
   try {
     const result = await fastApiService.getUserGenres(req.user.id);
-    console.log("ye result", result);
+    // console.log("custom genres result", result);
     res.status(200).json({
       success: true,
       data: result

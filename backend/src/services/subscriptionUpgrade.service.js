@@ -18,7 +18,6 @@ exports.upgradeSubscription = async ({
 }) => {
   const now = new Date();
 
-  // 1️⃣ Get current active subscription
   const currentSub = await UserSubscription.findOne({
     user: userId,
     status: "active",
@@ -26,69 +25,48 @@ exports.upgradeSubscription = async ({
   }).populate("plan");
 
   if (!currentSub) {
-    throw new Error("No active subscription to upgrade");
+    throw new Error("No active subscription");
   }
 
-  // 2️⃣ Get new plan
   const newPlan = await SubscriptionPlan.findById(newPlanId);
   if (!newPlan || !newPlan.isActive) {
-    throw new Error("Invalid upgrade plan");
+    throw new Error("Invalid plan");
   }
 
-  // 3️⃣ Calculate carried-forward credits (ONLY unused credits)
   const carriedCredits = {};
+  const oldLimits = currentSub.plan.limits || {};
 
-  Object.keys(currentSub.plan.limits).forEach(key => {
-    const baseLimit = currentSub.plan.limits[key] || 0;
-    const bonus = currentSub.bonusCredits?.[key] || 0;
+  Object.keys(oldLimits).forEach(key => {
+    if (oldLimits[key] === null) {
+      carriedCredits[key] = 0;
+      return;
+    }
+
     const used = currentSub.usage?.[key] || 0;
+    const bonus = currentSub.bonusCredits?.[key] || 0;
 
     carriedCredits[key] = Math.max(
-      baseLimit + bonus - used,
+      oldLimits[key] + bonus - used,
       0
     );
   });
 
-  // 4️⃣ Calculate remaining validity days
   const remainingMs = Math.max(currentSub.expiresAt - now, 0);
-  const remainingDays = Math.ceil(
-    remainingMs / (24 * 60 * 60 * 1000)
-  );
+  const remainingDays = Math.ceil(remainingMs / 86400000);
 
-  const totalValidityDays =
-    remainingDays + (newPlan.validityDays || 0);
-
-  // 5️⃣ Expire old subscription
   currentSub.status = "expired";
   await currentSub.save();
 
-  // 6️⃣ Create upgraded subscription
-  const upgradedSub = await UserSubscription.create({
+  return UserSubscription.create({
     user: userId,
     plan: newPlan._id,
-
     status: "active",
-
-    // usage resets
-    usage: {
-      maxPages: 0,
-      maxBooks: 0,
-      faceSwaps: 0,
-      regenerations: 0,
-      edits: 0,
-      erases: 0
-    },
-
-    // carry-forward credits ONLY
+    usage: {},
     bonusCredits: carriedCredits,
-
     startedAt: now,
     expiresAt: new Date(
-      now.getTime() + totalValidityDays * 24 * 60 * 60 * 1000
+      now.getTime() + (remainingDays + newPlan.validityDays) * 86400000
     ),
-
     razorpay: razorpayDetails
   });
-
-  return upgradedSub;
 };
