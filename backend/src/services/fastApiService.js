@@ -290,3 +290,129 @@ exports.getUserGenres = async (userId) => {
     throw err;
   }
 };
+// -------- Character Training --------
+
+const { Readable } = require("stream");
+
+exports.uploadAndProcessCharacter = async (userId, files) => {
+  const form = new FormData();
+
+  form.append("user_id", String(userId));
+
+  files.forEach(f => {
+    form.append(
+      "files",
+      Readable.from(f.buffer),
+      {
+        filename: f.originalname,
+        contentType: f.mimetype,
+        knownLength: f.buffer.length
+      }
+    );
+  });
+
+  const contentLength = await new Promise((resolve, reject) => {
+    form.getLength((err, length) => {
+      if (err) reject(err);
+      else resolve(length);
+    });
+  });
+
+  const res = await fastApiClient.post("/upload-and-process", form, {
+    headers: {
+      ...form.getHeaders(),
+      "Content-Length": contentLength
+    },
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity
+  });
+
+  console.log("resultData", res.data);
+  return res.data;
+};
+
+exports.generateCharacterCaptions = async (userId, triggerWord) => {
+  const res = await fastApiClient.post(
+    "/generate-captions",
+    { sync: true },
+    { params: { user_id: userId, trigger_word: triggerWord } }
+  );
+
+  return res.data;
+};
+
+exports.trainCharacterLoRA = async (userId, triggerWord) => {
+  const form = new FormData();
+
+  form.append("user_id", String(userId));
+  form.append("trigger_word", String(triggerWord));
+
+  const contentLength = await new Promise((resolve, reject) => {
+    form.getLength((err, length) => {
+      if (err) reject(err);
+      else resolve(length);
+    });
+  });
+
+  const res = await fastApiClient.post("/train-character", form, {
+    headers: {
+      ...form.getHeaders(),
+      "Content-Length": contentLength
+    },
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity,
+    timeout: 3600000
+  });
+
+  return res.data;
+};
+
+exports.generateLoRAImages = async ({ userId, triggerWord, pages, orientation, loraStrength }) => {
+  const res = await fastApiClient.post("/images/generate-lora", {
+    user_id: userId, trigger_word: triggerWord, pages, orientation, lora_strength: loraStrength || 1.0
+  });
+  return res.data;
+};
+
+exports.generateCharacterDetails = async (files, personName) => {
+  if (!files || files.length === 0) {
+    throw new Error("No image files provided");
+  }
+
+  const formData = new FormData();
+  
+  // Add image file with proper formatting for FastAPI
+  formData.append("images", files[0].buffer, {
+    filename: files[0].originalname,
+    contentType: files[0].mimetype
+  });
+  
+  // Add person name for context
+  if (personName) {
+    formData.append("person_name", personName);
+  }
+
+  formData.append("sync", "true");
+  formData.append("save_txt", "true");
+
+  try {
+    const res = await fastApiClient.post("/caption", formData, {
+      headers: formData.getHeaders(),
+      timeout: 300000 // 5 minutes for caption generation
+    });
+
+    if (!res.data) {
+      throw new Error("No response from FastAPI caption service");
+    }
+
+    return res.data; // Expected: { captions: [...] }
+  } catch (error) {
+    console.error("❌ FastAPI caption error:", error.message);
+    throw error;
+  }
+};
+
+exports.getTrainingStatus = async (runpodJobId) => {
+  const res = await fastApiClient.get(`/job-status/${runpodJobId}`);
+  return res.data;
+};

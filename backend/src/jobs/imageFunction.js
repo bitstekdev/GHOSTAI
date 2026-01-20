@@ -1,6 +1,7 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
+const User = require('../models/User');
 const ImageJob = require('../models/ImageJob');
 const fastApiService = require('../services/fastApiService');
 const s3Service = require('../services/s3Service');
@@ -147,11 +148,35 @@ const generateCharacterImagesLogic = async ({ storyId, userId, title, jobId }) =
     ? story.genres.join(", ")
     : story.genre;
 
-  const result = await fastApiService.generateImages(
-    pageData,
-    story.orientation,
-    storyGenreString
-  );
+    const user = await User.findById(story.user).populate('trainedCharacters');
+  // const result = await fastApiService.generateImages(
+  //   pageData,
+  //   story.orientation,
+  //   storyGenreString
+  // );
+  let result;
+  if (user.trainedCharacters.length > 0) {
+    console.log("🟡 Generating LoRA images for trained character...");
+      const trained = user.trainedCharacters[0];
+
+      console.log("Using trained character:", trained.triggerWord, "user:", String(user._id), "pages:", story.numOfPages, "orientation:", story.orientation, );
+
+      result = await fastApiService.generateLoRAImages({
+        userId: String(user._id),
+        triggerWord: trained.triggerWord,
+        pages: pageData,
+        orientation: story.orientation,
+        loraStrength: 1.0
+      });
+    } else {
+      console.log("🟡 Generating standard images...");
+       result = await fastApiService.generateImages(
+          pageData,
+          story.orientation,
+          storyGenreString
+        );
+    }
+
 
   const imagePromises = result.pages.map(async (pageResult, index) => {
     if (!pageResult.hidream_image_base64 || pageResult.error) {

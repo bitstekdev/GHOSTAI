@@ -1,9 +1,11 @@
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
+const User = require('../models/User');
 const s3Service = require('../services/s3Service');
 const fastApiService = require('../services/fastApiService');
 const { consumeUsage, getActiveSubscriptionOrFail, assertCanConsume } = require("../services/subscriptionUsage.service");
+const { resolveCharacters } = require('../services/storyCharacterResolver');
 
 
 // @desc    Start story (hybrid: questionnaire or direct gist)
@@ -59,6 +61,16 @@ exports.startStory = async (req, res, next) => {
       }
     }
 
+    // Resolve @Name syntax to trained characters if present in gist
+    let resolvedGist = entryMode === 'gist' ? gist : null;
+    let trainedCharacters = [];
+    
+    if (resolvedGist) {
+      const { fixedText, characters } = await resolveCharacters(resolvedGist, req.user.id);
+      resolvedGist = fixedText;
+      trainedCharacters = characters.map(c => c._id);
+    }
+
     const story = await Story.create({
       user: req.user.id,
       title,
@@ -67,7 +79,8 @@ exports.startStory = async (req, res, next) => {
       numCharacters,
       characterDetails,
       entryMode,
-      gist: entryMode === 'gist' ? gist : null,
+      gist: resolvedGist,
+      trainedCharacters,
       gistSource: entryMode === 'gist' ? 'user' : 'ai',
       step: entryMode === 'gist' ? 3 : 1
     });
@@ -207,7 +220,6 @@ exports.generateGist = async (req, res, next) => {
     next(error);
   }
 };
-
 // @desc    Create story with pages
 // @route   POST /api/story/create
 // @access  Private
@@ -316,6 +328,8 @@ exports.createStory = async (req, res, next) => {
     next(error);
   }
 };
+
+
 
 // @desc    Rename story
 // @route   PATCH /api/story/rename/:storyId
@@ -701,6 +715,51 @@ exports.getConversation = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Failed to load conversation" });
+  }
+};
+
+// @desc    Generate character details captions from images
+// @route   POST /api/story/character-details
+// @access  Private
+exports.generateCharacterDetails = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No image files provided"
+      });
+    }
+
+    const { personName } = req.body;
+    
+    if (!personName) {
+      return res.status(400).json({
+        success: false,
+        message: "Person name is required"
+      });
+    }
+
+    console.log(`🔄 Generating character details for ${personName} (${req.files.length} images)...`);
+
+    // Call FastAPI caption service
+    const result = await fastApiService.generateCharacterDetails(req.files, personName);
+
+    console.log(`🟢 Character details generated successfully:`, result);
+
+    res.json({
+      success: true,
+      data: {
+        personName,
+        captions: result.results || [],
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error("❌ Character details generation error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to generate character details"
+    });
   }
 };
 

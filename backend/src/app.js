@@ -99,6 +99,7 @@ const userSubscriptionRoutes = require('./routes/userSubscription.routes');
 const purchaseRoutes = require('./routes/purchase.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
+const characterTrainingRoutes = require('./routes/characterTrainingRoutes');
 
 const app = express();
 
@@ -115,7 +116,7 @@ app.use(
 
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5174', 'http://localhost:5173'],
     // origin: 'https://ghostverse.ai',
     credentials: true,
   })
@@ -164,6 +165,8 @@ app.use('/api/v1/user-subscriptions', userSubscriptionRoutes);
 app.use('/api/v1/purchase', purchaseRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/order', orderRoutes);
+app.use('/api/v1/character-training', characterTrainingRoutes);
+
 /* ======================================================
    PDF ROUTES (SPECIAL HANDLING)
 ====================================================== */

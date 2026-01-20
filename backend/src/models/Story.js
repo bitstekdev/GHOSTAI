@@ -89,6 +89,10 @@ const storySchema = new mongoose.Schema(
       required: true,
     },
     characterDetails: [characterDetailsSchema],
+    // trainedCharacters: [{
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "TrainedCharacter"
+    // }],
     orientation: {
       type: String,
       enum: ["Portrait", "Landscape", "Square"],
