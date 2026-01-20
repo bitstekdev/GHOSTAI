@@ -48,8 +48,8 @@ export default function Sidebar({
       icon: BookMarked,
       dropdown: true,
       items: [
-        { id: "characterdump", label: "Character", path: "/characterdump", locked: true },
-        { id: "datadump", label: "Data Dump", path: "/datadump", locked: true },
+        { id: "characterdump", label: "Character", path: "/characterdump"},
+        { id: "datadump", label: "Data Dump", path: "/datadump" },
       ]
     },
 

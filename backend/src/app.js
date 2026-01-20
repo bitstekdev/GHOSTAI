@@ -95,6 +95,7 @@ const coverRoutes = require('./routes/cover');
 const addressRoutes = require('./routes/address');
 const pdfRoutes = require('./routes/pdf');
 const subscriptionRoutes = require('./routes/subscription.routes');
+const characterTrainingRoutes = require('./routes/characterTrainingRoutes');
 
 const app = express();
 
@@ -126,7 +127,7 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
 });
 
-app.use('/api/v1/', limiter);
+// app.use('/api/v1/', limiter);
 
 /* ======================================================
    BODY PARSERS
@@ -155,6 +156,7 @@ app.use('/api/v1/images', imageRoutes);
 app.use('/api/v1/cover', coverRoutes);
 app.use('/api/v1/address', addressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/character-training', characterTrainingRoutes);
 
 /* ======================================================
    PDF ROUTES (SPECIAL HANDLING)

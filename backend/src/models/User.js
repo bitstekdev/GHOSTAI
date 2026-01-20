@@ -65,8 +65,16 @@ const userSchema = new mongoose.Schema({
   customGenreProcessedAt: {
     type: Date,
     default: null
-  }
-}, {
+  },
+      // mainCharacter: {
+      //   name: String,
+      //   loraPath: { type: String, default: null }
+      // }
+      trainedCharacters: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TrainedCharacter"
+    }],
+    }, {
   timestamps: true
 });
 

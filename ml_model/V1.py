@@ -66,7 +66,7 @@ S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY")
 S3_SECRET_KEY = os.getenv("S3_SECRET_KEY")
 
 LORA_BASE_PATH = os.getenv("LORA_BASE_PATH", "/runpod-volume/models/loras")
-RUNPOD_API_KEY = os.getenv("RUNPOD_AUTH_BEARER")
+RUNPOD_API_KEY = os.getenv("RUNPOD_HIDREAM")
 RUNPOD_TRAINING_ENDPOINT_ID = os.getenv("RUNPOD_TRAINING_ENDPOINT_ID")
 S3_BUCKET = os.getenv("S3_BUCKET")
 
@@ -79,7 +79,7 @@ s3 = boto3.client(
     endpoint_url=S3_ENDPOINT,
     aws_access_key_id=S3_ACCESS_KEY,
     aws_secret_access_key=S3_SECRET_KEY,
-    region_name="us-ks-2",
+    region_name="eur-is-1",
     config=Config(
         signature_version="s3v4",
         s3={"addressing_style": "path"}
@@ -299,8 +299,10 @@ def call_llm(
 
 RUNPOD_HIDREAM_URL = os.getenv("RUNPOD_HIDREAM_URL")
 RUNPOD_HIDREAM_STATUS = os.getenv("RUNPOD_HIDREAM_STATUS")
-RUNPOD_AUTH_BEARER = os.getenv("RUNPOD_AUTH_BEARER")
+RUNPOD_HIDREAM = os.getenv("RUNPOD_HIDEREAM")
+RUNPOD_EDITS = os.getenv("RUNPOD_EDITS")
 RUNPOD_FLUX_URL = os.getenv("RUNPOD_FLUX_URL")
+RUNPOD_FEATURE = os.getenv("RUNPOD_FEATURE")
 DEFAULT_TIMEOUT = int(os.getenv("IMAGE_GEN_TIMEOUT_S", "1600"))
 POLL_INTERVAL = float(os.getenv("IMAGE_GEN_POLL_INTERVAL_S", "3.0"))
 JOB_TIMEOUT = int(os.getenv("JOB_TIMEOUT_S", "600"))
@@ -596,7 +598,7 @@ def generate_gist(conversation, genre="Family",user_id: str | None = None, model
 # HiDream / RunPod CONFIG (Gist Images)
 # -------------------------------------------------
 HEADERS = {
-    "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
+    "Authorization": f"Bearer {RUNPOD_HIDREAM}",
     "Content-Type": "application/json",
 }
 
@@ -831,7 +833,8 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
-RUNPOD_AUTH_BEARER = require_env("RUNPOD_AUTH_BEARER")
+RUNPOD_HIDREAM = require_env("RUNPOD_HIDREAM")
+RUNPOD_EDITS = require_env("RUNPOD_EDITS")
 RUNPOD_HIDREAM_URL = require_env("RUNPOD_HIDREAM_URL")
 RUNPOD_HIDREAM_STATUS = require_env("RUNPOD_HIDREAM_STATUS")
 RUNPOD_FLUX_URL = require_env("RUNPOD_FLUX_URL")
@@ -844,7 +847,6 @@ S3_ACCESS_KEY = require_env("S3_ACCESS_KEY")
 S3_SECRET_KEY = require_env("S3_SECRET_KEY")
 
 RUNPOD_ENDPOINT_ID = require_env("RUNPOD_CAPTION_ENDPOINT_ID")
-RUNPOD_API_KEY = require_env("RUNPOD_AUTH_BEARER")
 
 RUNPOD_URL = f"https://api.runpod.ai/v2/{RUNPOD_ENDPOINT_ID}/runsync"
 # =========================================================
@@ -911,11 +913,101 @@ s3 = boto3.client(
     endpoint_url=S3_ENDPOINT,
     aws_access_key_id=S3_ACCESS_KEY,
     aws_secret_access_key=S3_SECRET_KEY,
-    region_name="us-ks-2",
+    region_name="eur-is-1",
     config=Config(s3={"addressing_style": "path"})
 )
 
 rembg_session = new_session("u2net")
+#============================================================
+# Feature
+#===========================================================
+
+POLLING_INTERVAL = int(os.environ.get("POLLING_INTERVAL", "2"))
+SAVE_DIR = os.getenv("CAPTION_SAVE_DIR", "captions")
+
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+def image_to_base64(file: UploadFile) -> str:
+    try:
+        img = Image.open(file.file)
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
+
+
+def runpod_sync(base64_image: str, person_name: str | None = None) -> str:
+    url = f"https://api.runpod.ai/v2/{RUNPOD_FEATURE}/runsync"
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_EDITS}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "input": {
+            "image": base64_image
+        }
+    }
+
+    if person_name:
+        payload["input"]["person_name"] = person_name
+
+    r = requests.post(url, headers=headers, json=payload)
+    r.raise_for_status()
+    data = r.json()
+
+    if "error" in data:
+        raise RuntimeError(data["error"])
+
+    return data["output"]["caption"]
+
+
+
+def runpod_async(base64_image: str, person_name: str | None = None) -> str:
+    url = f"https://api.runpod.ai/v2/{RUNPOD_FEATURE}/run"
+    headers = {
+        "Authorization": f"Bearer {RUNPOD_EDITS}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "input": {
+            "image": base64_image
+        }
+    }
+
+    if person_name:
+        payload["input"]["person_name"] = person_name
+
+    r = requests.post(url, headers=headers, json=payload)
+    r.raise_for_status()
+    job_id = r.json().get("id")
+
+    if not job_id:
+        raise RuntimeError("No job ID returned from RunPod")
+
+    status_url = f"https://api.runpod.ai/v2/{RUNPOD_FEATURE}/status/{job_id}"
+
+    while True:
+        time.sleep(POLLING_INTERVAL)
+        s = requests.get(status_url, headers=headers)
+        s.raise_for_status()
+        data = s.json()
+
+        status = data.get("status")
+
+        if status == "COMPLETED":
+            return data["output"]["caption"]
+
+        if status in ("FAILED", "CANCELLED"):
+            raise RuntimeError(f"RunPod job {status}")
+
+
 # =========================================================
 # BOOK TYPE CLASSIFIER
 # =========================================================
@@ -1725,11 +1817,17 @@ def generate_story_and_prompts(story_gist: str, num_characters: int, character_d
             else:
                 unknown_genres.append(g)
 
+    # FINAL SAFETY FALLBACK (CRITICAL)
     if not writing_styles:
-        raise HTTPException(
-            status_code=400,
-        detail=f"Unknown genres: {', '.join(unknown_genres)}"
-    )
+        logger.warning(
+            f"[GENRE_FALLBACK] user={user_id} genres={genres} "
+            "→ applying user-only fallback style"
+        )
+
+        writing_styles.append(
+            fallback_writing_style(genres[0])
+        )
+
 
 
 
@@ -2048,7 +2146,7 @@ def generate_image_from_prompt(prompt: str, negative_prompt: str, page_num: int 
 
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"
+            "Authorization": f"Bearer {RUNPOD_HIDREAM}"
         }
 
         resp = requests.post(RUNPOD_HIDREAM_URL, headers=headers, json=workflow_payload, timeout=30)
@@ -2119,7 +2217,7 @@ def generate_image_from_safetensor(
     )
 
     headers = {
-        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
+        "Authorization": f"Bearer {RUNPOD_HIDREAM}",
         "Content-Type": "application/json"
     }
 
@@ -2249,10 +2347,29 @@ def call_llm_get_prompts(pages: List[FluxPageIn]) -> Optional[Dict[str, Dict[str
 # ----------------------------
 # FLUX call wrapper (RunPod)
 # ----------------------------
-def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> str:
+
+def url_to_base64(url: str) -> str:
+    resp = requests.get(url, timeout=60)
+    resp.raise_for_status()
+    return base64.b64encode(resp.content).decode("utf-8")
+
+
+def extract_flux_image_base64(data: dict) -> str:
+    # ✅ FLUX Schnell canonical output
+    try:
+        url = data["output"]["result"]
+    except Exception:
+        raise RuntimeError(
+            f"Invalid FLUX response structure: {data}"
+        )
+
+    return url_to_base64(url)
+
+
+def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> dict:
     payload = {
         "input": {
-            "prompt": prompt ,
+            "prompt": prompt,
             "width": width,
             "height": height,
             "num_inference_steps": 4,
@@ -2263,33 +2380,20 @@ def run_runpod_flux(prompt: str, width: int, height: int, seed: int = -1) -> str
     }
 
     headers = {
-        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
+        "Authorization": f"Bearer {RUNPOD_EDITS}",
         "Content-Type": "application/json"
     }
 
-    last_error = None
+    resp = requests.post(
+        RUNPOD_FLUX_URL,
+        json=payload,
+        headers=headers,
+        timeout=180
+    )
+    resp.raise_for_status()
+    return resp.json()   # 🔒 ALWAYS dict
 
-    for attempt in range(3):
-        try:
-            resp = requests.post(
-                RUNPOD_FLUX_URL,
-                json=payload,
-                headers=headers,
-                timeout=180
-            )
-            resp.raise_for_status()
 
-            data = resp.json()
-            if data.get("status") != "COMPLETED":
-                raise RuntimeError(data.get("error", "FLUX generation failed"))
-
-            return data["output"]["image_url"]
-
-        except Exception as e:
-            last_error = e
-            time.sleep(2 * (attempt + 1))  # backoff
-
-    raise RuntimeError(f"FLUX request failed after retries: {last_error}")
 # ============================
 # 🎨 Base Title Generator
 # ============================
@@ -2516,10 +2620,10 @@ def runpod_hidream_generate(prompt: str, orientation: str = "Portrait") -> str:
         }
     }
 
-    if not RUNPOD_AUTH_BEARER:
-        raise RuntimeError("RUNPOD_AUTH_BEARER not set in environment")
+    if not RUNPOD_HIDREAM:
+        raise RuntimeError("RUNPOD_HIDREAM not set in environment")
 
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"}
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {RUNPOD_HIDREAM}"}
     resp = requests.post(RUNPOD_HIDREAM_URL, headers=headers, json=workflow_payload, timeout=30)
 
     if resp.status_code not in (200, 201):
@@ -2685,7 +2789,7 @@ def encode_image_to_base64(image_path):
 def run_banana_edit(prompt, image_b64, output_format):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}"
+        "Authorization": f"Bearer {RUNPOD_EDITS}"
     }
 
     data = {
@@ -2741,7 +2845,7 @@ def call_runpod_faceswap(
     }
 
     headers = {
-        "Authorization": f"Bearer {RUNPOD_AUTH_BEARER}",
+        "Authorization": f"Bearer {RUNPOD_EDITS}",
         "Content-Type": "application/json"
     }
 
@@ -3081,6 +3185,48 @@ class LoRAImageRequest(BaseModel):
     orientation: Optional[str] = "Landscape"
     lora_strength: float = 1.0
 
+@app.post("/caption")
+async def caption_images(
+    images: List[UploadFile] = File(...),
+    person_name: str | None = Form(None),
+    sync: bool = Form(True),
+    save_txt: bool = Form(True),
+):
+    results = []
+
+    for image in images:
+        base64_image = image_to_base64(image)
+
+        try:
+            caption = (
+                runpod_sync(base64_image, person_name)
+                if sync
+                else runpod_async(base64_image, person_name)
+            )
+            if person_name:
+                caption = f"{person_name}: {caption}"
+
+            if save_txt:
+                txt_path = os.path.join(
+                    SAVE_DIR,
+                    os.path.splitext(image.filename)[0] + ".txt"
+                )
+                with open(txt_path, "w", encoding="utf-8") as f:
+                    f.write(caption)
+
+            results.append({
+                "filename": image.filename,
+                "caption": caption
+            })
+
+        except Exception as e:
+            results.append({
+                "filename": image.filename,
+                "error": str(e)
+            })
+
+    return {"results": results}
+
 @app.post("/upload-and-process")
 async def upload_and_process(
     user_id: str = Form(...),
@@ -3166,7 +3312,26 @@ def generate_captions(user_id: str, trigger_word: str):
     )
     r.raise_for_status()
 
-    captions = r.json()["output"]["captions"]
+    resp_json = r.json()
+
+# Debug log once (IMPORTANT)
+    logger.info(f"[CAPTION_RESPONSE] keys={list(resp_json.keys())}")
+
+    if "output" in resp_json:
+        captions = resp_json["output"].get("captions")
+
+    elif "captions" in resp_json:
+        captions = resp_json["captions"]
+
+    elif "result" in resp_json and "captions" in resp_json["result"]:
+        captions = resp_json["result"]["captions"]
+
+    else:
+        raise HTTPException(
+        status_code=500,
+        detail=f"Unexpected RunPod caption response: {resp_json}"
+        )
+
 
     for key, caption in zip(image_keys, captions):
         clean_caption = (
@@ -3340,6 +3505,77 @@ def images_generate(req: ImageRequest):
 
     return ImageResponse(pages=results, message="HiDream generation completed (Flux background pending).")
 
+class RegenLoRAPageInput(BaseModel):
+    page: int
+    text: str
+    prompt: str
+    character_details: str
+
+
+class RegenLoRARequest(BaseModel):
+    user_id: str
+    trigger_word: str
+    lora_strength: float = 1.0
+    pages: List[RegenLoRAPageInput]
+    orientation: Optional[str] = "Landscape"
+    genre: str
+
+
+class RegenLoRAPageOut(BaseModel):
+    page: int
+    new_story: str
+    new_prompt: str
+    new_html: str
+    image_base64: Optional[str] = None
+    error: Optional[str] = None
+
+@app.post("/images/regenerate-lora")
+def images_regenerate_lora(req: RegenLoRARequest):
+    results = []
+
+    for page in req.pages:
+        try:
+            # 1️⃣ Regenerate story + prompt + html (same as normal regen)
+            new_story, new_prompt, new_html, _ = regenerate_page(
+                story_text=page.text,
+                old_prompt=page.prompt,
+                character_details=page.character_details,
+                page_num=page.page,
+                orientation=req.orientation,
+                genre=req.genre
+            )
+
+            # 2️⃣ Generate LoRA image
+            image_b64 = generate_image_from_safetensor(
+                user_id=req.user_id,
+                trigger_word=req.trigger_word,
+                prompt=new_prompt,
+                page_num=page.page,
+                orientation=req.orientation,
+                lora_strength=req.lora_strength
+            )
+
+            results.append({
+                "page": page.page,
+                "new_story": new_story,
+                "new_prompt": new_prompt,
+                "new_html": new_html,
+                "image_base64": image_b64,
+                "error": None
+            })
+
+        except Exception as e:
+            results.append({
+                "page": page.page,
+                "error": str(e)
+            })
+
+    return {
+        "pages": results,
+        "message": "LoRA regeneration completed."
+    }
+
+
 @app.post("/images/regenerate")
 def images_regenerate(req: RegenRequest):
     results = []
@@ -3418,16 +3654,9 @@ def flux_generate(req: FluxRequest):
                 continue
 
             # 2️⃣ FLUX IMAGE GENERATION
-            image_url = run_runpod_flux(flux_prompt, width, height)
+            flux_resp = run_runpod_flux(flux_prompt, width, height)
+            final_b64 = extract_flux_image_base64(flux_resp)
 
-            if image_url.startswith("http"):
-                r = requests.get(image_url, timeout=30)
-                r.raise_for_status()
-                final_b64 = base64.b64encode(r.content).decode()
-            elif image_url.startswith("data:image"):
-                final_b64 = image_url.split(",", 1)[1]
-            else:
-                final_b64 = image_url
 
             page_result.flux_background_base64 = final_b64
             results.append(page_result)

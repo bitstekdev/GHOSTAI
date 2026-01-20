@@ -222,8 +222,13 @@ const GenerateStory = () => {
 
       case "characterName":
         setCurrentCharacter(prev => ({ ...prev, name: input }));
-        addBotMessage(`Nice 😊 Now, tell me some details about ${input} and appearance (e.g., "indian male, burgandy hair, wearing biege sweatshirt, wearing blue jeans, wearing brown shoes, clam, intelligent")`);
-        setCurrentStep("characterDetails");
+        addBotMessage(`Nice 😊 Now upload one photo of ${input} so I can describe them automatically.`);
+        setShowUploadMenu(true);
+        setCurrentStep("characterImages");
+        break;
+
+      case "characterImages":
+        // handled by upload input
         break;
 
       case "characterDetails":
@@ -510,6 +515,47 @@ How would you like to continue?
       }
     };
 
+  const handleCharacterImageUpload = async (files) => {
+    if (!files || files.length === 0) return;
+
+    const fd = new FormData();
+    fd.append("images", files[0]);
+    fd.append("personName", currentCharacter.name);
+    fd.append("sync", "true");
+    fd.append("save_txt", "false");
+
+    addBotMessage(`🧠 Analyzing ${currentCharacter.name}'s photo...`);
+
+    try {
+      const res = await api.post("/api/v1/story/character-details", fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      const caption = res.data.data.captions[0].caption;
+
+      const newChar = { name: currentCharacter.name, details: caption };
+
+      const updated = {
+        ...formData,
+        characterDetails: [...formData.characterDetails, newChar]
+      };
+
+      setFormData(updated);
+
+      const nextIndex = currentCharacter.index + 1;
+
+      if (nextIndex < Number(formData.numCharacters)) {
+        addBotMessage(`Character added! ✅ Enter name of character #${nextIndex + 1}:`);
+        setCurrentCharacter({ index: nextIndex, name: "", details: "" });
+        setCurrentStep("characterName");
+      } else {
+        showConfirmation(updated);
+      }
+    } catch (err) {
+      addBotMessage("❌ Failed to analyze image. Please try again.");
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -702,11 +748,19 @@ How would you like to continue?
               ref={imageInputRef}
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
               onChange={(e) => {
                 setShowUploadMenu(false);
-                setIsCustomGenreProcessing(true);
-                handleCustomGenreUpload(e.target.files);
+                setIsCustomGenreProcessing(false);
+
+                if (currentStep === "characterImages") {
+                  handleCharacterImageUpload(e.target.files);
+                } else {
+                  setIsCustomGenreProcessing(true);
+                  handleCustomGenreUpload(e.target.files);
+                }
+
                 e.target.value = null;
               }}
             />

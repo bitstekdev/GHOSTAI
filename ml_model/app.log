@@ -1,0 +1,1389 @@
+2026-01-19 12:22:45,177 [INFO] storybook_api - [REQ_START] id=a2c51e3efd03 method=GET path=/
+2026-01-19 12:22:45,179 [INFO] storybook_api - [REQ_END] id=a2c51e3efd03 status=404 duration_ms=2.03
+2026-01-19 12:22:45,358 [INFO] storybook_api - [REQ_START] id=e10f9aa56514 method=GET path=/favicon.ico
+2026-01-19 12:22:45,359 [INFO] storybook_api - [REQ_END] id=e10f9aa56514 status=404 duration_ms=1.35
+2026-01-19 12:22:51,762 [INFO] storybook_api - [REQ_START] id=987306d000b0 method=GET path=/docs
+2026-01-19 12:22:51,763 [INFO] storybook_api - [REQ_END] id=987306d000b0 status=200 duration_ms=1.02
+2026-01-19 12:22:51,914 [INFO] storybook_api - [REQ_START] id=29e7050d1b5e method=GET path=/openapi.json
+2026-01-19 12:22:52,252 [INFO] storybook_api - [REQ_END] id=29e7050d1b5e status=200 duration_ms=337.86
+2026-01-19 15:53:30,412 [INFO] storybook_api - [REQ_START] id=79fc29f25d4f method=GET path=/docs
+2026-01-19 15:53:30,413 [INFO] storybook_api - [REQ_END] id=79fc29f25d4f status=200 duration_ms=0.99
+2026-01-19 15:53:30,770 [INFO] storybook_api - [REQ_START] id=817916ae6f7b method=GET path=/openapi.json
+2026-01-19 15:53:31,011 [INFO] storybook_api - [REQ_END] id=817916ae6f7b status=200 duration_ms=240.49
+2026-01-19 16:32:44,905 [INFO] storybook_api - [REQ_START] id=1c21029f86cf method=POST path=/caption
+2026-01-19 16:32:45,179 [INFO] storybook_api - [REQ_END] id=1c21029f86cf status=422 duration_ms=291.43
+2026-01-19 16:41:12,705 [INFO] storybook_api - [REQ_START] id=4619154fba13 method=GET path=/genres
+2026-01-19 16:41:13,587 [INFO] storybook_api - [REQ_END] id=4619154fba13 status=200 duration_ms=900.49
+2026-01-19 16:41:13,698 [INFO] storybook_api - [REQ_START] id=e9a35eafd4fa method=GET path=/genres
+2026-01-19 16:41:13,737 [INFO] storybook_api - [REQ_END] id=e9a35eafd4fa status=200 duration_ms=38.49
+2026-01-19 16:41:13,790 [INFO] storybook_api - [REQ_START] id=d1d239d4d11a method=GET path=/genres
+2026-01-19 16:41:13,839 [INFO] storybook_api - [REQ_END] id=d1d239d4d11a status=200 duration_ms=48.17
+2026-01-19 16:50:25,569 [INFO] storybook_api - [REQ_START] id=5874c2d327cb method=POST path=/caption
+2026-01-19 16:51:36,343 [INFO] storybook_api - [REQ_END] id=5874c2d327cb status=200 duration_ms=70785.62
+2026-01-19 16:52:13,613 [INFO] storybook_api - [REQ_START] id=3d529be25d76 method=POST path=/caption
+2026-01-19 16:53:02,559 [INFO] storybook_api - [REQ_END] id=3d529be25d76 status=200 duration_ms=48946.88
+2026-01-19 16:55:03,610 [INFO] storybook_api - [REQ_START] id=037610663a09 method=POST path=/caption
+2026-01-19 16:55:12,672 [INFO] storybook_api - [REQ_END] id=037610663a09 status=200 duration_ms=9061.34
+2026-01-19 16:56:36,221 [INFO] storybook_api - [REQ_START] id=04453d67c2ae method=POST path=/caption
+2026-01-19 16:56:44,535 [INFO] storybook_api - [REQ_END] id=04453d67c2ae status=200 duration_ms=8320.71
+2026-01-19 17:09:22,554 [INFO] storybook_api - [REQ_START] id=215337966e75 method=POST path=/caption
+2026-01-19 17:10:20,778 [INFO] storybook_api - [REQ_END] id=215337966e75 status=200 duration_ms=58254.73
+2026-01-19 17:13:58,485 [INFO] storybook_api - [REQ_START] id=037a216de027 method=GET path=/genres
+2026-01-19 17:13:58,707 [INFO] storybook_api - [REQ_END] id=037a216de027 status=200 duration_ms=226.17
+2026-01-19 17:13:58,839 [INFO] storybook_api - [REQ_START] id=3b6a061ed408 method=GET path=/genres
+2026-01-19 17:13:58,873 [INFO] storybook_api - [REQ_END] id=3b6a061ed408 status=200 duration_ms=34.36
+2026-01-19 17:13:58,953 [INFO] storybook_api - [REQ_START] id=718ed96a818d method=GET path=/genres
+2026-01-19 17:13:58,985 [INFO] storybook_api - [REQ_END] id=718ed96a818d status=200 duration_ms=32.37
+2026-01-19 17:15:08,243 [INFO] storybook_api - [REQ_START] id=866fb7358b81 method=POST path=/caption
+2026-01-19 17:15:17,213 [INFO] storybook_api - [REQ_END] id=866fb7358b81 status=200 duration_ms=8969.55
+2026-01-19 17:15:43,925 [INFO] storybook_api - [REQ_START] id=120d0edce150 method=POST path=/caption
+2026-01-19 17:15:55,603 [INFO] storybook_api - [REQ_END] id=120d0edce150 status=200 duration_ms=11676.69
+2026-01-19 17:17:03,019 [INFO] storybook_api - [REQ_START] id=f1acc4c07656 method=POST path=/gist/preview-images
+2026-01-19 17:17:09,577 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 17:17:20,536 [INFO] storybook_api - [REQ_END] id=f1acc4c07656 status=200 duration_ms=17517.29
+2026-01-19 17:18:40,843 [INFO] storybook_api - [REQ_START] id=420753957ea1 method=GET path=/genres
+2026-01-19 17:18:40,865 [INFO] storybook_api - [REQ_END] id=420753957ea1 status=200 duration_ms=21.46
+2026-01-19 17:18:40,926 [INFO] storybook_api - [REQ_START] id=0f65d762fc38 method=GET path=/genres
+2026-01-19 17:18:40,956 [INFO] storybook_api - [REQ_END] id=0f65d762fc38 status=200 duration_ms=28.11
+2026-01-19 17:30:36,362 [INFO] storybook_api - [REQ_START] id=0137fbc5983c method=POST path=/caption
+2026-01-19 17:31:51,618 [INFO] storybook_api - [REQ_END] id=0137fbc5983c status=200 duration_ms=75264.74
+2026-01-19 17:55:55,694 [INFO] storybook_api - [REQ_START] id=8098d2dd46b5 method=GET path=/genres
+2026-01-19 17:55:55,806 [INFO] storybook_api - [REQ_END] id=8098d2dd46b5 status=200 duration_ms=115.75
+2026-01-19 17:55:55,898 [INFO] storybook_api - [REQ_START] id=973fd71025c9 method=GET path=/genres
+2026-01-19 17:55:55,928 [INFO] storybook_api - [REQ_END] id=973fd71025c9 status=200 duration_ms=30.11
+2026-01-19 18:35:35,166 [INFO] storybook_api - [REQ_START] id=cef8bee52504 method=POST path=/upload-and-process
+2026-01-19 18:35:48,414 [INFO] storybook_api - [REQ_END] id=cef8bee52504 status=200 duration_ms=13260.72
+2026-01-19 18:35:48,429 [INFO] storybook_api - [REQ_START] id=c5b3dfc72264 method=POST path=/upload-and-process
+2026-01-19 18:35:54,502 [INFO] storybook_api - [REQ_END] id=c5b3dfc72264 status=200 duration_ms=6073.36
+2026-01-19 18:35:54,511 [INFO] storybook_api - [REQ_START] id=fd8a7c86db5d method=POST path=/generate-captions
+2026-01-19 18:35:54,558 [INFO] storybook_api - [REQ_START] id=d9986a9ec80e method=POST path=/generate-captions
+2026-01-19 18:36:51,913 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 18:36:52,852 [INFO] storybook_api - [REQ_END] id=d9986a9ec80e status=200 duration_ms=58294.31
+2026-01-19 18:36:59,486 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 18:37:00,407 [INFO] storybook_api - [REQ_END] id=fd8a7c86db5d status=200 duration_ms=65902.14
+2026-01-19 18:44:41,481 [INFO] storybook_api - [REQ_START] id=1456b06d2cb6 method=POST path=/upload-and-process
+2026-01-19 18:44:53,277 [INFO] storybook_api - [REQ_END] id=1456b06d2cb6 status=200 duration_ms=11812.08
+2026-01-19 18:44:53,356 [INFO] storybook_api - [REQ_START] id=bef7f37c53e4 method=POST path=/generate-captions
+2026-01-19 18:46:27,355 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['id', 'status']
+2026-01-19 18:46:27,365 [INFO] storybook_api - [REQ_END] id=bef7f37c53e4 status=500 duration_ms=94008.58
+2026-01-19 18:53:32,277 [INFO] storybook_api - [REQ_START] id=8f1dac416cb4 method=POST path=/upload-and-process
+2026-01-19 18:53:46,637 [INFO] storybook_api - [REQ_END] id=8f1dac416cb4 status=200 duration_ms=14386.5
+2026-01-19 18:53:46,711 [INFO] storybook_api - [REQ_START] id=f8b66e57d536 method=POST path=/generate-captions
+2026-01-19 18:54:43,742 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 18:54:44,683 [INFO] storybook_api - [REQ_END] id=f8b66e57d536 status=200 duration_ms=57971.4
+2026-01-19 18:54:44,726 [INFO] storybook_api - [REQ_START] id=5bd9a1fd7487 method=POST path=/train-character
+2026-01-19 18:54:45,345 [INFO] storybook_api - [REQ_END] id=5bd9a1fd7487 status=200 duration_ms=620.71
+2026-01-19 19:16:14,137 [INFO] storybook_api - [REQ_START] id=62929634d5b1 method=POST path=/train-character
+2026-01-19 19:16:15,283 [INFO] storybook_api - [REQ_END] id=62929634d5b1 status=200 duration_ms=1161.7
+2026-01-19 19:38:07,920 [INFO] storybook_api - [REQ_START] id=c755476ea344 method=POST path=/upload-and-process
+2026-01-19 19:38:19,493 [INFO] storybook_api - [REQ_END] id=c755476ea344 status=200 duration_ms=11582.03
+2026-01-19 19:38:19,580 [INFO] storybook_api - [REQ_START] id=43b90432729b method=POST path=/generate-captions
+2026-01-19 19:39:19,973 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 19:39:21,413 [INFO] storybook_api - [REQ_END] id=43b90432729b status=200 duration_ms=61833.22
+2026-01-19 19:39:21,459 [INFO] storybook_api - [REQ_START] id=44985047aab8 method=POST path=/train-character
+2026-01-19 19:39:22,070 [INFO] storybook_api - [REQ_END] id=44985047aab8 status=200 duration_ms=611.19
+2026-01-19 19:39:37,147 [INFO] storybook_api - [REQ_START] id=ca68a072f8c6 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:39:37,608 [INFO] storybook_api - [REQ_END] id=ca68a072f8c6 status=200 duration_ms=461.26
+2026-01-19 19:39:52,680 [INFO] storybook_api - [REQ_START] id=bcf561cf1e99 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:39:53,093 [INFO] storybook_api - [REQ_END] id=bcf561cf1e99 status=200 duration_ms=413.0
+2026-01-19 19:40:08,148 [INFO] storybook_api - [REQ_START] id=52dda4087297 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:40:08,544 [INFO] storybook_api - [REQ_END] id=52dda4087297 status=200 duration_ms=396.75
+2026-01-19 19:40:23,605 [INFO] storybook_api - [REQ_START] id=2f1b32451c21 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:40:24,002 [INFO] storybook_api - [REQ_END] id=2f1b32451c21 status=200 duration_ms=397.33
+2026-01-19 19:40:39,062 [INFO] storybook_api - [REQ_START] id=54f53fa22f67 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:40:39,440 [INFO] storybook_api - [REQ_END] id=54f53fa22f67 status=200 duration_ms=377.2
+2026-01-19 19:40:54,475 [INFO] storybook_api - [REQ_START] id=da94ceb2da77 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:40:54,856 [INFO] storybook_api - [REQ_END] id=da94ceb2da77 status=200 duration_ms=381.09
+2026-01-19 19:41:09,891 [INFO] storybook_api - [REQ_START] id=67e58ea3448c method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:41:10,271 [INFO] storybook_api - [REQ_END] id=67e58ea3448c status=200 duration_ms=380.05
+2026-01-19 19:41:53,894 [INFO] storybook_api - [REQ_START] id=9406334ce585 method=GET path=/job-status/43618be6-6f65-4a3b-9ee8-4d7b84c7a3e9-e1
+2026-01-19 19:44:26,094 [INFO] storybook_api - [REQ_START] id=d7485c203546 method=POST path=/upload-and-process
+2026-01-19 19:44:37,628 [INFO] storybook_api - [REQ_END] id=d7485c203546 status=200 duration_ms=11533.36
+2026-01-19 19:44:37,674 [INFO] storybook_api - [REQ_START] id=c4a10dfa3e6c method=POST path=/generate-captions
+2026-01-19 19:45:29,962 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 19:45:31,188 [INFO] storybook_api - [REQ_END] id=c4a10dfa3e6c status=200 duration_ms=53512.34
+2026-01-19 19:45:31,229 [INFO] storybook_api - [REQ_START] id=00f707724535 method=POST path=/train-character
+2026-01-19 19:45:31,837 [INFO] storybook_api - [REQ_END] id=00f707724535 status=200 duration_ms=608.57
+2026-01-19 19:45:46,892 [INFO] storybook_api - [REQ_START] id=358d085142fb method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:45:47,324 [INFO] storybook_api - [REQ_END] id=358d085142fb status=200 duration_ms=434.37
+2026-01-19 19:46:02,459 [INFO] storybook_api - [REQ_START] id=ee41fdf3322d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:46:02,890 [INFO] storybook_api - [REQ_END] id=ee41fdf3322d status=200 duration_ms=431.28
+2026-01-19 19:46:17,946 [INFO] storybook_api - [REQ_START] id=2ad3251c5dd9 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:46:18,304 [INFO] storybook_api - [REQ_END] id=2ad3251c5dd9 status=200 duration_ms=358.09
+2026-01-19 19:46:33,376 [INFO] storybook_api - [REQ_START] id=811a55b74ad2 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:46:33,778 [INFO] storybook_api - [REQ_END] id=811a55b74ad2 status=200 duration_ms=402.15
+2026-01-19 19:46:36,408 [INFO] storybook_api - [REQ_START] id=1430178dfbde method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:46:36,784 [INFO] storybook_api - [REQ_END] id=1430178dfbde status=200 duration_ms=375.79
+2026-01-19 19:46:48,845 [INFO] storybook_api - [REQ_START] id=ae887c0e2e15 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:46:49,270 [INFO] storybook_api - [REQ_END] id=ae887c0e2e15 status=200 duration_ms=425.13
+2026-01-19 19:47:04,328 [INFO] storybook_api - [REQ_START] id=e9f9d7710e90 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:47:04,714 [INFO] storybook_api - [REQ_END] id=e9f9d7710e90 status=200 duration_ms=386.3
+2026-01-19 19:47:19,786 [INFO] storybook_api - [REQ_START] id=28b3479c36c5 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:47:20,185 [INFO] storybook_api - [REQ_END] id=28b3479c36c5 status=200 duration_ms=399.15
+2026-01-19 19:47:35,247 [INFO] storybook_api - [REQ_START] id=f50eae26f46d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:47:35,699 [INFO] storybook_api - [REQ_END] id=f50eae26f46d status=200 duration_ms=451.76
+2026-01-19 19:47:50,755 [INFO] storybook_api - [REQ_START] id=6519913ee2f4 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:47:51,178 [INFO] storybook_api - [REQ_END] id=6519913ee2f4 status=200 duration_ms=423.14
+2026-01-19 19:48:06,251 [INFO] storybook_api - [REQ_START] id=0e454e27cde6 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:48:06,670 [INFO] storybook_api - [REQ_END] id=0e454e27cde6 status=200 duration_ms=418.49
+2026-01-19 19:48:07,545 [INFO] storybook_api - [REQ_START] id=372574a66eba method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:48:07,938 [INFO] storybook_api - [REQ_END] id=372574a66eba status=200 duration_ms=392.4
+2026-01-19 19:48:21,729 [INFO] storybook_api - [REQ_START] id=d79f2d9f2eea method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:48:22,119 [INFO] storybook_api - [REQ_END] id=d79f2d9f2eea status=200 duration_ms=390.65
+2026-01-19 19:48:37,192 [INFO] storybook_api - [REQ_START] id=741099c869f5 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:48:37,608 [INFO] storybook_api - [REQ_END] id=741099c869f5 status=200 duration_ms=415.23
+2026-01-19 19:48:52,651 [INFO] storybook_api - [REQ_START] id=5fe2a0b7ff90 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:48:53,033 [INFO] storybook_api - [REQ_END] id=5fe2a0b7ff90 status=200 duration_ms=381.7
+2026-01-19 19:49:08,074 [INFO] storybook_api - [REQ_START] id=ec451c57f521 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:49:08,534 [INFO] storybook_api - [REQ_END] id=ec451c57f521 status=200 duration_ms=459.73
+2026-01-19 19:49:23,577 [INFO] storybook_api - [REQ_START] id=d41225f589db method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:49:24,025 [INFO] storybook_api - [REQ_END] id=d41225f589db status=200 duration_ms=448.04
+2026-01-19 19:49:39,063 [INFO] storybook_api - [REQ_START] id=9fcf61b488df method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:49:39,457 [INFO] storybook_api - [REQ_END] id=9fcf61b488df status=200 duration_ms=394.14
+2026-01-19 19:49:54,511 [INFO] storybook_api - [REQ_START] id=6d145637c23e method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:49:54,958 [INFO] storybook_api - [REQ_END] id=6d145637c23e status=200 duration_ms=447.07
+2026-01-19 19:50:10,001 [INFO] storybook_api - [REQ_START] id=09490c8db187 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:50:10,407 [INFO] storybook_api - [REQ_END] id=09490c8db187 status=200 duration_ms=405.97
+2026-01-19 19:50:25,450 [INFO] storybook_api - [REQ_START] id=3e7a061d1861 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:50:25,855 [INFO] storybook_api - [REQ_END] id=3e7a061d1861 status=200 duration_ms=404.51
+2026-01-19 19:50:40,925 [INFO] storybook_api - [REQ_START] id=f190f87cdbba method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:50:41,307 [INFO] storybook_api - [REQ_END] id=f190f87cdbba status=200 duration_ms=382.72
+2026-01-19 19:50:56,373 [INFO] storybook_api - [REQ_START] id=7ce44fea2a99 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:50:56,810 [INFO] storybook_api - [REQ_END] id=7ce44fea2a99 status=200 duration_ms=436.95
+2026-01-19 19:51:11,870 [INFO] storybook_api - [REQ_START] id=d463056fe6b1 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:51:12,312 [INFO] storybook_api - [REQ_END] id=d463056fe6b1 status=200 duration_ms=442.53
+2026-01-19 19:51:27,361 [INFO] storybook_api - [REQ_START] id=90b0afda27c7 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:51:27,741 [INFO] storybook_api - [REQ_END] id=90b0afda27c7 status=200 duration_ms=380.06
+2026-01-19 19:51:42,782 [INFO] storybook_api - [REQ_START] id=ca0c89db3798 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:51:43,157 [INFO] storybook_api - [REQ_END] id=ca0c89db3798 status=200 duration_ms=375.76
+2026-01-19 19:51:58,216 [INFO] storybook_api - [REQ_START] id=913a800edc3e method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:51:58,860 [INFO] storybook_api - [REQ_END] id=913a800edc3e status=200 duration_ms=644.14
+2026-01-19 19:52:13,965 [INFO] storybook_api - [REQ_START] id=8823c7089c1c method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:52:16,322 [INFO] storybook_api - [REQ_END] id=8823c7089c1c status=200 duration_ms=2356.87
+2026-01-19 19:52:31,367 [INFO] storybook_api - [REQ_START] id=6d800d975543 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:52:31,808 [INFO] storybook_api - [REQ_END] id=6d800d975543 status=200 duration_ms=441.04
+2026-01-19 19:52:46,864 [INFO] storybook_api - [REQ_START] id=e1a83509e3d8 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:52:47,270 [INFO] storybook_api - [REQ_END] id=e1a83509e3d8 status=200 duration_ms=405.59
+2026-01-19 19:53:02,326 [INFO] storybook_api - [REQ_START] id=2269330efd05 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:53:02,732 [INFO] storybook_api - [REQ_END] id=2269330efd05 status=200 duration_ms=405.99
+2026-01-19 19:53:17,782 [INFO] storybook_api - [REQ_START] id=6e2066d88d14 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:53:18,189 [INFO] storybook_api - [REQ_END] id=6e2066d88d14 status=200 duration_ms=406.66
+2026-01-19 19:53:33,248 [INFO] storybook_api - [REQ_START] id=f1d0a6ba7101 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:53:33,662 [INFO] storybook_api - [REQ_END] id=f1d0a6ba7101 status=200 duration_ms=414.18
+2026-01-19 19:53:48,708 [INFO] storybook_api - [REQ_START] id=7c9c03c536f9 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:53:49,140 [INFO] storybook_api - [REQ_END] id=7c9c03c536f9 status=200 duration_ms=431.86
+2026-01-19 19:54:04,205 [INFO] storybook_api - [REQ_START] id=dfceb4359d2e method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:54:04,585 [INFO] storybook_api - [REQ_END] id=dfceb4359d2e status=200 duration_ms=379.4
+2026-01-19 19:54:19,627 [INFO] storybook_api - [REQ_START] id=9b4926c65387 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:54:20,094 [INFO] storybook_api - [REQ_END] id=9b4926c65387 status=200 duration_ms=466.92
+2026-01-19 19:54:35,137 [INFO] storybook_api - [REQ_START] id=4a6ae5c3638c method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:54:35,558 [INFO] storybook_api - [REQ_END] id=4a6ae5c3638c status=200 duration_ms=421.3
+2026-01-19 19:54:50,635 [INFO] storybook_api - [REQ_START] id=b60c4104bb2d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:54:51,054 [INFO] storybook_api - [REQ_END] id=b60c4104bb2d status=200 duration_ms=417.74
+2026-01-19 19:55:06,113 [INFO] storybook_api - [REQ_START] id=3d70e988a0bd method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:55:06,523 [INFO] storybook_api - [REQ_END] id=3d70e988a0bd status=200 duration_ms=410.2
+2026-01-19 19:55:21,569 [INFO] storybook_api - [REQ_START] id=904d15cf8f2c method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:55:22,039 [INFO] storybook_api - [REQ_END] id=904d15cf8f2c status=200 duration_ms=470.19
+2026-01-19 19:55:37,162 [INFO] storybook_api - [REQ_START] id=523d9ccf2fdd method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:55:37,563 [INFO] storybook_api - [REQ_END] id=523d9ccf2fdd status=200 duration_ms=400.69
+2026-01-19 19:55:52,613 [INFO] storybook_api - [REQ_START] id=9f19688e510c method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:55:52,996 [INFO] storybook_api - [REQ_END] id=9f19688e510c status=200 duration_ms=382.8
+2026-01-19 19:56:08,035 [INFO] storybook_api - [REQ_START] id=fd58abe8f572 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:56:08,464 [INFO] storybook_api - [REQ_END] id=fd58abe8f572 status=200 duration_ms=428.53
+2026-01-19 19:56:23,518 [INFO] storybook_api - [REQ_START] id=b7dcebfe404a method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:56:23,929 [INFO] storybook_api - [REQ_END] id=b7dcebfe404a status=200 duration_ms=411.51
+2026-01-19 19:56:38,983 [INFO] storybook_api - [REQ_START] id=5d175db2c92f method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:56:39,425 [INFO] storybook_api - [REQ_END] id=5d175db2c92f status=200 duration_ms=442.03
+2026-01-19 19:56:54,472 [INFO] storybook_api - [REQ_START] id=241aa450771b method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:56:54,906 [INFO] storybook_api - [REQ_END] id=241aa450771b status=200 duration_ms=434.63
+2026-01-19 19:57:09,953 [INFO] storybook_api - [REQ_START] id=0603c153a7b3 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:57:10,339 [INFO] storybook_api - [REQ_END] id=0603c153a7b3 status=200 duration_ms=385.88
+2026-01-19 19:57:25,405 [INFO] storybook_api - [REQ_START] id=ff4dbfaf5528 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:57:25,827 [INFO] storybook_api - [REQ_END] id=ff4dbfaf5528 status=200 duration_ms=422.22
+2026-01-19 19:57:40,876 [INFO] storybook_api - [REQ_START] id=5a864fae1f07 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:57:41,274 [INFO] storybook_api - [REQ_END] id=5a864fae1f07 status=200 duration_ms=398.21
+2026-01-19 19:57:56,330 [INFO] storybook_api - [REQ_START] id=76e188a5a998 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:57:56,761 [INFO] storybook_api - [REQ_END] id=76e188a5a998 status=200 duration_ms=431.66
+2026-01-19 19:58:11,819 [INFO] storybook_api - [REQ_START] id=86465b5d9207 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:58:12,311 [INFO] storybook_api - [REQ_END] id=86465b5d9207 status=200 duration_ms=492.15
+2026-01-19 19:58:27,356 [INFO] storybook_api - [REQ_START] id=b0be4573ea8d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:58:27,756 [INFO] storybook_api - [REQ_END] id=b0be4573ea8d status=200 duration_ms=399.64
+2026-01-19 19:58:42,814 [INFO] storybook_api - [REQ_START] id=0d07d12e42e7 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:58:43,219 [INFO] storybook_api - [REQ_END] id=0d07d12e42e7 status=200 duration_ms=404.63
+2026-01-19 19:58:58,252 [INFO] storybook_api - [REQ_START] id=ded7a9f24ebf method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:58:58,637 [INFO] storybook_api - [REQ_END] id=ded7a9f24ebf status=200 duration_ms=384.34
+2026-01-19 19:59:13,674 [INFO] storybook_api - [REQ_START] id=7fd8d94cf36d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:59:14,127 [INFO] storybook_api - [REQ_END] id=7fd8d94cf36d status=200 duration_ms=453.75
+2026-01-19 19:59:29,189 [INFO] storybook_api - [REQ_START] id=69248e279f97 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:59:29,595 [INFO] storybook_api - [REQ_END] id=69248e279f97 status=200 duration_ms=406.44
+2026-01-19 19:59:44,647 [INFO] storybook_api - [REQ_START] id=5545d6de5d61 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 19:59:45,070 [INFO] storybook_api - [REQ_END] id=5545d6de5d61 status=200 duration_ms=422.78
+2026-01-19 20:00:00,122 [INFO] storybook_api - [REQ_START] id=32f7fb4c6127 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:00:00,562 [INFO] storybook_api - [REQ_END] id=32f7fb4c6127 status=200 duration_ms=439.37
+2026-01-19 20:00:15,594 [INFO] storybook_api - [REQ_START] id=14c0b4530d2d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:00:15,984 [INFO] storybook_api - [REQ_END] id=14c0b4530d2d status=200 duration_ms=389.96
+2026-01-19 20:00:31,047 [INFO] storybook_api - [REQ_START] id=77e6f26baffc method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:00:31,445 [INFO] storybook_api - [REQ_END] id=77e6f26baffc status=200 duration_ms=398.22
+2026-01-19 20:00:46,491 [INFO] storybook_api - [REQ_START] id=456f0206d68f method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:00:46,926 [INFO] storybook_api - [REQ_END] id=456f0206d68f status=200 duration_ms=434.87
+2026-01-19 20:01:01,968 [INFO] storybook_api - [REQ_START] id=7a4cd27e243b method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:01:02,447 [INFO] storybook_api - [REQ_END] id=7a4cd27e243b status=200 duration_ms=479.39
+2026-01-19 20:01:17,515 [INFO] storybook_api - [REQ_START] id=dc3917a1d9dd method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:01:17,946 [INFO] storybook_api - [REQ_END] id=dc3917a1d9dd status=200 duration_ms=430.3
+2026-01-19 20:01:33,003 [INFO] storybook_api - [REQ_START] id=1c8611af818b method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:01:33,428 [INFO] storybook_api - [REQ_END] id=1c8611af818b status=200 duration_ms=425.12
+2026-01-19 20:01:48,475 [INFO] storybook_api - [REQ_START] id=f4d34cd7d1df method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:01:48,865 [INFO] storybook_api - [REQ_END] id=f4d34cd7d1df status=200 duration_ms=389.12
+2026-01-19 20:02:03,915 [INFO] storybook_api - [REQ_START] id=02c36382fc0a method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:02:04,344 [INFO] storybook_api - [REQ_END] id=02c36382fc0a status=200 duration_ms=427.81
+2026-01-19 20:02:19,385 [INFO] storybook_api - [REQ_START] id=0e4c0e5d3e54 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:02:19,899 [INFO] storybook_api - [REQ_END] id=0e4c0e5d3e54 status=200 duration_ms=514.17
+2026-01-19 20:02:34,994 [INFO] storybook_api - [REQ_START] id=9e5223858ef0 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:02:35,393 [INFO] storybook_api - [REQ_END] id=9e5223858ef0 status=200 duration_ms=398.81
+2026-01-19 20:02:50,436 [INFO] storybook_api - [REQ_START] id=99848526f707 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:02:50,825 [INFO] storybook_api - [REQ_END] id=99848526f707 status=200 duration_ms=388.47
+2026-01-19 20:03:05,882 [INFO] storybook_api - [REQ_START] id=3d9781158e31 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:03:06,287 [INFO] storybook_api - [REQ_END] id=3d9781158e31 status=200 duration_ms=404.44
+2026-01-19 20:03:21,336 [INFO] storybook_api - [REQ_START] id=26108ee06f16 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:03:21,722 [INFO] storybook_api - [REQ_END] id=26108ee06f16 status=200 duration_ms=387.86
+2026-01-19 20:03:36,776 [INFO] storybook_api - [REQ_START] id=293105e136de method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:03:37,205 [INFO] storybook_api - [REQ_END] id=293105e136de status=200 duration_ms=429.09
+2026-01-19 20:03:52,272 [INFO] storybook_api - [REQ_START] id=54e1bbe81b6d method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:03:52,668 [INFO] storybook_api - [REQ_END] id=54e1bbe81b6d status=200 duration_ms=396.02
+2026-01-19 20:04:11,805 [INFO] storybook_api - [REQ_START] id=87a9637f92c8 method=GET path=/job-status/04b2e7ed-a185-4334-afe3-14acc607f1d0-e1
+2026-01-19 20:04:12,220 [INFO] storybook_api - [REQ_END] id=87a9637f92c8 status=200 duration_ms=414.64
+2026-01-19 20:46:32,029 [INFO] storybook_api - [REQ_START] id=701279e0bee4 method=GET path=/genres
+2026-01-19 20:46:32,241 [INFO] storybook_api - [REQ_END] id=701279e0bee4 status=200 duration_ms=224.62
+2026-01-19 20:47:18,891 [INFO] storybook_api - [REQ_START] id=09fefe81dbb7 method=POST path=/upload-books
+2026-01-19 20:47:19,332 [INFO] storybook_api - [REQ_END] id=09fefe81dbb7 status=200 duration_ms=441.3
+2026-01-19 20:47:19,343 [INFO] storybook_api - [REQ_START] id=f2ca5aac9933 method=POST path=/process-books
+2026-01-19 20:47:27,612 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 20:47:36,315 [INFO] storybook_api - [REQ_END] id=f2ca5aac9933 status=200 duration_ms=16971.26
+2026-01-19 20:47:36,471 [INFO] storybook_api - [REQ_START] id=ac852b382b36 method=GET path=/genres
+2026-01-19 20:47:36,503 [INFO] storybook_api - [REQ_END] id=ac852b382b36 status=200 duration_ms=31.71
+2026-01-19 20:48:44,373 [INFO] storybook_api - [REQ_START] id=efc3b88eea35 method=POST path=/caption
+2026-01-19 20:49:38,917 [INFO] storybook_api - [REQ_END] id=efc3b88eea35 status=200 duration_ms=54543.42
+2026-01-19 20:55:06,866 [INFO] storybook_api - [REQ_START] id=79ffd8bcbd43 method=POST path=/upload-and-process
+2026-01-19 20:55:20,901 [INFO] storybook_api - [REQ_END] id=79ffd8bcbd43 status=200 duration_ms=14052.85
+2026-01-19 20:55:20,961 [INFO] storybook_api - [REQ_START] id=320b9b0633d6 method=POST path=/generate-captions
+2026-01-19 20:56:23,522 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 20:56:24,737 [INFO] storybook_api - [REQ_END] id=320b9b0633d6 status=200 duration_ms=63776.16
+2026-01-19 20:56:24,782 [INFO] storybook_api - [REQ_START] id=9610dd20ebab method=POST path=/train-character
+2026-01-19 20:56:25,371 [INFO] storybook_api - [REQ_END] id=9610dd20ebab status=200 duration_ms=588.93
+2026-01-19 20:56:40,425 [INFO] storybook_api - [REQ_START] id=b442c355828d method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:56:40,806 [INFO] storybook_api - [REQ_END] id=b442c355828d status=200 duration_ms=382.3
+2026-01-19 20:56:55,843 [INFO] storybook_api - [REQ_START] id=dd3420512fff method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:56:56,229 [INFO] storybook_api - [REQ_END] id=dd3420512fff status=200 duration_ms=385.88
+2026-01-19 20:57:11,282 [INFO] storybook_api - [REQ_START] id=409c47504cd9 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:57:11,661 [INFO] storybook_api - [REQ_END] id=409c47504cd9 status=200 duration_ms=379.52
+2026-01-19 20:57:26,697 [INFO] storybook_api - [REQ_START] id=74d84bbe5cd6 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:57:27,133 [INFO] storybook_api - [REQ_END] id=74d84bbe5cd6 status=200 duration_ms=436.0
+2026-01-19 20:57:42,182 [INFO] storybook_api - [REQ_START] id=9a1b2de391ef method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:57:42,565 [INFO] storybook_api - [REQ_END] id=9a1b2de391ef status=200 duration_ms=382.92
+2026-01-19 20:57:57,616 [INFO] storybook_api - [REQ_START] id=9a24f74f78b4 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:57:57,961 [INFO] storybook_api - [REQ_END] id=9a24f74f78b4 status=200 duration_ms=345.72
+2026-01-19 20:58:13,015 [INFO] storybook_api - [REQ_START] id=0f570dfc2a81 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:58:13,399 [INFO] storybook_api - [REQ_END] id=0f570dfc2a81 status=200 duration_ms=383.81
+2026-01-19 20:58:28,443 [INFO] storybook_api - [REQ_START] id=95ba922b5e39 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:58:28,841 [INFO] storybook_api - [REQ_END] id=95ba922b5e39 status=200 duration_ms=398.64
+2026-01-19 20:58:43,918 [INFO] storybook_api - [REQ_START] id=c54f4a9a79cb method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:58:44,300 [INFO] storybook_api - [REQ_END] id=c54f4a9a79cb status=200 duration_ms=381.91
+2026-01-19 20:58:58,774 [INFO] storybook_api - [REQ_START] id=b70d7cbd68b0 method=POST path=/caption
+2026-01-19 20:59:52,478 [INFO] storybook_api - [REQ_END] id=b70d7cbd68b0 status=200 duration_ms=53704.45
+2026-01-19 20:59:52,487 [INFO] storybook_api - [REQ_START] id=921d233c0f47 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 20:59:52,877 [INFO] storybook_api - [REQ_END] id=921d233c0f47 status=200 duration_ms=389.62
+2026-01-19 21:00:07,925 [INFO] storybook_api - [REQ_START] id=e09ad86aa250 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:00:08,305 [INFO] storybook_api - [REQ_END] id=e09ad86aa250 status=200 duration_ms=379.72
+2026-01-19 21:00:23,358 [INFO] storybook_api - [REQ_START] id=7a791e2998ed method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:00:23,803 [INFO] storybook_api - [REQ_END] id=7a791e2998ed status=200 duration_ms=444.77
+2026-01-19 21:00:38,857 [INFO] storybook_api - [REQ_START] id=fe2764c8504c method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:00:39,216 [INFO] storybook_api - [REQ_END] id=fe2764c8504c status=200 duration_ms=359.24
+2026-01-19 21:00:54,265 [INFO] storybook_api - [REQ_START] id=0ee3442d3f51 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:00:54,682 [INFO] storybook_api - [REQ_END] id=0ee3442d3f51 status=200 duration_ms=417.02
+2026-01-19 21:01:09,725 [INFO] storybook_api - [REQ_START] id=cb63ebbaec29 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:01:10,095 [INFO] storybook_api - [REQ_END] id=cb63ebbaec29 status=200 duration_ms=369.45
+2026-01-19 21:01:25,146 [INFO] storybook_api - [REQ_START] id=78f172607761 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:01:25,577 [INFO] storybook_api - [REQ_END] id=78f172607761 status=200 duration_ms=431.08
+2026-01-19 21:01:40,628 [INFO] storybook_api - [REQ_START] id=37e08b9f0654 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:01:41,196 [INFO] storybook_api - [REQ_END] id=37e08b9f0654 status=200 duration_ms=567.94
+2026-01-19 21:01:56,240 [INFO] storybook_api - [REQ_START] id=f6d404571626 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:01:56,662 [INFO] storybook_api - [REQ_END] id=f6d404571626 status=200 duration_ms=422.03
+2026-01-19 21:02:11,723 [INFO] storybook_api - [REQ_START] id=5198a00ddcdd method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:02:12,129 [INFO] storybook_api - [REQ_END] id=5198a00ddcdd status=200 duration_ms=406.23
+2026-01-19 21:02:27,207 [INFO] storybook_api - [REQ_START] id=5db3d64d59a7 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:02:27,625 [INFO] storybook_api - [REQ_END] id=5db3d64d59a7 status=200 duration_ms=418.35
+2026-01-19 21:02:42,692 [INFO] storybook_api - [REQ_START] id=73f255d27a33 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:02:43,079 [INFO] storybook_api - [REQ_END] id=73f255d27a33 status=200 duration_ms=386.76
+2026-01-19 21:02:58,134 [INFO] storybook_api - [REQ_START] id=5fac7a5f9420 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:02:58,556 [INFO] storybook_api - [REQ_END] id=5fac7a5f9420 status=200 duration_ms=422.77
+2026-01-19 21:03:13,628 [INFO] storybook_api - [REQ_START] id=24626a879848 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:03:14,057 [INFO] storybook_api - [REQ_END] id=24626a879848 status=200 duration_ms=428.41
+2026-01-19 21:03:29,114 [INFO] storybook_api - [REQ_START] id=3b17d653d8a2 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:03:29,497 [INFO] storybook_api - [REQ_END] id=3b17d653d8a2 status=200 duration_ms=382.56
+2026-01-19 21:03:44,549 [INFO] storybook_api - [REQ_START] id=d679b375c5cf method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:03:44,955 [INFO] storybook_api - [REQ_END] id=d679b375c5cf status=200 duration_ms=406.03
+2026-01-19 21:04:00,023 [INFO] storybook_api - [REQ_START] id=85be8de76f6b method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:04:00,414 [INFO] storybook_api - [REQ_END] id=85be8de76f6b status=200 duration_ms=391.73
+2026-01-19 21:04:05,988 [INFO] storybook_api - [REQ_START] id=4d5384302d0b method=POST path=/gist/preview-images
+2026-01-19 21:04:08,915 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 21:04:15,470 [INFO] storybook_api - [REQ_START] id=b07dcd1e6ad1 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:04:15,730 [INFO] storybook_api - [REQ_END] id=4d5384302d0b status=200 duration_ms=9742.56
+2026-01-19 21:04:16,527 [INFO] storybook_api - [REQ_END] id=b07dcd1e6ad1 status=200 duration_ms=1056.43
+2026-01-19 21:04:31,783 [INFO] storybook_api - [REQ_START] id=de90660db1ef method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:04:32,196 [INFO] storybook_api - [REQ_END] id=de90660db1ef status=200 duration_ms=412.65
+2026-01-19 21:04:47,240 [INFO] storybook_api - [REQ_START] id=d1e99f763f3a method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:04:47,622 [INFO] storybook_api - [REQ_END] id=d1e99f763f3a status=200 duration_ms=382.05
+2026-01-19 21:04:52,443 [INFO] storybook_api - [REQ_START] id=c6111a8ec3d8 method=POST path=/story/generate
+2026-01-19 21:04:52,517 [INFO] storybook_api - [REQ_END] id=c6111a8ec3d8 status=400 duration_ms=73.98
+2026-01-19 21:05:02,667 [INFO] storybook_api - [REQ_START] id=54e9328d0a7f method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:05:03,082 [INFO] storybook_api - [REQ_END] id=54e9328d0a7f status=200 duration_ms=414.44
+2026-01-19 21:05:18,145 [INFO] storybook_api - [REQ_START] id=158dd7dcdbe5 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:05:18,551 [INFO] storybook_api - [REQ_END] id=158dd7dcdbe5 status=200 duration_ms=405.26
+2026-01-19 21:05:33,594 [INFO] storybook_api - [REQ_START] id=12fe7ad9f82f method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:05:34,020 [INFO] storybook_api - [REQ_END] id=12fe7ad9f82f status=200 duration_ms=425.87
+2026-01-19 21:05:49,067 [INFO] storybook_api - [REQ_START] id=04db6b973814 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:05:49,473 [INFO] storybook_api - [REQ_END] id=04db6b973814 status=200 duration_ms=406.29
+2026-01-19 21:06:04,509 [INFO] storybook_api - [REQ_START] id=4ed45fd4859b method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:06:04,929 [INFO] storybook_api - [REQ_END] id=4ed45fd4859b status=200 duration_ms=419.78
+2026-01-19 21:06:19,977 [INFO] storybook_api - [REQ_START] id=befff4adc42d method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:06:20,360 [INFO] storybook_api - [REQ_END] id=befff4adc42d status=200 duration_ms=382.76
+2026-01-19 21:06:35,411 [INFO] storybook_api - [REQ_START] id=d0101a8a2484 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:06:35,773 [INFO] storybook_api - [REQ_END] id=d0101a8a2484 status=200 duration_ms=361.93
+2026-01-19 21:06:50,842 [INFO] storybook_api - [REQ_START] id=b7089503348a method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:06:51,245 [INFO] storybook_api - [REQ_END] id=b7089503348a status=200 duration_ms=402.56
+2026-01-19 21:07:06,294 [INFO] storybook_api - [REQ_START] id=1c4e76a1c4dd method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:07:06,673 [INFO] storybook_api - [REQ_END] id=1c4e76a1c4dd status=200 duration_ms=378.98
+2026-01-19 21:07:21,732 [INFO] storybook_api - [REQ_START] id=f551a1c22f2a method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:07:22,132 [INFO] storybook_api - [REQ_END] id=f551a1c22f2a status=200 duration_ms=400.67
+2026-01-19 21:07:37,181 [INFO] storybook_api - [REQ_START] id=724652e0a4e7 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:07:37,592 [INFO] storybook_api - [REQ_END] id=724652e0a4e7 status=200 duration_ms=410.4
+2026-01-19 21:07:52,643 [INFO] storybook_api - [REQ_START] id=ae1c55601e92 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:07:53,034 [INFO] storybook_api - [REQ_END] id=ae1c55601e92 status=200 duration_ms=390.62
+2026-01-19 21:08:08,079 [INFO] storybook_api - [REQ_START] id=5334ae6377ba method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:08:08,480 [INFO] storybook_api - [REQ_END] id=5334ae6377ba status=200 duration_ms=400.15
+2026-01-19 21:08:23,540 [INFO] storybook_api - [REQ_START] id=0fdccbd22991 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:08:23,952 [INFO] storybook_api - [REQ_END] id=0fdccbd22991 status=200 duration_ms=413.34
+2026-01-19 21:08:39,006 [INFO] storybook_api - [REQ_START] id=1c47ed8b4a32 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:08:39,378 [INFO] storybook_api - [REQ_END] id=1c47ed8b4a32 status=200 duration_ms=371.94
+2026-01-19 21:08:54,439 [INFO] storybook_api - [REQ_START] id=660991c5ba49 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:08:54,819 [INFO] storybook_api - [REQ_END] id=660991c5ba49 status=200 duration_ms=380.1
+2026-01-19 21:09:09,889 [INFO] storybook_api - [REQ_START] id=86f2f2200fa4 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:09:10,262 [INFO] storybook_api - [REQ_END] id=86f2f2200fa4 status=200 duration_ms=372.7
+2026-01-19 21:09:25,310 [INFO] storybook_api - [REQ_START] id=1f760256ab19 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:09:25,779 [INFO] storybook_api - [REQ_END] id=1f760256ab19 status=200 duration_ms=468.39
+2026-01-19 21:09:40,863 [INFO] storybook_api - [REQ_START] id=30001323c53c method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:09:41,285 [INFO] storybook_api - [REQ_END] id=30001323c53c status=200 duration_ms=421.13
+2026-01-19 21:09:56,352 [INFO] storybook_api - [REQ_START] id=fbec4cde4dc7 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:09:56,772 [INFO] storybook_api - [REQ_END] id=fbec4cde4dc7 status=200 duration_ms=420.0
+2026-01-19 21:10:11,840 [INFO] storybook_api - [REQ_START] id=3e873f480a89 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:10:12,235 [INFO] storybook_api - [REQ_END] id=3e873f480a89 status=200 duration_ms=394.68
+2026-01-19 21:10:27,285 [INFO] storybook_api - [REQ_START] id=9f6aeaf485b9 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:10:27,762 [INFO] storybook_api - [REQ_END] id=9f6aeaf485b9 status=200 duration_ms=476.64
+2026-01-19 21:10:42,817 [INFO] storybook_api - [REQ_START] id=4d270c09bc11 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:10:43,249 [INFO] storybook_api - [REQ_END] id=4d270c09bc11 status=200 duration_ms=432.28
+2026-01-19 21:10:58,292 [INFO] storybook_api - [REQ_START] id=b79d2dc85b73 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:10:58,711 [INFO] storybook_api - [REQ_END] id=b79d2dc85b73 status=200 duration_ms=418.6
+2026-01-19 21:11:13,755 [INFO] storybook_api - [REQ_START] id=50cab366915f method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:11:14,225 [INFO] storybook_api - [REQ_END] id=50cab366915f status=200 duration_ms=469.81
+2026-01-19 21:11:29,276 [INFO] storybook_api - [REQ_START] id=3d95121b534d method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:11:29,648 [INFO] storybook_api - [REQ_END] id=3d95121b534d status=200 duration_ms=372.62
+2026-01-19 21:11:44,709 [INFO] storybook_api - [REQ_START] id=c581f8314e54 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:11:45,103 [INFO] storybook_api - [REQ_END] id=c581f8314e54 status=200 duration_ms=394.17
+2026-01-19 21:12:00,162 [INFO] storybook_api - [REQ_START] id=40ede95e309a method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:12:00,577 [INFO] storybook_api - [REQ_END] id=40ede95e309a status=200 duration_ms=414.1
+2026-01-19 21:12:15,633 [INFO] storybook_api - [REQ_START] id=652ef5c6d846 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:12:16,049 [INFO] storybook_api - [REQ_END] id=652ef5c6d846 status=200 duration_ms=415.25
+2026-01-19 21:12:31,095 [INFO] storybook_api - [REQ_START] id=a040b5996c1b method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:12:31,494 [INFO] storybook_api - [REQ_END] id=a040b5996c1b status=200 duration_ms=398.86
+2026-01-19 21:12:46,537 [INFO] storybook_api - [REQ_START] id=b39be8ebc3b6 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:12:46,942 [INFO] storybook_api - [REQ_END] id=b39be8ebc3b6 status=200 duration_ms=404.41
+2026-01-19 21:13:01,998 [INFO] storybook_api - [REQ_START] id=9a7b7b761762 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:13:02,404 [INFO] storybook_api - [REQ_END] id=9a7b7b761762 status=200 duration_ms=406.07
+2026-01-19 21:13:17,462 [INFO] storybook_api - [REQ_START] id=8273a68d5972 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:13:17,874 [INFO] storybook_api - [REQ_END] id=8273a68d5972 status=200 duration_ms=411.51
+2026-01-19 21:13:32,909 [INFO] storybook_api - [REQ_START] id=bd13faff6841 method=GET path=/job-status/6e3c8ef5-2e79-45c4-9e89-3b79971a3413-e1
+2026-01-19 21:13:33,322 [INFO] storybook_api - [REQ_END] id=bd13faff6841 status=200 duration_ms=412.83
+2026-01-19 21:48:34,853 [INFO] storybook_api - [REQ_START] id=d8143ac6558a method=POST path=/story/generate
+2026-01-19 21:48:34,972 [INFO] storybook_api - [REQ_END] id=d8143ac6558a status=400 duration_ms=118.1
+2026-01-19 21:52:32,670 [INFO] storybook_api - [REQ_START] id=236123601814 method=POST path=/story/generate
+2026-01-19 21:52:33,041 [INFO] storybook_api - [REQ_END] id=236123601814 status=400 duration_ms=389.16
+2026-01-19 21:55:01,758 [INFO] storybook_api - [REQ_START] id=14ff191522b0 method=POST path=/story/generate
+2026-01-19 21:55:01,893 [INFO] storybook_api - [REQ_END] id=14ff191522b0 status=400 duration_ms=136.21
+2026-01-19 21:57:37,589 [INFO] storybook_api - [REQ_START] id=ab4329a1fe1e method=POST path=/story/generate
+2026-01-19 21:57:45,922 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 21:57:58,972 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 21:58:12,774 [INFO] storybook_api - [REQ_START] id=acf8c26b5d18 method=GET path=/genres
+2026-01-19 21:58:12,846 [INFO] storybook_api - [REQ_END] id=acf8c26b5d18 status=200 duration_ms=71.92
+2026-01-19 21:58:18,721 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 21:58:46,438 [INFO] storybook_api - [ARTIFACT] req=ab4329a1fe1e type=story pages=5 ttl=24h
+2026-01-19 21:58:46,439 [INFO] storybook_api - [ARTIFACT] req=ab4329a1fe1e type=story pages=5 ttl=24h
+2026-01-19 21:58:46,443 [INFO] storybook_api - [ARTIFACT] req=ab4329a1fe1e type=story pages=5 ttl=24h
+2026-01-19 21:58:46,470 [INFO] storybook_api - [ARTIFACT] req=ab4329a1fe1e type=story pages=5 ttl=24h
+2026-01-19 21:58:46,487 [INFO] storybook_api - [ARTIFACT] req=ab4329a1fe1e type=story pages=5 ttl=24h
+2026-01-19 21:58:54,113 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 21:58:56,199 [INFO] storybook_api - [STYLE_SAVED] user=string genre=Family
+2026-01-19 21:58:56,226 [INFO] storybook_api - [REQ_END] id=ab4329a1fe1e status=200 duration_ms=78643.28
+2026-01-19 21:59:00,347 [INFO] storybook_api - [REQ_START] id=9631589d78cc method=POST path=/story/generate
+2026-01-19 21:59:00,474 [INFO] storybook_api - [REQ_END] id=9631589d78cc status=400 duration_ms=127.33
+2026-01-19 21:59:17,703 [INFO] storybook_api - [REQ_START] id=3442da8035f5 method=POST path=/story/generate
+2026-01-19 21:59:17,795 [INFO] storybook_api - [REQ_END] id=3442da8035f5 status=400 duration_ms=92.28
+2026-01-19 21:59:18,901 [INFO] storybook_api - [REQ_START] id=a4e30f335a5b method=POST path=/story/generate
+2026-01-19 21:59:18,985 [INFO] storybook_api - [REQ_END] id=a4e30f335a5b status=400 duration_ms=84.43
+2026-01-19 22:02:28,074 [INFO] storybook_api - [REQ_START] id=367593cc7bca method=POST path=/story/generate
+2026-01-19 22:02:29,538 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:02:42,959 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:03:09,394 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:03:34,916 [INFO] storybook_api - [ARTIFACT] req=367593cc7bca type=story pages=5 ttl=24h
+2026-01-19 22:03:34,919 [INFO] storybook_api - [ARTIFACT] req=367593cc7bca type=story pages=5 ttl=24h
+2026-01-19 22:03:34,923 [INFO] storybook_api - [ARTIFACT] req=367593cc7bca type=story pages=5 ttl=24h
+2026-01-19 22:03:34,927 [INFO] storybook_api - [ARTIFACT] req=367593cc7bca type=story pages=5 ttl=24h
+2026-01-19 22:03:34,931 [INFO] storybook_api - [ARTIFACT] req=367593cc7bca type=story pages=5 ttl=24h
+2026-01-19 22:03:35,554 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:03:37,902 [INFO] storybook_api - [STYLE_SAVED] user=123456 genre=marriage+children's fiction / personalized story
+2026-01-19 22:03:37,910 [INFO] storybook_api - [REQ_END] id=367593cc7bca status=200 duration_ms=69835.77
+2026-01-19 22:12:15,582 [INFO] storybook_api - [REQ_START] id=c5626b618fd1 method=POST path=/story/generate
+2026-01-19 22:12:17,616 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:12:28,127 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:12:47,627 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:13:05,616 [INFO] storybook_api - [ARTIFACT] req=c5626b618fd1 type=story pages=4 ttl=24h
+2026-01-19 22:13:05,622 [INFO] storybook_api - [ARTIFACT] req=c5626b618fd1 type=story pages=4 ttl=24h
+2026-01-19 22:13:05,626 [INFO] storybook_api - [ARTIFACT] req=c5626b618fd1 type=story pages=4 ttl=24h
+2026-01-19 22:13:05,633 [INFO] storybook_api - [ARTIFACT] req=c5626b618fd1 type=story pages=4 ttl=24h
+2026-01-19 22:13:06,081 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:13:08,499 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-19 22:13:08,506 [INFO] storybook_api - [REQ_END] id=c5626b618fd1 status=200 duration_ms=52923.26
+2026-01-19 22:13:22,831 [INFO] storybook_api - [REQ_START] id=52b203827a78 method=POST path=/title/generate
+2026-01-19 22:13:24,478 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:13:26,394 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 22:13:27,076 [INFO] storybook_api - [REQ_END] id=52b203827a78 status=200 duration_ms=4243.83
+2026-01-19 22:56:54,169 [INFO] storybook_api - [REQ_START] id=1e3d31a5d132 method=POST path=/images/generate
+2026-01-19 22:56:54,950 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-19 22:58:26,101 [INFO] storybook_api - [IMG_JOB_DONE] req=1e3d31a5d132 job_id=91b3e7ad-d50e-4d18-9c03-a20284354c58-e1
+2026-01-19 22:58:26,112 [INFO] storybook_api - [ARTIFACT] req=1e3d31a5d132 type=image page=1 ttl=ephemeral
+2026-01-19 22:58:26,281 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-19 22:59:03,342 [INFO] storybook_api - [IMG_JOB_DONE] req=1e3d31a5d132 job_id=59ae1893-9ba8-4f1d-a111-1fe73770a87c-e1
+2026-01-19 22:59:03,346 [INFO] storybook_api - [ARTIFACT] req=1e3d31a5d132 type=image page=2 ttl=ephemeral
+2026-01-19 22:59:03,476 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-19 22:59:43,972 [INFO] storybook_api - [IMG_JOB_DONE] req=1e3d31a5d132 job_id=a82abdf4-bca9-49e9-abba-4c2b02f48f9a-e1
+2026-01-19 22:59:43,977 [INFO] storybook_api - [ARTIFACT] req=1e3d31a5d132 type=image page=3 ttl=ephemeral
+2026-01-19 22:59:44,119 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-19 23:00:20,717 [INFO] storybook_api - [IMG_JOB_DONE] req=1e3d31a5d132 job_id=9aa89309-2afb-4331-bf21-c86df14455d4-e2
+2026-01-19 23:00:20,723 [INFO] storybook_api - [ARTIFACT] req=1e3d31a5d132 type=image page=4 ttl=ephemeral
+2026-01-19 23:01:16,076 [INFO] storybook_api - [REQ_START] id=3a0b549bbcf7 method=POST path=/title/generate
+2026-01-19 23:01:18,174 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:01:20,428 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:01:21,149 [INFO] storybook_api - [REQ_END] id=3a0b549bbcf7 status=200 duration_ms=5073.57
+2026-01-19 23:01:34,129 [INFO] storybook_api - [REQ_START] id=f829d2d336d8 method=POST path=/images/generate
+2026-01-19 23:01:34,138 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-19 23:01:55,859 [INFO] storybook_api - [REQ_START] id=df8202d5402a method=GET path=/genres
+2026-01-19 23:01:55,889 [INFO] storybook_api - [REQ_END] id=df8202d5402a status=200 duration_ms=29.37
+2026-01-19 23:01:55,945 [INFO] storybook_api - [REQ_START] id=c20511a5a298 method=GET path=/genres
+2026-01-19 23:01:55,974 [INFO] storybook_api - [REQ_END] id=c20511a5a298 status=200 duration_ms=28.98
+2026-01-19 23:02:40,450 [INFO] storybook_api - [REQ_START] id=4449afea1821 method=POST path=/caption
+2026-01-19 23:03:09,714 [INFO] storybook_api - [IMG_JOB_DONE] req=f829d2d336d8 job_id=bf597e1d-3454-477b-9d43-cadcbf5519a5-e1
+2026-01-19 23:03:09,720 [INFO] storybook_api - [ARTIFACT] req=f829d2d336d8 type=image page=1 ttl=ephemeral
+2026-01-19 23:03:09,871 [INFO] storybook_api - Generating image for page=2, orientation=Landscape
+2026-01-19 23:03:37,721 [INFO] storybook_api - [REQ_END] id=4449afea1821 status=200 duration_ms=57270.66
+2026-01-19 23:03:46,852 [INFO] storybook_api - [IMG_JOB_DONE] req=f829d2d336d8 job_id=c5949622-54fb-447f-aac3-c71b26230dfa-e2
+2026-01-19 23:03:46,860 [INFO] storybook_api - [ARTIFACT] req=f829d2d336d8 type=image page=2 ttl=ephemeral
+2026-01-19 23:03:47,027 [INFO] storybook_api - Generating image for page=3, orientation=Landscape
+2026-01-19 23:03:51,760 [INFO] storybook_api - [REQ_START] id=ea9e8440eaf9 method=POST path=/upload-and-process
+2026-01-19 23:03:57,147 [INFO] storybook_api - [REQ_END] id=ea9e8440eaf9 status=200 duration_ms=5387.3
+2026-01-19 23:03:57,198 [INFO] storybook_api - [REQ_START] id=548492257159 method=POST path=/generate-captions
+2026-01-19 23:04:27,156 [INFO] storybook_api - [IMG_JOB_DONE] req=f829d2d336d8 job_id=6683e7b2-e0cd-48a1-87d4-2048b9f56a0d-e1
+2026-01-19 23:04:27,160 [INFO] storybook_api - [ARTIFACT] req=f829d2d336d8 type=image page=3 ttl=ephemeral
+2026-01-19 23:04:27,280 [INFO] storybook_api - Generating image for page=4, orientation=Landscape
+2026-01-19 23:04:42,259 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-19 23:04:42,844 [INFO] storybook_api - [REQ_END] id=548492257159 status=200 duration_ms=45645.45
+2026-01-19 23:04:42,877 [INFO] storybook_api - [REQ_START] id=a81754043c19 method=POST path=/train-character
+2026-01-19 23:04:43,506 [INFO] storybook_api - [REQ_END] id=a81754043c19 status=200 duration_ms=628.72
+2026-01-19 23:04:48,569 [INFO] storybook_api - [REQ_START] id=b549b9d58140 method=POST path=/gist/preview-images
+2026-01-19 23:04:49,807 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:04:55,571 [ERROR] storybook_api - Gist image generation failed
+Traceback (most recent call last):
+  File "C:\Users\mirsh\GHOSTAI\ml_model\V1.py", line 3132, in gist_preview_images
+    images = generate_preview_images_from_gist(payload.gist)
+  File "C:\Users\mirsh\GHOSTAI\ml_model\V1.py", line 807, in generate_preview_images_from_gist
+    prompt = generate_image_prompt_from_gist(gist)
+  File "C:\Users\mirsh\GHOSTAI\ml_model\V1.py", line 622, in generate_image_prompt_from_gist
+    prompt = response.choices[0].message.content.strip()
+TypeError: 'NoneType' object is not subscriptable
+2026-01-19 23:04:55,586 [INFO] storybook_api - [REQ_END] id=b549b9d58140 status=500 duration_ms=7017.24
+2026-01-19 23:04:58,564 [INFO] storybook_api - [REQ_START] id=55787152b6e3 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:04:58,992 [INFO] storybook_api - [REQ_END] id=55787152b6e3 status=200 duration_ms=428.34
+2026-01-19 23:05:03,847 [INFO] storybook_api - [IMG_JOB_DONE] req=f829d2d336d8 job_id=51ae2977-79da-4632-b80a-e48297396db9-e1
+2026-01-19 23:05:03,852 [INFO] storybook_api - [ARTIFACT] req=f829d2d336d8 type=image page=4 ttl=ephemeral
+2026-01-19 23:05:04,040 [INFO] storybook_api - [REQ_END] id=f829d2d336d8 status=200 duration_ms=209910.95
+2026-01-19 23:05:12,093 [INFO] storybook_api - [REQ_START] id=1e0cff98e76d method=POST path=/images/flux_generate
+2026-01-19 23:05:12,101 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-19 23:05:14,040 [INFO] storybook_api - [REQ_START] id=2435d298f53f method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:05:14,409 [INFO] storybook_api - [REQ_END] id=2435d298f53f status=200 duration_ms=368.65
+2026-01-19 23:05:29,457 [INFO] storybook_api - [REQ_START] id=72a8b647accb method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:05:29,826 [INFO] storybook_api - [REQ_END] id=72a8b647accb status=200 duration_ms=368.99
+2026-01-19 23:05:44,886 [INFO] storybook_api - [REQ_START] id=5a92487ca9ec method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:05:45,261 [INFO] storybook_api - [REQ_END] id=5a92487ca9ec status=200 duration_ms=375.31
+2026-01-19 23:05:49,597 [INFO] storybook_api - [REQ_END] id=1e0cff98e76d status=200 duration_ms=37504.3
+2026-01-19 23:05:52,017 [INFO] storybook_api - [REQ_START] id=78c18649f931 method=POST path=/coverback/generate
+2026-01-19 23:05:52,026 [INFO] storybook_api - /coverback/generate called. Genre=children's coloring book, nature, emotional learning, Title=Peaceful Morning Light
+2026-01-19 23:06:00,308 [INFO] storybook_api - [REQ_START] id=6817b2801021 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:06:00,741 [INFO] storybook_api - [REQ_END] id=6817b2801021 status=200 duration_ms=434.5
+2026-01-19 23:06:15,794 [INFO] storybook_api - [REQ_START] id=84f870b3a587 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:06:16,208 [INFO] storybook_api - [REQ_END] id=84f870b3a587 status=200 duration_ms=413.3
+2026-01-19 23:06:31,255 [INFO] storybook_api - [REQ_START] id=7da204b9495e method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:06:31,709 [INFO] storybook_api - [REQ_END] id=7da204b9495e status=200 duration_ms=453.85
+2026-01-19 23:06:46,770 [INFO] storybook_api - [REQ_START] id=4b3fad88df1c method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:06:47,166 [INFO] storybook_api - [REQ_END] id=4b3fad88df1c status=200 duration_ms=396.35
+2026-01-19 23:07:02,213 [INFO] storybook_api - [REQ_START] id=f2c8d747a954 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:07:02,599 [INFO] storybook_api - [REQ_END] id=f2c8d747a954 status=200 duration_ms=385.7
+2026-01-19 23:07:17,663 [INFO] storybook_api - [REQ_START] id=2c12f1c2b1da method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:07:18,041 [INFO] storybook_api - [REQ_END] id=2c12f1c2b1da status=200 duration_ms=377.95
+2026-01-19 23:07:19,790 [INFO] storybook_api - [REQ_END] id=78c18649f931 status=200 duration_ms=87773.09
+2026-01-19 23:07:33,080 [INFO] storybook_api - [REQ_START] id=90ab0da5d0bd method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:07:33,499 [INFO] storybook_api - [REQ_END] id=90ab0da5d0bd status=200 duration_ms=419.56
+2026-01-19 23:07:48,545 [INFO] storybook_api - [REQ_START] id=0433b7ec612d method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:07:48,929 [INFO] storybook_api - [REQ_END] id=0433b7ec612d status=200 duration_ms=384.99
+2026-01-19 23:08:03,973 [INFO] storybook_api - [REQ_START] id=a3152f75394b method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:08:04,921 [INFO] storybook_api - [REQ_END] id=a3152f75394b status=200 duration_ms=948.13
+2026-01-19 23:08:19,970 [INFO] storybook_api - [REQ_START] id=4123874299b4 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:08:20,397 [INFO] storybook_api - [REQ_END] id=4123874299b4 status=200 duration_ms=426.71
+2026-01-19 23:08:35,458 [INFO] storybook_api - [REQ_START] id=049019b702c8 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:08:35,843 [INFO] storybook_api - [REQ_END] id=049019b702c8 status=200 duration_ms=384.23
+2026-01-19 23:08:50,886 [INFO] storybook_api - [REQ_START] id=4546ea6ba5f9 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:08:51,292 [INFO] storybook_api - [REQ_END] id=4546ea6ba5f9 status=200 duration_ms=406.87
+2026-01-19 23:09:06,334 [INFO] storybook_api - [REQ_START] id=1b8a58446736 method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:09:06,745 [INFO] storybook_api - [REQ_END] id=1b8a58446736 status=200 duration_ms=410.98
+2026-01-19 23:09:21,795 [INFO] storybook_api - [REQ_START] id=cdf1d4fdfcfe method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:09:22,217 [INFO] storybook_api - [REQ_END] id=cdf1d4fdfcfe status=200 duration_ms=422.35
+2026-01-19 23:09:37,271 [INFO] storybook_api - [REQ_START] id=2d2afe16dfed method=GET path=/job-status/a87784a6-74c4-4d35-bafc-d02b3c934b95-e1
+2026-01-19 23:09:37,664 [INFO] storybook_api - [REQ_END] id=2d2afe16dfed status=200 duration_ms=393.12
+2026-01-19 23:19:12,179 [INFO] storybook_api - [REQ_START] id=44891f2204a5 method=POST path=/images/generate
+2026-01-19 23:19:12,404 [INFO] storybook_api - [REQ_END] id=44891f2204a5 status=422 duration_ms=231.29
+2026-01-19 23:21:07,541 [INFO] storybook_api - [REQ_START] id=dd92a21be4f1 method=POST path=/story/generate
+2026-01-19 23:21:10,886 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:21:23,182 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:21:29,163 [INFO] storybook_api - [REQ_END] id=dd92a21be4f1 status=500 duration_ms=21642.38
+2026-01-19 23:28:18,071 [INFO] storybook_api - [REQ_START] id=fff514c08373 method=POST path=/story/generate
+2026-01-19 23:28:20,376 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:28:28,372 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:28:38,894 [INFO] storybook_api - [REQ_END] id=fff514c08373 status=500 duration_ms=20838.69
+2026-01-19 23:31:46,806 [INFO] storybook_api - [REQ_START] id=790e11eeeadd method=POST path=/story/generate
+2026-01-19 23:31:48,423 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:31:58,733 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:32:20,998 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:32:37,961 [INFO] storybook_api - [ARTIFACT] req=790e11eeeadd type=story pages=3 ttl=24h
+2026-01-19 23:32:37,962 [INFO] storybook_api - [ARTIFACT] req=790e11eeeadd type=story pages=3 ttl=24h
+2026-01-19 23:32:37,964 [INFO] storybook_api - [ARTIFACT] req=790e11eeeadd type=story pages=3 ttl=24h
+2026-01-19 23:32:38,701 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-19 23:32:40,207 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-19 23:32:40,239 [INFO] storybook_api - [REQ_END] id=790e11eeeadd status=200 duration_ms=53448.33
+2026-01-19 23:32:51,903 [INFO] storybook_api - [REQ_START] id=0a951a43a6d5 method=GET path=/genres
+2026-01-19 23:32:51,944 [INFO] storybook_api - [REQ_END] id=0a951a43a6d5 status=200 duration_ms=42.52
+2026-01-19 23:32:52,008 [INFO] storybook_api - [REQ_START] id=55df6da8a911 method=GET path=/genres
+2026-01-19 23:32:52,042 [INFO] storybook_api - [REQ_END] id=55df6da8a911 status=200 duration_ms=32.22
+2026-01-19 23:33:44,304 [INFO] storybook_api - [REQ_START] id=3f59ec02b1bf method=POST path=/caption
+2026-01-19 23:34:46,453 [INFO] storybook_api - [REQ_END] id=3f59ec02b1bf status=200 duration_ms=62148.83
+2026-01-19 23:40:20,719 [INFO] storybook_api - [REQ_START] id=1fb1cad326e4 method=GET path=/genres
+2026-01-19 23:40:21,059 [INFO] storybook_api - [REQ_END] id=1fb1cad326e4 status=200 duration_ms=366.87
+2026-01-19 23:40:21,199 [INFO] storybook_api - [REQ_START] id=a164b4551095 method=GET path=/genres
+2026-01-19 23:40:21,235 [INFO] storybook_api - [REQ_END] id=a164b4551095 status=200 duration_ms=36.03
+2026-01-19 23:40:21,292 [INFO] storybook_api - [REQ_START] id=099dc98765db method=GET path=/genres
+2026-01-19 23:40:21,321 [INFO] storybook_api - [REQ_END] id=099dc98765db status=200 duration_ms=28.66
+2026-01-19 23:40:59,281 [INFO] storybook_api - [REQ_START] id=2823dfca9ad5 method=POST path=/caption
+2026-01-19 23:42:22,963 [INFO] storybook_api - [REQ_END] id=2823dfca9ad5 status=200 duration_ms=83681.65
+2026-01-19 23:46:31,601 [INFO] storybook_api - [REQ_START] id=3ba67963222e method=GET path=/genres
+2026-01-19 23:46:31,842 [INFO] storybook_api - [REQ_END] id=3ba67963222e status=200 duration_ms=251.13
+2026-01-19 23:46:32,050 [INFO] storybook_api - [REQ_START] id=36ad8842b80b method=GET path=/genres
+2026-01-19 23:46:32,106 [INFO] storybook_api - [REQ_END] id=36ad8842b80b status=200 duration_ms=54.02
+2026-01-19 23:46:32,247 [INFO] storybook_api - [REQ_START] id=bf45a460932a method=GET path=/genres
+2026-01-19 23:46:32,281 [INFO] storybook_api - [REQ_END] id=bf45a460932a status=200 duration_ms=33.26
+2026-01-19 23:47:11,143 [INFO] storybook_api - [REQ_START] id=7fdfeb2882a4 method=POST path=/caption
+2026-01-19 23:48:09,040 [INFO] storybook_api - [REQ_END] id=7fdfeb2882a4 status=200 duration_ms=57897.72
+2026-01-19 23:53:34,215 [INFO] storybook_api - [REQ_START] id=dc828e8db1da method=GET path=/genres
+2026-01-19 23:53:35,247 [INFO] storybook_api - [REQ_END] id=dc828e8db1da status=200 duration_ms=1070.98
+2026-01-19 23:53:35,750 [INFO] storybook_api - [REQ_START] id=cb2247d558ab method=GET path=/genres
+2026-01-19 23:53:35,814 [INFO] storybook_api - [REQ_END] id=cb2247d558ab status=200 duration_ms=63.91
+2026-01-19 23:53:35,999 [INFO] storybook_api - [REQ_START] id=9be6c7c940ad method=GET path=/genres
+2026-01-19 23:53:36,103 [INFO] storybook_api - [REQ_END] id=9be6c7c940ad status=200 duration_ms=103.63
+2026-01-19 23:54:08,266 [INFO] storybook_api - [REQ_START] id=bf7c0a1263c8 method=POST path=/caption
+2026-01-19 23:54:53,166 [INFO] storybook_api - [REQ_END] id=bf7c0a1263c8 status=200 duration_ms=44900.91
+2026-01-19 23:59:41,135 [INFO] storybook_api - [REQ_START] id=066bb626be7e method=GET path=/genres
+2026-01-19 23:59:42,060 [INFO] storybook_api - [REQ_END] id=066bb626be7e status=200 duration_ms=959.71
+2026-01-19 23:59:42,290 [INFO] storybook_api - [REQ_START] id=318a7b70b616 method=GET path=/genres
+2026-01-19 23:59:42,369 [INFO] storybook_api - [REQ_END] id=318a7b70b616 status=200 duration_ms=79.55
+2026-01-20 00:00:33,289 [INFO] storybook_api - [REQ_START] id=b164ffa701f2 method=POST path=/caption
+2026-01-20 00:01:31,112 [INFO] storybook_api - [REQ_END] id=b164ffa701f2 status=200 duration_ms=57828.77
+2026-01-20 00:01:53,159 [INFO] storybook_api - [REQ_START] id=695f71b68511 method=POST path=/upload-and-process
+2026-01-20 00:02:01,291 [INFO] storybook_api - [REQ_END] id=695f71b68511 status=200 duration_ms=8134.52
+2026-01-20 00:02:01,337 [INFO] storybook_api - [REQ_START] id=ea30e0281bb8 method=POST path=/generate-captions
+2026-01-20 00:02:45,491 [INFO] storybook_api - [REQ_START] id=a41ca6f998ad method=POST path=/gist/preview-images
+2026-01-20 00:02:47,291 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:02:53,352 [INFO] storybook_api - [REQ_END] id=a41ca6f998ad status=200 duration_ms=7860.86
+2026-01-20 00:03:00,719 [INFO] storybook_api - [REQ_START] id=240049edef42 method=POST path=/story/generate
+2026-01-20 00:03:02,334 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:03:07,433 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-20 00:03:08,532 [INFO] storybook_api - [REQ_END] id=ea30e0281bb8 status=200 duration_ms=67200.23
+2026-01-20 00:03:08,586 [INFO] storybook_api - [REQ_START] id=7c33cfe2554e method=POST path=/train-character
+2026-01-20 00:03:09,227 [INFO] storybook_api - [REQ_END] id=7c33cfe2554e status=200 duration_ms=641.73
+2026-01-20 00:03:09,304 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:03:16,369 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:03:21,838 [INFO] storybook_api - [ARTIFACT] req=240049edef42 type=story pages=1 ttl=24h
+2026-01-20 00:03:22,327 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:03:24,132 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 00:03:24,162 [INFO] storybook_api - [REQ_END] id=240049edef42 status=200 duration_ms=23442.06
+2026-01-20 00:03:24,311 [INFO] storybook_api - [REQ_START] id=c1af7ce4db45 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:03:24,747 [INFO] storybook_api - [REQ_END] id=c1af7ce4db45 status=200 duration_ms=436.25
+2026-01-20 00:03:39,802 [INFO] storybook_api - [REQ_START] id=66f700045ff3 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:03:40,220 [INFO] storybook_api - [REQ_END] id=66f700045ff3 status=200 duration_ms=417.87
+2026-01-20 00:03:55,314 [INFO] storybook_api - [REQ_START] id=5b1472fdb225 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:03:55,713 [INFO] storybook_api - [REQ_END] id=5b1472fdb225 status=200 duration_ms=399.02
+2026-01-20 00:04:10,767 [INFO] storybook_api - [REQ_START] id=0c6f4f54422b method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:04:11,217 [INFO] storybook_api - [REQ_END] id=0c6f4f54422b status=200 duration_ms=449.21
+2026-01-20 00:04:26,273 [INFO] storybook_api - [REQ_START] id=c16c4af71c88 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:04:26,722 [INFO] storybook_api - [REQ_END] id=c16c4af71c88 status=200 duration_ms=448.99
+2026-01-20 00:04:41,787 [INFO] storybook_api - [REQ_START] id=2a701eb92235 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:04:42,202 [INFO] storybook_api - [REQ_END] id=2a701eb92235 status=200 duration_ms=415.07
+2026-01-20 00:04:57,250 [INFO] storybook_api - [REQ_START] id=5ba02c6b8f3c method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:04:57,637 [INFO] storybook_api - [REQ_END] id=5ba02c6b8f3c status=200 duration_ms=386.72
+2026-01-20 00:05:12,677 [INFO] storybook_api - [REQ_START] id=1b0b27ff55d6 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:05:13,081 [INFO] storybook_api - [REQ_END] id=1b0b27ff55d6 status=200 duration_ms=404.54
+2026-01-20 00:05:28,165 [INFO] storybook_api - [REQ_START] id=1a57d6851578 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:05:28,577 [INFO] storybook_api - [REQ_END] id=1a57d6851578 status=200 duration_ms=411.89
+2026-01-20 00:05:43,626 [INFO] storybook_api - [REQ_START] id=47efb2addae2 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:05:44,033 [INFO] storybook_api - [REQ_END] id=47efb2addae2 status=200 duration_ms=407.01
+2026-01-20 00:05:59,094 [INFO] storybook_api - [REQ_START] id=1f94cd5c6d26 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:05:59,484 [INFO] storybook_api - [REQ_END] id=1f94cd5c6d26 status=200 duration_ms=390.29
+2026-01-20 00:06:14,523 [INFO] storybook_api - [REQ_START] id=655c72d5bc10 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:06:14,927 [INFO] storybook_api - [REQ_END] id=655c72d5bc10 status=200 duration_ms=403.94
+2026-01-20 00:06:29,988 [INFO] storybook_api - [REQ_START] id=f333ecbd78fd method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:06:30,445 [INFO] storybook_api - [REQ_END] id=f333ecbd78fd status=200 duration_ms=457.04
+2026-01-20 00:06:45,484 [INFO] storybook_api - [REQ_START] id=decccb1f32c1 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:06:45,951 [INFO] storybook_api - [REQ_END] id=decccb1f32c1 status=200 duration_ms=467.88
+2026-01-20 00:07:01,050 [INFO] storybook_api - [REQ_START] id=e843105e9afa method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:07:01,442 [INFO] storybook_api - [REQ_END] id=e843105e9afa status=200 duration_ms=392.08
+2026-01-20 00:07:16,496 [INFO] storybook_api - [REQ_START] id=53c87505dfd8 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:07:16,915 [INFO] storybook_api - [REQ_END] id=53c87505dfd8 status=200 duration_ms=418.98
+2026-01-20 00:07:31,967 [INFO] storybook_api - [REQ_START] id=164be66dba2c method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:07:32,321 [INFO] storybook_api - [REQ_END] id=164be66dba2c status=200 duration_ms=355.16
+2026-01-20 00:07:47,398 [INFO] storybook_api - [REQ_START] id=5848f5dc2e2b method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:07:47,824 [INFO] storybook_api - [REQ_END] id=5848f5dc2e2b status=200 duration_ms=426.44
+2026-01-20 00:08:02,870 [INFO] storybook_api - [REQ_START] id=389c6606688b method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:08:03,264 [INFO] storybook_api - [REQ_END] id=389c6606688b status=200 duration_ms=394.09
+2026-01-20 00:08:18,321 [INFO] storybook_api - [REQ_START] id=5a43b734d954 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:08:18,791 [INFO] storybook_api - [REQ_END] id=5a43b734d954 status=200 duration_ms=470.06
+2026-01-20 00:08:33,849 [INFO] storybook_api - [REQ_START] id=93ac1c7a02fb method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:08:34,293 [INFO] storybook_api - [REQ_END] id=93ac1c7a02fb status=200 duration_ms=444.11
+2026-01-20 00:08:49,349 [INFO] storybook_api - [REQ_START] id=7d1d94d9de41 method=GET path=/job-status/d45eed07-8fb4-4c88-baf4-9ed65afcc7dd-e2
+2026-01-20 00:08:49,768 [INFO] storybook_api - [REQ_END] id=7d1d94d9de41 status=200 duration_ms=418.57
+2026-01-20 00:10:27,618 [INFO] storybook_api - [REQ_START] id=2b4fa3a1d247 method=POST path=/title/generate
+2026-01-20 00:10:29,608 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:10:31,932 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:10:33,216 [INFO] storybook_api - [REQ_END] id=2b4fa3a1d247 status=200 duration_ms=5598.57
+2026-01-20 00:11:05,439 [INFO] storybook_api - [REQ_START] id=456680a34331 method=POST path=/images/generate
+2026-01-20 00:11:05,450 [INFO] storybook_api - Generating image for page=1, orientation=Landscape
+2026-01-20 00:12:38,726 [INFO] storybook_api - [IMG_JOB_DONE] req=456680a34331 job_id=34502741-db93-4bf4-bd63-175b2eeac393-e1
+2026-01-20 00:12:38,738 [INFO] storybook_api - [ARTIFACT] req=456680a34331 type=image page=1 ttl=ephemeral
+2026-01-20 00:12:38,975 [INFO] storybook_api - [REQ_END] id=456680a34331 status=200 duration_ms=93535.62
+2026-01-20 00:12:41,944 [INFO] storybook_api - [REQ_START] id=dccb41cb63cd method=POST path=/images/flux_generate
+2026-01-20 00:12:41,959 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-20 00:12:52,222 [INFO] storybook_api - [REQ_END] id=dccb41cb63cd status=200 duration_ms=10277.81
+2026-01-20 00:12:54,913 [INFO] storybook_api - [REQ_START] id=24178c8c686f method=POST path=/coverback/generate
+2026-01-20 00:12:54,926 [INFO] storybook_api - /coverback/generate called. Genre=children's coloring book, nature, emotional learning, Title=Heart Beats Free
+2026-01-20 00:15:44,470 [INFO] storybook_api - [REQ_END] id=24178c8c686f status=200 duration_ms=169555.65
+2026-01-20 00:24:24,247 [INFO] storybook_api - [REQ_START] id=11913a292390 method=POST path=/story/generate
+2026-01-20 00:24:28,535 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:24:33,663 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:24:43,971 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:24:53,735 [INFO] storybook_api - [ARTIFACT] req=11913a292390 type=story pages=1 ttl=24h
+2026-01-20 00:24:54,133 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 00:24:55,865 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 00:24:55,895 [INFO] storybook_api - [REQ_END] id=11913a292390 status=200 duration_ms=31670.23
+2026-01-20 00:41:32,905 [INFO] storybook_api - [REQ_START] id=a0282eb9af10 method=GET path=/genres
+2026-01-20 00:41:33,397 [INFO] storybook_api - [REQ_END] id=a0282eb9af10 status=200 duration_ms=509.31
+2026-01-20 00:41:33,540 [INFO] storybook_api - [REQ_START] id=16e624ab1071 method=GET path=/genres
+2026-01-20 00:41:33,769 [INFO] storybook_api - [REQ_END] id=16e624ab1071 status=200 duration_ms=230.07
+2026-01-20 00:42:26,149 [INFO] storybook_api - [REQ_START] id=01a94ca6224d method=POST path=/caption
+2026-01-20 00:43:30,924 [INFO] storybook_api - [REQ_END] id=01a94ca6224d status=200 duration_ms=64775.36
+2026-01-20 00:45:48,811 [INFO] storybook_api - [REQ_START] id=03b0c0561b2e method=POST path=/upload-books
+2026-01-20 00:45:49,029 [INFO] storybook_api - [REQ_END] id=03b0c0561b2e status=400 duration_ms=222.79
+2026-01-20 00:46:02,766 [INFO] storybook_api - [REQ_START] id=94423979d416 method=POST path=/upload-and-process
+2026-01-20 00:46:11,327 [INFO] storybook_api - [REQ_END] id=94423979d416 status=200 duration_ms=8561.16
+2026-01-20 00:46:11,503 [INFO] storybook_api - [REQ_START] id=f9e1fe9445c1 method=POST path=/generate-captions
+2026-01-20 00:47:20,739 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-20 00:47:21,822 [INFO] storybook_api - [REQ_END] id=f9e1fe9445c1 status=200 duration_ms=70319.14
+2026-01-20 00:47:21,864 [INFO] storybook_api - [REQ_START] id=2432e10c01da method=POST path=/train-character
+2026-01-20 00:47:22,425 [INFO] storybook_api - [REQ_END] id=2432e10c01da status=200 duration_ms=561.65
+2026-01-20 00:47:37,466 [INFO] storybook_api - [REQ_START] id=457bf3e46c2e method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:47:37,870 [INFO] storybook_api - [REQ_END] id=457bf3e46c2e status=200 duration_ms=404.73
+2026-01-20 00:47:52,911 [INFO] storybook_api - [REQ_START] id=7e4aee16a117 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:47:53,269 [INFO] storybook_api - [REQ_END] id=7e4aee16a117 status=200 duration_ms=357.99
+2026-01-20 00:48:08,312 [INFO] storybook_api - [REQ_START] id=066b18b7f0f7 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:48:08,744 [INFO] storybook_api - [REQ_END] id=066b18b7f0f7 status=200 duration_ms=431.55
+2026-01-20 00:48:23,807 [INFO] storybook_api - [REQ_START] id=41d97add028e method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:48:24,207 [INFO] storybook_api - [REQ_END] id=41d97add028e status=200 duration_ms=400.0
+2026-01-20 00:48:39,260 [INFO] storybook_api - [REQ_START] id=353766bd2cdf method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:48:39,653 [INFO] storybook_api - [REQ_END] id=353766bd2cdf status=200 duration_ms=392.75
+2026-01-20 00:48:54,727 [INFO] storybook_api - [REQ_START] id=b2d062fc528a method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:48:55,339 [INFO] storybook_api - [REQ_END] id=b2d062fc528a status=200 duration_ms=611.65
+2026-01-20 00:49:10,401 [INFO] storybook_api - [REQ_START] id=2c08867e0f46 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:49:10,867 [INFO] storybook_api - [REQ_END] id=2c08867e0f46 status=200 duration_ms=466.51
+2026-01-20 00:49:25,919 [INFO] storybook_api - [REQ_START] id=35056e53956f method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:49:26,346 [INFO] storybook_api - [REQ_END] id=35056e53956f status=200 duration_ms=427.08
+2026-01-20 00:49:41,405 [INFO] storybook_api - [REQ_START] id=5e270d515603 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:49:41,775 [INFO] storybook_api - [REQ_END] id=5e270d515603 status=200 duration_ms=370.27
+2026-01-20 00:49:56,833 [INFO] storybook_api - [REQ_START] id=be2d2a8466cf method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:49:57,199 [INFO] storybook_api - [REQ_END] id=be2d2a8466cf status=200 duration_ms=366.08
+2026-01-20 00:50:12,256 [INFO] storybook_api - [REQ_START] id=19f6e6317d0a method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:50:12,613 [INFO] storybook_api - [REQ_END] id=19f6e6317d0a status=200 duration_ms=356.97
+2026-01-20 00:50:27,651 [INFO] storybook_api - [REQ_START] id=774d2e0b94b9 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:50:28,011 [INFO] storybook_api - [REQ_END] id=774d2e0b94b9 status=200 duration_ms=360.57
+2026-01-20 00:50:43,052 [INFO] storybook_api - [REQ_START] id=68de613abbba method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:50:43,431 [INFO] storybook_api - [REQ_END] id=68de613abbba status=200 duration_ms=379.38
+2026-01-20 00:50:58,489 [INFO] storybook_api - [REQ_START] id=e6ff8a54fafb method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:50:58,848 [INFO] storybook_api - [REQ_END] id=e6ff8a54fafb status=200 duration_ms=358.96
+2026-01-20 00:51:13,894 [INFO] storybook_api - [REQ_START] id=fd04e0b9ef0a method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:51:14,276 [INFO] storybook_api - [REQ_END] id=fd04e0b9ef0a status=200 duration_ms=381.92
+2026-01-20 00:51:29,308 [INFO] storybook_api - [REQ_START] id=283a4dba413c method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:51:29,696 [INFO] storybook_api - [REQ_END] id=283a4dba413c status=200 duration_ms=388.33
+2026-01-20 00:51:44,741 [INFO] storybook_api - [REQ_START] id=a3701f3b263c method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:51:45,259 [INFO] storybook_api - [REQ_END] id=a3701f3b263c status=200 duration_ms=518.41
+2026-01-20 00:52:00,436 [INFO] storybook_api - [REQ_START] id=b96d1671ff70 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:52:00,816 [INFO] storybook_api - [REQ_END] id=b96d1671ff70 status=200 duration_ms=380.08
+2026-01-20 00:52:15,853 [INFO] storybook_api - [REQ_START] id=12c1331c9a71 method=GET path=/job-status/c241836c-8c83-49b9-b648-6b80565afde7-e1
+2026-01-20 00:52:16,210 [INFO] storybook_api - [REQ_END] id=12c1331c9a71 status=200 duration_ms=356.9
+2026-01-20 01:22:53,454 [INFO] storybook_api - [REQ_START] id=9c7e70dd97da method=GET path=/genres
+2026-01-20 01:22:54,967 [INFO] storybook_api - [REQ_END] id=9c7e70dd97da status=200 duration_ms=1529.74
+2026-01-20 01:22:55,016 [INFO] storybook_api - [REQ_START] id=d1d15f68d377 method=GET path=/genres
+2026-01-20 01:22:55,229 [INFO] storybook_api - [REQ_END] id=d1d15f68d377 status=200 duration_ms=213.32
+2026-01-20 01:22:55,364 [INFO] storybook_api - [REQ_START] id=119893aa6a7a method=GET path=/genres
+2026-01-20 01:22:55,411 [INFO] storybook_api - [REQ_END] id=119893aa6a7a status=200 duration_ms=46.77
+2026-01-20 01:22:55,499 [INFO] storybook_api - [REQ_START] id=60307b759eb1 method=GET path=/genres
+2026-01-20 01:22:55,585 [INFO] storybook_api - [REQ_END] id=60307b759eb1 status=200 duration_ms=86.02
+2026-01-20 01:30:24,113 [INFO] storybook_api - [REQ_START] id=1abce6a0a331 method=GET path=/genres
+2026-01-20 01:30:24,331 [INFO] storybook_api - [REQ_END] id=1abce6a0a331 status=200 duration_ms=224.01
+2026-01-20 01:30:24,441 [INFO] storybook_api - [REQ_START] id=9d1f76d859de method=GET path=/genres
+2026-01-20 01:30:24,477 [INFO] storybook_api - [REQ_END] id=9d1f76d859de status=200 duration_ms=35.9
+2026-01-20 01:31:13,177 [INFO] storybook_api - [REQ_START] id=22bcfedab729 method=POST path=/caption
+2026-01-20 01:32:30,604 [INFO] storybook_api - [REQ_END] id=22bcfedab729 status=200 duration_ms=77429.11
+2026-01-20 01:35:54,026 [INFO] storybook_api - [REQ_START] id=1a8db66c9ef7 method=GET path=/genres
+2026-01-20 01:35:54,482 [INFO] storybook_api - [REQ_END] id=1a8db66c9ef7 status=200 duration_ms=488.8
+2026-01-20 01:35:54,744 [INFO] storybook_api - [REQ_START] id=3607b3a306cf method=GET path=/genres
+2026-01-20 01:35:54,805 [INFO] storybook_api - [REQ_END] id=3607b3a306cf status=200 duration_ms=60.99
+2026-01-20 01:35:54,927 [INFO] storybook_api - [REQ_START] id=139e07f7f38d method=GET path=/genres
+2026-01-20 01:35:55,057 [INFO] storybook_api - [REQ_END] id=139e07f7f38d status=200 duration_ms=129.1
+2026-01-20 01:36:34,355 [INFO] storybook_api - [REQ_START] id=dd4e0f666e1c method=POST path=/caption
+2026-01-20 01:36:48,891 [INFO] storybook_api - [REQ_END] id=dd4e0f666e1c status=200 duration_ms=14540.5
+2026-01-20 01:43:46,115 [INFO] storybook_api - [REQ_START] id=3b464fb85818 method=GET path=/genres
+2026-01-20 01:43:46,415 [INFO] storybook_api - [REQ_END] id=3b464fb85818 status=200 duration_ms=309.2
+2026-01-20 01:43:46,860 [INFO] storybook_api - [REQ_START] id=bb84c1805682 method=GET path=/genres
+2026-01-20 01:43:46,889 [INFO] storybook_api - [REQ_END] id=bb84c1805682 status=200 duration_ms=28.65
+2026-01-20 01:44:32,245 [INFO] storybook_api - [REQ_START] id=8867bed2356b method=POST path=/caption
+2026-01-20 01:44:45,445 [INFO] storybook_api - [REQ_END] id=8867bed2356b status=200 duration_ms=13200.1
+2026-01-20 01:46:06,446 [WARNING] storybook_api - [TTL] Cleared expired upload session user_id=693f9d52cef2f9280426fa5f
+2026-01-20 01:48:29,228 [INFO] storybook_api - [REQ_START] id=366f0b068ad8 method=GET path=/genres
+2026-01-20 01:48:30,593 [INFO] storybook_api - [REQ_END] id=366f0b068ad8 status=200 duration_ms=1446.67
+2026-01-20 01:48:30,792 [INFO] storybook_api - [REQ_START] id=1b38672badc7 method=GET path=/genres
+2026-01-20 01:48:30,835 [INFO] storybook_api - [REQ_END] id=1b38672badc7 status=200 duration_ms=42.79
+2026-01-20 01:48:31,207 [INFO] storybook_api - [REQ_START] id=0e346624ea94 method=GET path=/genres
+2026-01-20 01:48:31,256 [INFO] storybook_api - [REQ_END] id=0e346624ea94 status=200 duration_ms=48.82
+2026-01-20 01:49:06,332 [INFO] storybook_api - [REQ_START] id=f99ad5a62f1f method=POST path=/caption
+2026-01-20 01:49:16,856 [INFO] storybook_api - [REQ_END] id=f99ad5a62f1f status=200 duration_ms=10524.01
+2026-01-20 01:54:41,355 [INFO] storybook_api - [REQ_START] id=229be375ef60 method=POST path=/upload-and-process
+2026-01-20 01:54:57,118 [INFO] storybook_api - [REQ_END] id=229be375ef60 status=200 duration_ms=15772.42
+2026-01-20 01:54:57,178 [INFO] storybook_api - [REQ_START] id=2079dd9ff2ca method=POST path=/generate-captions
+2026-01-20 01:55:51,504 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'executionTime', 'id', 'output', 'status', 'workerId']
+2026-01-20 01:55:52,639 [INFO] storybook_api - [REQ_END] id=2079dd9ff2ca status=200 duration_ms=55461.43
+2026-01-20 01:55:52,691 [INFO] storybook_api - [REQ_START] id=11bd31952b23 method=POST path=/train-character
+2026-01-20 01:55:53,258 [INFO] storybook_api - [REQ_END] id=11bd31952b23 status=200 duration_ms=567.67
+2026-01-20 01:56:08,323 [INFO] storybook_api - [REQ_START] id=a08614bb803a method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:56:08,714 [INFO] storybook_api - [REQ_END] id=a08614bb803a status=200 duration_ms=390.22
+2026-01-20 01:56:23,764 [INFO] storybook_api - [REQ_START] id=53731528ce23 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:56:24,243 [INFO] storybook_api - [REQ_END] id=53731528ce23 status=200 duration_ms=478.24
+2026-01-20 01:56:39,301 [INFO] storybook_api - [REQ_START] id=e4c331eafe49 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:56:39,690 [INFO] storybook_api - [REQ_END] id=e4c331eafe49 status=200 duration_ms=388.72
+2026-01-20 01:56:54,735 [INFO] storybook_api - [REQ_START] id=a0c6f3998c0c method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:56:55,303 [INFO] storybook_api - [REQ_END] id=a0c6f3998c0c status=200 duration_ms=567.41
+2026-01-20 01:57:10,341 [INFO] storybook_api - [REQ_START] id=09b1c1f2ee54 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:57:10,716 [INFO] storybook_api - [REQ_END] id=09b1c1f2ee54 status=200 duration_ms=375.69
+2026-01-20 01:57:25,758 [INFO] storybook_api - [REQ_START] id=1c277d3a5dc2 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:57:26,146 [INFO] storybook_api - [REQ_END] id=1c277d3a5dc2 status=200 duration_ms=387.25
+2026-01-20 01:57:41,193 [INFO] storybook_api - [REQ_START] id=6c1d7279310b method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:57:41,664 [INFO] storybook_api - [REQ_END] id=6c1d7279310b status=200 duration_ms=470.99
+2026-01-20 01:57:56,723 [INFO] storybook_api - [REQ_START] id=b8e9c0224ea0 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:57:57,114 [INFO] storybook_api - [REQ_END] id=b8e9c0224ea0 status=200 duration_ms=390.99
+2026-01-20 01:58:12,156 [INFO] storybook_api - [REQ_START] id=0c99ac42b0bf method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:58:12,508 [INFO] storybook_api - [REQ_END] id=0c99ac42b0bf status=200 duration_ms=351.93
+2026-01-20 01:58:27,555 [INFO] storybook_api - [REQ_START] id=ad4aa5014e6e method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:58:27,976 [INFO] storybook_api - [REQ_END] id=ad4aa5014e6e status=200 duration_ms=420.62
+2026-01-20 01:58:43,022 [INFO] storybook_api - [REQ_START] id=a9f7a0e4ae53 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:58:43,373 [INFO] storybook_api - [REQ_END] id=a9f7a0e4ae53 status=200 duration_ms=350.9
+2026-01-20 01:58:58,429 [INFO] storybook_api - [REQ_START] id=5a11ad543289 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:58:58,859 [INFO] storybook_api - [REQ_END] id=5a11ad543289 status=200 duration_ms=430.28
+2026-01-20 01:59:13,901 [INFO] storybook_api - [REQ_START] id=e70649556512 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:59:14,257 [INFO] storybook_api - [REQ_END] id=e70649556512 status=200 duration_ms=356.16
+2026-01-20 01:59:29,299 [INFO] storybook_api - [REQ_START] id=c74c61c56b4f method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:59:29,845 [INFO] storybook_api - [REQ_END] id=c74c61c56b4f status=200 duration_ms=545.92
+2026-01-20 01:59:44,913 [INFO] storybook_api - [REQ_START] id=f3a1b66ab1fe method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 01:59:45,311 [INFO] storybook_api - [REQ_END] id=f3a1b66ab1fe status=200 duration_ms=397.62
+2026-01-20 02:00:00,354 [INFO] storybook_api - [REQ_START] id=9eff7703f2dc method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:00:00,797 [INFO] storybook_api - [REQ_END] id=9eff7703f2dc status=200 duration_ms=443.54
+2026-01-20 02:00:15,849 [INFO] storybook_api - [REQ_START] id=c01473dba0c7 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:00:16,205 [INFO] storybook_api - [REQ_END] id=c01473dba0c7 status=200 duration_ms=356.55
+2026-01-20 02:00:31,254 [INFO] storybook_api - [REQ_START] id=28f3ff9185a6 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:00:31,621 [INFO] storybook_api - [REQ_END] id=28f3ff9185a6 status=200 duration_ms=367.55
+2026-01-20 02:00:46,668 [INFO] storybook_api - [REQ_START] id=0be990ab8924 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:00:47,029 [INFO] storybook_api - [REQ_END] id=0be990ab8924 status=200 duration_ms=360.61
+2026-01-20 02:01:02,080 [INFO] storybook_api - [REQ_START] id=5d9644b30adf method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:01:02,447 [INFO] storybook_api - [REQ_END] id=5d9644b30adf status=200 duration_ms=367.46
+2026-01-20 02:01:17,495 [INFO] storybook_api - [REQ_START] id=6ad073bb4e74 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:01:18,298 [INFO] storybook_api - [REQ_END] id=6ad073bb4e74 status=200 duration_ms=803.1
+2026-01-20 02:01:33,428 [INFO] storybook_api - [REQ_START] id=fdc80cb17880 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:01:33,839 [INFO] storybook_api - [REQ_END] id=fdc80cb17880 status=200 duration_ms=410.38
+2026-01-20 02:01:48,879 [INFO] storybook_api - [REQ_START] id=0f45031e4e50 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:01:49,835 [INFO] storybook_api - [REQ_END] id=0f45031e4e50 status=200 duration_ms=956.42
+2026-01-20 02:02:05,784 [INFO] storybook_api - [REQ_START] id=51448a9f393d method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:02:06,355 [INFO] storybook_api - [REQ_END] id=51448a9f393d status=200 duration_ms=570.98
+2026-01-20 02:02:21,399 [INFO] storybook_api - [REQ_START] id=a68481ef8011 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:02:21,974 [INFO] storybook_api - [REQ_END] id=a68481ef8011 status=200 duration_ms=574.71
+2026-01-20 02:02:37,338 [INFO] storybook_api - [REQ_START] id=2e91610860ab method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:02:37,721 [INFO] storybook_api - [REQ_END] id=2e91610860ab status=200 duration_ms=383.43
+2026-01-20 02:02:52,754 [INFO] storybook_api - [REQ_START] id=d3155722e94d method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:02:53,164 [INFO] storybook_api - [REQ_END] id=d3155722e94d status=200 duration_ms=410.88
+2026-01-20 02:03:08,245 [INFO] storybook_api - [REQ_START] id=99e0585c5694 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:03:08,623 [INFO] storybook_api - [REQ_END] id=99e0585c5694 status=200 duration_ms=377.6
+2026-01-20 02:03:23,755 [INFO] storybook_api - [REQ_START] id=eb026766daac method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:03:24,111 [INFO] storybook_api - [REQ_END] id=eb026766daac status=200 duration_ms=356.33
+2026-01-20 02:03:39,157 [INFO] storybook_api - [REQ_START] id=0f319c3dae89 method=GET path=/job-status/2f145953-365a-434e-ab83-a14f72dae024-e2
+2026-01-20 02:03:39,510 [INFO] storybook_api - [REQ_END] id=0f319c3dae89 status=200 duration_ms=353.26
+2026-01-20 02:17:49,290 [INFO] storybook_api - [REQ_START] id=9ffec085eafe method=GET path=/genres
+2026-01-20 02:17:49,502 [INFO] storybook_api - [REQ_END] id=9ffec085eafe status=200 duration_ms=223.76
+2026-01-20 02:17:49,600 [INFO] storybook_api - [REQ_START] id=48132b5b8d17 method=GET path=/genres
+2026-01-20 02:17:49,626 [INFO] storybook_api - [REQ_END] id=48132b5b8d17 status=200 duration_ms=26.27
+2026-01-20 02:17:49,674 [INFO] storybook_api - [REQ_START] id=663c0cf0183a method=GET path=/genres
+2026-01-20 02:17:49,699 [INFO] storybook_api - [REQ_END] id=663c0cf0183a status=200 duration_ms=25.5
+2026-01-20 02:19:40,474 [INFO] storybook_api - [REQ_START] id=77f12cc3abb6 method=POST path=/caption
+2026-01-20 02:20:43,251 [INFO] storybook_api - [REQ_END] id=77f12cc3abb6 status=200 duration_ms=62776.77
+2026-01-20 02:23:12,527 [INFO] storybook_api - [REQ_START] id=f9660ec2bb96 method=GET path=/genres
+2026-01-20 02:23:13,014 [INFO] storybook_api - [REQ_END] id=f9660ec2bb96 status=200 duration_ms=524.92
+2026-01-20 02:23:13,228 [INFO] storybook_api - [REQ_START] id=a00d6dc86893 method=GET path=/genres
+2026-01-20 02:23:13,279 [INFO] storybook_api - [REQ_END] id=a00d6dc86893 status=200 duration_ms=50.56
+2026-01-20 02:23:13,453 [INFO] storybook_api - [REQ_START] id=fb48f6f0d46b method=GET path=/genres
+2026-01-20 02:23:13,484 [INFO] storybook_api - [REQ_END] id=fb48f6f0d46b status=200 duration_ms=31.45
+2026-01-20 02:24:00,594 [INFO] storybook_api - [REQ_START] id=88c3ed2c187e method=POST path=/caption
+2026-01-20 02:25:07,040 [INFO] storybook_api - [REQ_END] id=88c3ed2c187e status=200 duration_ms=66453.58
+2026-01-20 02:25:29,037 [INFO] storybook_api - [REQ_START] id=28c3251e7ce7 method=POST path=/caption
+2026-01-20 02:25:41,778 [INFO] storybook_api - [REQ_END] id=28c3251e7ce7 status=200 duration_ms=12741.13
+2026-01-20 02:36:45,132 [INFO] storybook_api - [REQ_START] id=16c9b5dd2f65 method=GET path=/genres
+2026-01-20 02:36:45,617 [INFO] storybook_api - [REQ_END] id=16c9b5dd2f65 status=200 duration_ms=493.12
+2026-01-20 02:36:46,098 [INFO] storybook_api - [REQ_START] id=b4a1790081ae method=GET path=/genres
+2026-01-20 02:36:46,138 [INFO] storybook_api - [REQ_END] id=b4a1790081ae status=200 duration_ms=39.69
+2026-01-20 02:36:46,301 [INFO] storybook_api - [REQ_START] id=e16c72f86b53 method=GET path=/genres
+2026-01-20 02:36:46,343 [INFO] storybook_api - [REQ_END] id=e16c72f86b53 status=200 duration_ms=41.95
+2026-01-20 02:37:46,896 [INFO] storybook_api - [REQ_START] id=0f7da81d6bf1 method=POST path=/caption
+2026-01-20 02:37:59,175 [INFO] storybook_api - [REQ_END] id=0f7da81d6bf1 status=200 duration_ms=12279.64
+2026-01-20 02:38:27,688 [INFO] storybook_api - [REQ_START] id=aff869faa483 method=POST path=/caption
+2026-01-20 02:38:40,186 [INFO] storybook_api - [REQ_END] id=aff869faa483 status=200 duration_ms=12497.34
+2026-01-20 02:39:00,746 [INFO] storybook_api - [REQ_START] id=8463c458a9f0 method=POST path=/upload-and-process
+2026-01-20 02:39:44,788 [INFO] storybook_api - [REQ_END] id=8463c458a9f0 status=200 duration_ms=44043.89
+2026-01-20 02:39:44,920 [INFO] storybook_api - [REQ_START] id=f164dc4ec85c method=POST path=/generate-captions
+2026-01-20 02:40:46,422 [INFO] storybook_api - [REQ_START] id=17366147d29e method=POST path=/gist/preview-images
+2026-01-20 02:40:48,670 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:40:53,577 [INFO] storybook_api - [REQ_END] id=17366147d29e status=200 duration_ms=7153.9
+2026-01-20 02:41:07,296 [INFO] storybook_api - [REQ_START] id=731431f9eab2 method=POST path=/story/generate
+2026-01-20 02:41:09,162 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:41:15,824 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:41:28,222 [INFO] storybook_api - [CAPTION_RESPONSE] keys=['delayTime', 'id', 'status', 'workerId']
+2026-01-20 02:41:28,234 [INFO] storybook_api - [REQ_END] id=f164dc4ec85c status=500 duration_ms=103313.42
+2026-01-20 02:41:38,039 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:41:52,328 [INFO] storybook_api - [ARTIFACT] req=731431f9eab2 type=story pages=3 ttl=24h
+2026-01-20 02:41:52,330 [INFO] storybook_api - [ARTIFACT] req=731431f9eab2 type=story pages=3 ttl=24h
+2026-01-20 02:41:52,331 [INFO] storybook_api - [ARTIFACT] req=731431f9eab2 type=story pages=3 ttl=24h
+2026-01-20 02:41:53,470 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:41:55,577 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 02:41:55,614 [INFO] storybook_api - [REQ_END] id=731431f9eab2 status=200 duration_ms=48317.73
+2026-01-20 02:50:09,090 [INFO] storybook_api - [REQ_START] id=5d0c8bb33570 method=POST path=/story/generate
+2026-01-20 02:50:14,297 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:50:21,611 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:50:40,460 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:50:54,148 [INFO] storybook_api - [ARTIFACT] req=5d0c8bb33570 type=story pages=3 ttl=24h
+2026-01-20 02:50:54,151 [INFO] storybook_api - [ARTIFACT] req=5d0c8bb33570 type=story pages=3 ttl=24h
+2026-01-20 02:50:54,159 [INFO] storybook_api - [ARTIFACT] req=5d0c8bb33570 type=story pages=3 ttl=24h
+2026-01-20 02:50:55,057 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:50:57,165 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 02:50:57,255 [INFO] storybook_api - [REQ_END] id=5d0c8bb33570 status=200 duration_ms=48202.23
+2026-01-20 02:55:50,686 [INFO] storybook_api - [REQ_START] id=522b3f2302f9 method=POST path=/story/generate
+2026-01-20 02:55:52,847 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:55:58,958 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:56:34,458 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:56:46,271 [INFO] storybook_api - [ARTIFACT] req=522b3f2302f9 type=story pages=3 ttl=24h
+2026-01-20 02:56:46,276 [INFO] storybook_api - [ARTIFACT] req=522b3f2302f9 type=story pages=3 ttl=24h
+2026-01-20 02:56:46,280 [INFO] storybook_api - [ARTIFACT] req=522b3f2302f9 type=story pages=3 ttl=24h
+2026-01-20 02:56:48,019 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:56:49,389 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 02:56:49,424 [INFO] storybook_api - [REQ_END] id=522b3f2302f9 status=200 duration_ms=58753.4
+2026-01-20 02:56:58,187 [INFO] storybook_api - [REQ_START] id=bb768ba58d85 method=POST path=/title/generate
+2026-01-20 02:56:59,113 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:57:02,022 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 02:57:02,530 [INFO] storybook_api - [REQ_END] id=bb768ba58d85 status=200 duration_ms=4342.99
+2026-01-20 02:57:08,023 [INFO] storybook_api - [REQ_START] id=ef5bb3efbb6e method=POST path=/images/generate
+2026-01-20 02:57:08,170 [INFO] storybook_api - Generating image for page=1, orientation=Portrait
+2026-01-20 02:58:45,217 [INFO] storybook_api - [IMG_JOB_DONE] req=ef5bb3efbb6e job_id=5529d138-8f0c-4be5-8331-59e3f3b11359-e2
+2026-01-20 02:58:45,223 [INFO] storybook_api - [ARTIFACT] req=ef5bb3efbb6e type=image page=1 ttl=ephemeral
+2026-01-20 02:58:45,416 [INFO] storybook_api - Generating image for page=2, orientation=Portrait
+2026-01-20 03:00:20,059 [INFO] storybook_api - [IMG_JOB_DONE] req=ef5bb3efbb6e job_id=bd807568-5dec-46c8-bba3-4601fad3d5de-e2
+2026-01-20 03:00:20,064 [INFO] storybook_api - [ARTIFACT] req=ef5bb3efbb6e type=image page=2 ttl=ephemeral
+2026-01-20 03:00:20,226 [INFO] storybook_api - Generating image for page=3, orientation=Portrait
+2026-01-20 03:01:00,561 [INFO] storybook_api - [IMG_JOB_DONE] req=ef5bb3efbb6e job_id=5ef72d18-67cf-4570-ade9-7fc66eef2169-e2
+2026-01-20 03:01:00,564 [INFO] storybook_api - [ARTIFACT] req=ef5bb3efbb6e type=image page=3 ttl=ephemeral
+2026-01-20 03:01:00,851 [INFO] storybook_api - [REQ_END] id=ef5bb3efbb6e status=200 duration_ms=232826.94
+2026-01-20 03:01:05,170 [INFO] storybook_api - [REQ_START] id=2d86932413e7 method=POST path=/images/flux_generate
+2026-01-20 03:01:05,207 [INFO] storybook_api - /images/flux_generate called. Orientation=Portrait
+2026-01-20 03:01:47,325 [INFO] storybook_api - [REQ_END] id=2d86932413e7 status=200 duration_ms=42157.0
+2026-01-20 03:01:50,248 [INFO] storybook_api - [REQ_START] id=c6369dc996f2 method=POST path=/coverback/generate
+2026-01-20 03:01:50,269 [INFO] storybook_api - /coverback/generate called. Genre=children's coloring book, nature, emotional learning, Title=None
+2026-01-20 03:03:10,068 [INFO] storybook_api - [REQ_END] id=c6369dc996f2 status=200 duration_ms=79820.58
+2026-01-20 03:05:39,318 [INFO] storybook_api - [REQ_START] id=c6d089921f6b method=GET path=/genres
+2026-01-20 03:05:39,640 [INFO] storybook_api - [REQ_END] id=c6d089921f6b status=200 duration_ms=342.55
+2026-01-20 03:06:12,936 [INFO] storybook_api - [REQ_START] id=917379468481 method=GET path=/genres
+2026-01-20 03:06:12,980 [INFO] storybook_api - [REQ_START] id=2ef0bb6aef62 method=GET path=/genres
+2026-01-20 03:06:13,373 [INFO] storybook_api - [REQ_START] id=041fa7455023 method=GET path=/genres
+2026-01-20 03:06:13,387 [INFO] storybook_api - [REQ_END] id=917379468481 status=200 duration_ms=452.48
+2026-01-20 03:06:13,519 [INFO] storybook_api - [REQ_END] id=2ef0bb6aef62 status=200 duration_ms=538.83
+2026-01-20 03:06:14,799 [INFO] storybook_api - [REQ_END] id=041fa7455023 status=200 duration_ms=1426.08
+2026-01-20 03:06:47,307 [INFO] storybook_api - [REQ_START] id=458159d8866f method=POST path=/caption
+2026-01-20 03:07:35,483 [INFO] storybook_api - [REQ_END] id=458159d8866f status=200 duration_ms=48175.93
+2026-01-20 03:07:53,079 [INFO] storybook_api - [REQ_START] id=03f974264052 method=POST path=/upload-and-process
+2026-01-20 03:08:36,300 [INFO] storybook_api - [REQ_END] id=03f974264052 status=200 duration_ms=43222.58
+2026-01-20 03:08:36,377 [INFO] storybook_api - [REQ_START] id=1408d43f4358 method=POST path=/train-character
+2026-01-20 03:08:36,971 [INFO] storybook_api - [REQ_END] id=1408d43f4358 status=200 duration_ms=594.28
+2026-01-20 03:08:51,482 [INFO] storybook_api - [REQ_START] id=0be87f5a38a1 method=POST path=/gist/preview-images
+2026-01-20 03:08:52,023 [INFO] storybook_api - [REQ_START] id=94bd511ebfca method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:08:52,491 [INFO] storybook_api - [REQ_END] id=94bd511ebfca status=200 duration_ms=468.22
+2026-01-20 03:08:52,567 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:08:56,418 [INFO] storybook_api - [REQ_END] id=0be87f5a38a1 status=200 duration_ms=4935.34
+2026-01-20 03:09:07,550 [INFO] storybook_api - [REQ_START] id=3735db0ecbd3 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:09:07,931 [INFO] storybook_api - [REQ_END] id=3735db0ecbd3 status=200 duration_ms=381.0
+2026-01-20 03:09:22,981 [INFO] storybook_api - [REQ_START] id=3bdc92e22c19 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:09:23,431 [INFO] storybook_api - [REQ_END] id=3bdc92e22c19 status=200 duration_ms=449.92
+2026-01-20 03:09:38,477 [INFO] storybook_api - [REQ_START] id=08efcecb2111 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:09:38,854 [INFO] storybook_api - [REQ_END] id=08efcecb2111 status=200 duration_ms=377.6
+2026-01-20 03:09:53,909 [INFO] storybook_api - [REQ_START] id=c7e5449128e6 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:09:54,275 [INFO] storybook_api - [REQ_END] id=c7e5449128e6 status=200 duration_ms=366.0
+2026-01-20 03:10:09,335 [INFO] storybook_api - [REQ_START] id=73e2d31251e5 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:10:09,767 [INFO] storybook_api - [REQ_END] id=73e2d31251e5 status=200 duration_ms=431.79
+2026-01-20 03:10:24,837 [INFO] storybook_api - [REQ_START] id=896b5907d0bd method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:10:25,260 [INFO] storybook_api - [REQ_END] id=896b5907d0bd status=200 duration_ms=423.12
+2026-01-20 03:10:40,319 [INFO] storybook_api - [REQ_START] id=793bd266d640 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:10:40,765 [INFO] storybook_api - [REQ_END] id=793bd266d640 status=200 duration_ms=447.29
+2026-01-20 03:10:55,869 [INFO] storybook_api - [REQ_START] id=33bfa5ad7907 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:10:56,272 [INFO] storybook_api - [REQ_END] id=33bfa5ad7907 status=200 duration_ms=402.88
+2026-01-20 03:11:11,333 [INFO] storybook_api - [REQ_START] id=5d08175a6007 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:11:11,820 [INFO] storybook_api - [REQ_END] id=5d08175a6007 status=200 duration_ms=487.62
+2026-01-20 03:11:26,870 [INFO] storybook_api - [REQ_START] id=158dae39ae49 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:11:27,339 [INFO] storybook_api - [REQ_END] id=158dae39ae49 status=200 duration_ms=470.33
+2026-01-20 03:11:42,382 [INFO] storybook_api - [REQ_START] id=0be5f0a4a2fe method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:11:42,807 [INFO] storybook_api - [REQ_END] id=0be5f0a4a2fe status=200 duration_ms=425.09
+2026-01-20 03:11:57,873 [INFO] storybook_api - [REQ_START] id=97cc28f39df3 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:11:58,317 [INFO] storybook_api - [REQ_END] id=97cc28f39df3 status=200 duration_ms=444.39
+2026-01-20 03:12:13,379 [INFO] storybook_api - [REQ_START] id=d9dafed55f9b method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:12:13,789 [INFO] storybook_api - [REQ_END] id=d9dafed55f9b status=200 duration_ms=408.04
+2026-01-20 03:12:28,842 [INFO] storybook_api - [REQ_START] id=63d64ec0a4c9 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:12:29,254 [INFO] storybook_api - [REQ_END] id=63d64ec0a4c9 status=200 duration_ms=412.11
+2026-01-20 03:12:44,305 [INFO] storybook_api - [REQ_START] id=5a8e0de772ab method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:12:44,685 [INFO] storybook_api - [REQ_END] id=5a8e0de772ab status=200 duration_ms=379.95
+2026-01-20 03:12:59,724 [INFO] storybook_api - [REQ_START] id=07e4c0ec61c2 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:13:00,167 [INFO] storybook_api - [REQ_END] id=07e4c0ec61c2 status=200 duration_ms=442.8
+2026-01-20 03:13:15,225 [INFO] storybook_api - [REQ_START] id=59b92f3fd3cc method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:13:15,676 [INFO] storybook_api - [REQ_END] id=59b92f3fd3cc status=200 duration_ms=451.24
+2026-01-20 03:13:30,732 [INFO] storybook_api - [REQ_START] id=3329849dc640 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:13:31,148 [INFO] storybook_api - [REQ_END] id=3329849dc640 status=200 duration_ms=416.5
+2026-01-20 03:13:46,208 [INFO] storybook_api - [REQ_START] id=b13a95aa0fa8 method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:13:46,628 [INFO] storybook_api - [REQ_END] id=b13a95aa0fa8 status=200 duration_ms=419.79
+2026-01-20 03:14:01,684 [INFO] storybook_api - [REQ_START] id=86863b12b2ce method=GET path=/job-status/8d252bd0-49bd-44ef-ae70-698cef38514f-e1
+2026-01-20 03:14:02,129 [INFO] storybook_api - [REQ_END] id=86863b12b2ce status=200 duration_ms=444.91
+2026-01-20 03:20:05,502 [INFO] storybook_api - [REQ_START] id=da9df2149657 method=POST path=/story/generate
+2026-01-20 03:20:10,185 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:20:13,103 [INFO] storybook_api - [REQ_START] id=c9066e432e76 method=GET path=/genres
+2026-01-20 03:20:13,259 [INFO] storybook_api - [REQ_END] id=c9066e432e76 status=200 duration_ms=157.63
+2026-01-20 03:20:13,437 [INFO] storybook_api - [REQ_START] id=d1ec4df4f2d4 method=GET path=/genres
+2026-01-20 03:20:13,525 [INFO] storybook_api - [REQ_END] id=d1ec4df4f2d4 status=200 duration_ms=88.29
+2026-01-20 03:20:19,894 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:20:24,062 [INFO] storybook_api - [REQ_START] id=825d76481faa method=GET path=/genres
+2026-01-20 03:20:24,308 [INFO] storybook_api - [REQ_END] id=825d76481faa status=200 duration_ms=246.35
+2026-01-20 03:20:24,494 [INFO] storybook_api - [REQ_START] id=c2882d22720e method=GET path=/genres
+2026-01-20 03:20:24,551 [INFO] storybook_api - [REQ_END] id=c2882d22720e status=200 duration_ms=56.88
+2026-01-20 03:20:24,631 [INFO] storybook_api - [REQ_START] id=b080b9373b82 method=GET path=/genres
+2026-01-20 03:20:24,685 [INFO] storybook_api - [REQ_END] id=b080b9373b82 status=200 duration_ms=53.79
+2026-01-20 03:20:42,698 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:20:54,477 [INFO] storybook_api - [REQ_START] id=618ccebb8e89 method=POST path=/caption
+2026-01-20 03:20:57,281 [INFO] storybook_api - [ARTIFACT] req=da9df2149657 type=story pages=4 ttl=24h
+2026-01-20 03:20:57,282 [INFO] storybook_api - [ARTIFACT] req=da9df2149657 type=story pages=4 ttl=24h
+2026-01-20 03:20:57,284 [INFO] storybook_api - [ARTIFACT] req=da9df2149657 type=story pages=4 ttl=24h
+2026-01-20 03:20:57,285 [INFO] storybook_api - [ARTIFACT] req=da9df2149657 type=story pages=4 ttl=24h
+2026-01-20 03:20:57,792 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:21:00,319 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=fictional short story / magical realism
+2026-01-20 03:21:46,201 [INFO] storybook_api - [REQ_END] id=618ccebb8e89 status=200 duration_ms=51726.98
+2026-01-20 03:21:46,255 [INFO] storybook_api - [REQ_END] id=da9df2149657 status=200 duration_ms=100818.13
+2026-01-20 03:22:00,819 [INFO] storybook_api - [REQ_START] id=c550e5430544 method=POST path=/upload-and-process
+2026-01-20 03:22:42,587 [INFO] storybook_api - [REQ_END] id=c550e5430544 status=200 duration_ms=41767.92
+2026-01-20 03:22:42,646 [INFO] storybook_api - [REQ_START] id=e2d63d4b2b00 method=POST path=/train-character
+2026-01-20 03:22:43,262 [INFO] storybook_api - [REQ_END] id=e2d63d4b2b00 status=200 duration_ms=615.45
+2026-01-20 03:22:57,827 [INFO] storybook_api - [REQ_START] id=ca1d375b589f method=POST path=/gist/preview-images
+2026-01-20 03:22:58,338 [INFO] storybook_api - [REQ_START] id=54763b9564b8 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:22:58,824 [INFO] storybook_api - [REQ_END] id=54763b9564b8 status=200 duration_ms=486.53
+2026-01-20 03:22:58,958 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:23:04,413 [INFO] storybook_api - [REQ_END] id=ca1d375b589f status=200 duration_ms=6587.14
+2026-01-20 03:23:13,897 [INFO] storybook_api - [REQ_START] id=208c06b90f99 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:23:14,335 [INFO] storybook_api - [REQ_END] id=208c06b90f99 status=200 duration_ms=438.76
+2026-01-20 03:23:29,389 [INFO] storybook_api - [REQ_START] id=a0d73a343b4e method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:23:30,006 [INFO] storybook_api - [REQ_END] id=a0d73a343b4e status=200 duration_ms=617.55
+2026-01-20 03:23:45,098 [INFO] storybook_api - [REQ_START] id=596e1418d8c4 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:23:45,494 [INFO] storybook_api - [REQ_END] id=596e1418d8c4 status=200 duration_ms=396.55
+2026-01-20 03:24:00,536 [INFO] storybook_api - [REQ_START] id=d159c5d41eaf method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:24:00,920 [INFO] storybook_api - [REQ_END] id=d159c5d41eaf status=200 duration_ms=384.0
+2026-01-20 03:24:15,987 [INFO] storybook_api - [REQ_START] id=2d1d0cf0680e method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:24:16,411 [INFO] storybook_api - [REQ_END] id=2d1d0cf0680e status=200 duration_ms=425.41
+2026-01-20 03:24:31,468 [INFO] storybook_api - [REQ_START] id=61067381d676 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:24:31,895 [INFO] storybook_api - [REQ_END] id=61067381d676 status=200 duration_ms=426.96
+2026-01-20 03:24:46,943 [INFO] storybook_api - [REQ_START] id=63af86d969ec method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:24:47,375 [INFO] storybook_api - [REQ_END] id=63af86d969ec status=200 duration_ms=432.04
+2026-01-20 03:25:02,424 [INFO] storybook_api - [REQ_START] id=3e4d541c24f6 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:25:02,916 [INFO] storybook_api - [REQ_END] id=3e4d541c24f6 status=200 duration_ms=492.54
+2026-01-20 03:25:17,960 [INFO] storybook_api - [REQ_START] id=497b40fb7d79 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:25:18,408 [INFO] storybook_api - [REQ_END] id=497b40fb7d79 status=200 duration_ms=448.33
+2026-01-20 03:25:33,453 [INFO] storybook_api - [REQ_START] id=10bfa1071e98 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:25:33,833 [INFO] storybook_api - [REQ_END] id=10bfa1071e98 status=200 duration_ms=379.93
+2026-01-20 03:25:48,881 [INFO] storybook_api - [REQ_START] id=2a64815d55eb method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:25:49,301 [INFO] storybook_api - [REQ_END] id=2a64815d55eb status=200 duration_ms=419.1
+2026-01-20 03:26:04,363 [INFO] storybook_api - [REQ_START] id=4b27b15472f2 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:26:04,800 [INFO] storybook_api - [REQ_END] id=4b27b15472f2 status=200 duration_ms=437.28
+2026-01-20 03:26:19,866 [INFO] storybook_api - [REQ_START] id=75ddba38ffd0 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:26:20,296 [INFO] storybook_api - [REQ_END] id=75ddba38ffd0 status=200 duration_ms=430.09
+2026-01-20 03:26:35,352 [INFO] storybook_api - [REQ_START] id=ff6a0831219e method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:26:35,803 [INFO] storybook_api - [REQ_END] id=ff6a0831219e status=200 duration_ms=451.89
+2026-01-20 03:26:50,856 [INFO] storybook_api - [REQ_START] id=9cca8d584232 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:26:51,324 [INFO] storybook_api - [REQ_END] id=9cca8d584232 status=200 duration_ms=468.46
+2026-01-20 03:27:06,406 [INFO] storybook_api - [REQ_START] id=8df1dde79cbe method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:27:06,771 [INFO] storybook_api - [REQ_END] id=8df1dde79cbe status=200 duration_ms=366.07
+2026-01-20 03:27:21,817 [INFO] storybook_api - [REQ_START] id=969ffd750999 method=GET path=/job-status/b92ae2e9-b8ca-44d6-a7ca-203c04aca43f-e1
+2026-01-20 03:27:22,233 [INFO] storybook_api - [REQ_END] id=969ffd750999 status=200 duration_ms=415.92
+2026-01-20 03:37:09,435 [INFO] storybook_api - [REQ_START] id=0bbd18d23ced method=GET path=/genres
+2026-01-20 03:37:09,896 [INFO] storybook_api - [REQ_END] id=0bbd18d23ced status=200 duration_ms=481.87
+2026-01-20 03:37:10,072 [INFO] storybook_api - [REQ_START] id=28b733b575fb method=GET path=/genres
+2026-01-20 03:37:10,339 [INFO] storybook_api - [REQ_END] id=28b733b575fb status=200 duration_ms=266.46
+2026-01-20 03:37:49,669 [INFO] storybook_api - [REQ_START] id=6a54c728872c method=POST path=/caption
+2026-01-20 03:38:45,677 [INFO] storybook_api - [REQ_END] id=6a54c728872c status=200 duration_ms=56008.37
+2026-01-20 03:39:02,954 [INFO] storybook_api - [REQ_START] id=7ebe35b81530 method=POST path=/upload-and-process
+2026-01-20 03:39:47,407 [INFO] storybook_api - [REQ_END] id=7ebe35b81530 status=200 duration_ms=44450.26
+2026-01-20 03:39:47,538 [INFO] storybook_api - [REQ_START] id=77aab717fd9d method=POST path=/train-character
+2026-01-20 03:39:48,499 [INFO] storybook_api - [REQ_END] id=77aab717fd9d status=200 duration_ms=962.51
+2026-01-20 03:40:03,559 [INFO] storybook_api - [REQ_START] id=790d03c1bcbb method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:40:03,949 [INFO] storybook_api - [REQ_END] id=790d03c1bcbb status=200 duration_ms=390.16
+2026-01-20 03:40:19,012 [INFO] storybook_api - [REQ_START] id=5cafc9de70d9 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:40:19,415 [INFO] storybook_api - [REQ_END] id=5cafc9de70d9 status=200 duration_ms=402.9
+2026-01-20 03:40:34,418 [INFO] storybook_api - [REQ_START] id=3fe34c395461 method=POST path=/gist/preview-images
+2026-01-20 03:40:34,558 [INFO] storybook_api - [REQ_START] id=2e95e881fca5 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:40:35,206 [INFO] storybook_api - [REQ_END] id=2e95e881fca5 status=200 duration_ms=647.99
+2026-01-20 03:40:36,617 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 03:40:45,847 [INFO] storybook_api - [REQ_END] id=3fe34c395461 status=200 duration_ms=11429.09
+2026-01-20 03:40:50,250 [INFO] storybook_api - [REQ_START] id=57321ab00d58 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:40:50,664 [INFO] storybook_api - [REQ_END] id=57321ab00d58 status=200 duration_ms=414.57
+2026-01-20 03:41:05,744 [INFO] storybook_api - [REQ_START] id=0997aca3a8f5 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:41:06,126 [INFO] storybook_api - [REQ_END] id=0997aca3a8f5 status=200 duration_ms=382.13
+2026-01-20 03:41:21,182 [INFO] storybook_api - [REQ_START] id=3ff64ddac734 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:41:21,589 [INFO] storybook_api - [REQ_END] id=3ff64ddac734 status=200 duration_ms=406.72
+2026-01-20 03:41:36,664 [INFO] storybook_api - [REQ_START] id=49f691655d5e method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:41:37,064 [INFO] storybook_api - [REQ_END] id=49f691655d5e status=200 duration_ms=400.87
+2026-01-20 03:41:52,122 [INFO] storybook_api - [REQ_START] id=c67c1f27f709 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:41:52,538 [INFO] storybook_api - [REQ_END] id=c67c1f27f709 status=200 duration_ms=415.97
+2026-01-20 03:42:07,590 [INFO] storybook_api - [REQ_START] id=6775726a21b6 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:42:08,028 [INFO] storybook_api - [REQ_END] id=6775726a21b6 status=200 duration_ms=437.92
+2026-01-20 03:42:23,092 [INFO] storybook_api - [REQ_START] id=394497e340b2 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:42:23,522 [INFO] storybook_api - [REQ_END] id=394497e340b2 status=200 duration_ms=428.26
+2026-01-20 03:42:38,581 [INFO] storybook_api - [REQ_START] id=0ca7a239b7c2 method=GET path=/job-status/393cac07-8e78-49aa-98f2-34921b4cc3d4-e2
+2026-01-20 03:42:39,072 [INFO] storybook_api - [REQ_END] id=0ca7a239b7c2 status=200 duration_ms=490.88
+2026-01-20 03:49:19,521 [INFO] storybook_api - [REQ_START] id=80cef5c8ddf4 method=GET path=/genres
+2026-01-20 03:49:19,927 [INFO] storybook_api - [REQ_END] id=80cef5c8ddf4 status=200 duration_ms=420.65
+2026-01-20 03:49:20,040 [INFO] storybook_api - [REQ_START] id=550d954a0c22 method=GET path=/genres
+2026-01-20 03:49:20,072 [INFO] storybook_api - [REQ_END] id=550d954a0c22 status=200 duration_ms=31.31
+2026-01-20 03:49:46,003 [INFO] storybook_api - [REQ_START] id=8dc872e34a42 method=POST path=/caption
+2026-01-20 03:50:01,419 [INFO] storybook_api - [REQ_END] id=8dc872e34a42 status=200 duration_ms=15417.23
+2026-01-20 03:50:19,164 [INFO] storybook_api - [REQ_START] id=42ee2df22c4c method=POST path=/upload-and-process
+2026-01-20 03:51:02,855 [INFO] storybook_api - [REQ_END] id=42ee2df22c4c status=200 duration_ms=43691.23
+2026-01-20 03:51:02,937 [INFO] storybook_api - [REQ_START] id=7d61a40c84a9 method=POST path=/train-character
+2026-01-20 03:51:03,615 [INFO] storybook_api - [REQ_END] id=7d61a40c84a9 status=200 duration_ms=678.63
+2026-01-20 03:51:18,686 [INFO] storybook_api - [REQ_START] id=954bdc9f137a method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:51:19,089 [INFO] storybook_api - [REQ_END] id=954bdc9f137a status=200 duration_ms=403.03
+2026-01-20 03:51:34,182 [INFO] storybook_api - [REQ_START] id=b30a8bc22b2b method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:51:34,591 [INFO] storybook_api - [REQ_END] id=b30a8bc22b2b status=200 duration_ms=408.26
+2026-01-20 03:51:49,658 [INFO] storybook_api - [REQ_START] id=77f43de52ccc method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:51:50,080 [INFO] storybook_api - [REQ_END] id=77f43de52ccc status=200 duration_ms=421.07
+2026-01-20 03:52:05,142 [INFO] storybook_api - [REQ_START] id=b9de49c7dd3e method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:52:05,524 [INFO] storybook_api - [REQ_END] id=b9de49c7dd3e status=200 duration_ms=382.6
+2026-01-20 03:52:20,580 [INFO] storybook_api - [REQ_START] id=8ba34a9f4231 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:52:21,011 [INFO] storybook_api - [REQ_END] id=8ba34a9f4231 status=200 duration_ms=430.92
+2026-01-20 03:52:36,083 [INFO] storybook_api - [REQ_START] id=97bc10339d29 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:52:36,506 [INFO] storybook_api - [REQ_END] id=97bc10339d29 status=200 duration_ms=422.04
+2026-01-20 03:52:51,563 [INFO] storybook_api - [REQ_START] id=baab3d113231 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:52:51,973 [INFO] storybook_api - [REQ_END] id=baab3d113231 status=200 duration_ms=409.91
+2026-01-20 03:53:07,024 [INFO] storybook_api - [REQ_START] id=589e5d9eaca4 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:53:07,436 [INFO] storybook_api - [REQ_END] id=589e5d9eaca4 status=200 duration_ms=412.01
+2026-01-20 03:53:22,541 [INFO] storybook_api - [REQ_START] id=074ca2643c2a method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:53:22,938 [INFO] storybook_api - [REQ_END] id=074ca2643c2a status=200 duration_ms=397.18
+2026-01-20 03:53:37,997 [INFO] storybook_api - [REQ_START] id=eeca43f35f8d method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:53:38,340 [INFO] storybook_api - [REQ_END] id=eeca43f35f8d status=200 duration_ms=342.53
+2026-01-20 03:53:53,387 [INFO] storybook_api - [REQ_START] id=2535519dd13a method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:53:53,842 [INFO] storybook_api - [REQ_END] id=2535519dd13a status=200 duration_ms=453.88
+2026-01-20 03:54:08,885 [INFO] storybook_api - [REQ_START] id=1759e9aa767c method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:54:09,239 [INFO] storybook_api - [REQ_END] id=1759e9aa767c status=200 duration_ms=354.2
+2026-01-20 03:54:24,284 [INFO] storybook_api - [REQ_START] id=44640c824414 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:54:24,643 [INFO] storybook_api - [REQ_END] id=44640c824414 status=200 duration_ms=359.54
+2026-01-20 03:54:39,698 [INFO] storybook_api - [REQ_START] id=538b149d3c65 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:54:40,168 [INFO] storybook_api - [REQ_END] id=538b149d3c65 status=200 duration_ms=471.2
+2026-01-20 03:54:55,216 [INFO] storybook_api - [REQ_START] id=4a3c82ca3529 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:54:55,683 [INFO] storybook_api - [REQ_END] id=4a3c82ca3529 status=200 duration_ms=466.32
+2026-01-20 03:55:10,738 [INFO] storybook_api - [REQ_START] id=efc79da89ca5 method=GET path=/job-status/9da3419d-3576-477c-ad8a-ccdba8f7a4e1-e1
+2026-01-20 03:55:11,139 [INFO] storybook_api - [REQ_END] id=efc79da89ca5 status=200 duration_ms=401.44
+2026-01-20 04:01:02,949 [INFO] storybook_api - [REQ_START] id=ba49ec820d2c method=POST path=/upload-and-process
+2026-01-20 04:01:15,896 [INFO] storybook_api - [REQ_END] id=ba49ec820d2c status=200 duration_ms=12960.44
+2026-01-20 04:01:15,994 [INFO] storybook_api - [REQ_START] id=b36167df49a9 method=POST path=/train-character
+2026-01-20 04:01:16,762 [INFO] storybook_api - [REQ_END] id=b36167df49a9 status=200 duration_ms=770.26
+2026-01-20 04:01:31,821 [INFO] storybook_api - [REQ_START] id=9e12eb3b3e39 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:01:32,228 [INFO] storybook_api - [REQ_END] id=9e12eb3b3e39 status=200 duration_ms=407.13
+2026-01-20 04:01:47,297 [INFO] storybook_api - [REQ_START] id=bae2484d1b37 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:01:47,725 [INFO] storybook_api - [REQ_END] id=bae2484d1b37 status=200 duration_ms=428.58
+2026-01-20 04:02:02,789 [INFO] storybook_api - [REQ_START] id=18d332168db5 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:02:03,221 [INFO] storybook_api - [REQ_END] id=18d332168db5 status=200 duration_ms=431.83
+2026-01-20 04:02:18,279 [INFO] storybook_api - [REQ_START] id=9aa405d042c2 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:02:18,713 [INFO] storybook_api - [REQ_END] id=9aa405d042c2 status=200 duration_ms=434.52
+2026-01-20 04:02:33,757 [INFO] storybook_api - [REQ_START] id=c67e9af9eacd method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:02:34,118 [INFO] storybook_api - [REQ_END] id=c67e9af9eacd status=200 duration_ms=361.66
+2026-01-20 04:02:49,173 [INFO] storybook_api - [REQ_START] id=2574a5ce7100 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:02:49,603 [INFO] storybook_api - [REQ_END] id=2574a5ce7100 status=200 duration_ms=430.43
+2026-01-20 04:03:04,666 [INFO] storybook_api - [REQ_START] id=ce1ce5b7c7b2 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:03:05,103 [INFO] storybook_api - [REQ_END] id=ce1ce5b7c7b2 status=200 duration_ms=436.74
+2026-01-20 04:03:20,179 [INFO] storybook_api - [REQ_START] id=b23bce09a2a5 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:03:20,578 [INFO] storybook_api - [REQ_END] id=b23bce09a2a5 status=200 duration_ms=399.1
+2026-01-20 04:03:35,630 [INFO] storybook_api - [REQ_START] id=566e4759fb68 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:03:36,009 [INFO] storybook_api - [REQ_END] id=566e4759fb68 status=200 duration_ms=379.13
+2026-01-20 04:03:51,087 [INFO] storybook_api - [REQ_START] id=7ba34d32fb14 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:03:51,501 [INFO] storybook_api - [REQ_END] id=7ba34d32fb14 status=200 duration_ms=413.63
+2026-01-20 04:04:06,560 [INFO] storybook_api - [REQ_START] id=841d870d3b8f method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:04:06,955 [INFO] storybook_api - [REQ_END] id=841d870d3b8f status=200 duration_ms=395.84
+2026-01-20 04:04:22,009 [INFO] storybook_api - [REQ_START] id=ebab756ec2a3 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:04:22,419 [INFO] storybook_api - [REQ_END] id=ebab756ec2a3 status=200 duration_ms=410.56
+2026-01-20 04:04:37,481 [INFO] storybook_api - [REQ_START] id=241a7fec5075 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:04:37,857 [INFO] storybook_api - [REQ_END] id=241a7fec5075 status=200 duration_ms=375.94
+2026-01-20 04:04:52,928 [INFO] storybook_api - [REQ_START] id=237f9b32549d method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:04:53,367 [INFO] storybook_api - [REQ_END] id=237f9b32549d status=200 duration_ms=438.95
+2026-01-20 04:05:08,404 [INFO] storybook_api - [REQ_START] id=ffd5be467e5f method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:05:08,764 [INFO] storybook_api - [REQ_END] id=ffd5be467e5f status=200 duration_ms=360.68
+2026-01-20 04:05:23,831 [INFO] storybook_api - [REQ_START] id=a39464ef0921 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:05:24,281 [INFO] storybook_api - [REQ_END] id=a39464ef0921 status=200 duration_ms=451.16
+2026-01-20 04:05:39,342 [INFO] storybook_api - [REQ_START] id=ae1928966193 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:05:39,787 [INFO] storybook_api - [REQ_END] id=ae1928966193 status=200 duration_ms=443.62
+2026-01-20 04:05:54,880 [INFO] storybook_api - [REQ_START] id=7910ce1b3a38 method=GET path=/job-status/ec86d0e4-b8ec-4b6b-8c98-540e80ce637b-e2
+2026-01-20 04:05:55,417 [INFO] storybook_api - [REQ_END] id=7910ce1b3a38 status=200 duration_ms=538.05
+2026-01-20 04:29:08,851 [INFO] storybook_api - [REQ_START] id=ce3b3ac7620d method=POST path=/upload-and-process
+2026-01-20 04:29:25,086 [INFO] storybook_api - [REQ_END] id=ce3b3ac7620d status=200 duration_ms=16246.08
+2026-01-20 04:29:25,178 [INFO] storybook_api - [REQ_START] id=a8854ba20f8d method=POST path=/train-character
+2026-01-20 04:29:26,037 [INFO] storybook_api - [REQ_END] id=a8854ba20f8d status=200 duration_ms=859.1
+2026-01-20 04:29:41,094 [INFO] storybook_api - [REQ_START] id=ea1bd631b372 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:29:42,009 [INFO] storybook_api - [REQ_END] id=ea1bd631b372 status=200 duration_ms=917.42
+2026-01-20 04:29:57,061 [INFO] storybook_api - [REQ_START] id=805cbb39c31e method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:29:57,512 [INFO] storybook_api - [REQ_END] id=805cbb39c31e status=200 duration_ms=450.83
+2026-01-20 04:30:12,572 [INFO] storybook_api - [REQ_START] id=2885a86136b4 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:30:12,963 [INFO] storybook_api - [REQ_END] id=2885a86136b4 status=200 duration_ms=389.34
+2026-01-20 04:30:28,032 [INFO] storybook_api - [REQ_START] id=7a9d4e267a1b method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:30:28,453 [INFO] storybook_api - [REQ_END] id=7a9d4e267a1b status=200 duration_ms=420.63
+2026-01-20 04:30:43,505 [INFO] storybook_api - [REQ_START] id=46be2c6bf35a method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:30:43,883 [INFO] storybook_api - [REQ_END] id=46be2c6bf35a status=200 duration_ms=377.69
+2026-01-20 04:30:58,931 [INFO] storybook_api - [REQ_START] id=d6554ed98882 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:30:59,334 [INFO] storybook_api - [REQ_END] id=d6554ed98882 status=200 duration_ms=402.53
+2026-01-20 04:31:14,402 [INFO] storybook_api - [REQ_START] id=10c8599c1930 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:31:14,860 [INFO] storybook_api - [REQ_END] id=10c8599c1930 status=200 duration_ms=457.96
+2026-01-20 04:31:29,910 [INFO] storybook_api - [REQ_START] id=327d1a92170f method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:31:30,348 [INFO] storybook_api - [REQ_END] id=327d1a92170f status=200 duration_ms=438.83
+2026-01-20 04:31:45,407 [INFO] storybook_api - [REQ_START] id=47b0c4a6ad35 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:31:45,806 [INFO] storybook_api - [REQ_END] id=47b0c4a6ad35 status=200 duration_ms=397.66
+2026-01-20 04:32:00,882 [INFO] storybook_api - [REQ_START] id=b431d1bba991 method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:32:01,308 [INFO] storybook_api - [REQ_END] id=b431d1bba991 status=200 duration_ms=426.51
+2026-01-20 04:32:16,354 [INFO] storybook_api - [REQ_START] id=88ede06aec0a method=GET path=/job-status/205aeedc-d1df-4131-8550-34d5888e069c-e2
+2026-01-20 04:32:16,987 [INFO] storybook_api - [REQ_END] id=88ede06aec0a status=200 duration_ms=633.62
+2026-01-20 04:34:52,430 [INFO] storybook_api - [REQ_START] id=5391faf2ed70 method=POST path=/upload-and-process
+2026-01-20 04:35:06,485 [INFO] storybook_api - [REQ_END] id=5391faf2ed70 status=200 duration_ms=14067.7
+2026-01-20 04:35:06,591 [INFO] storybook_api - [REQ_START] id=fd9d0a572406 method=POST path=/train-character
+2026-01-20 04:35:07,316 [INFO] storybook_api - [REQ_END] id=fd9d0a572406 status=200 duration_ms=725.13
+2026-01-20 04:35:22,375 [INFO] storybook_api - [REQ_START] id=09b0a35e96ec method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:35:22,787 [INFO] storybook_api - [REQ_END] id=09b0a35e96ec status=200 duration_ms=412.86
+2026-01-20 04:35:37,854 [INFO] storybook_api - [REQ_START] id=31c6f66c579c method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:35:38,252 [INFO] storybook_api - [REQ_END] id=31c6f66c579c status=200 duration_ms=398.54
+2026-01-20 04:35:53,297 [INFO] storybook_api - [REQ_START] id=dd4f85b83f4b method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:35:53,768 [INFO] storybook_api - [REQ_END] id=dd4f85b83f4b status=200 duration_ms=471.9
+2026-01-20 04:36:08,834 [INFO] storybook_api - [REQ_START] id=8b323686229a method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:36:09,273 [INFO] storybook_api - [REQ_END] id=8b323686229a status=200 duration_ms=438.88
+2026-01-20 04:36:24,332 [INFO] storybook_api - [REQ_START] id=6d483cdf53c1 method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:36:24,788 [INFO] storybook_api - [REQ_END] id=6d483cdf53c1 status=200 duration_ms=455.83
+2026-01-20 04:36:39,857 [INFO] storybook_api - [REQ_START] id=2811ad06d56f method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:36:40,256 [INFO] storybook_api - [REQ_END] id=2811ad06d56f status=200 duration_ms=398.94
+2026-01-20 04:36:55,338 [INFO] storybook_api - [REQ_START] id=050418091e99 method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:36:55,796 [INFO] storybook_api - [REQ_END] id=050418091e99 status=200 duration_ms=458.2
+2026-01-20 04:37:10,861 [INFO] storybook_api - [REQ_START] id=dcfe981095b1 method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:37:11,257 [INFO] storybook_api - [REQ_END] id=dcfe981095b1 status=200 duration_ms=397.07
+2026-01-20 04:37:26,326 [INFO] storybook_api - [REQ_START] id=87e165e89425 method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:37:26,737 [INFO] storybook_api - [REQ_END] id=87e165e89425 status=200 duration_ms=410.28
+2026-01-20 04:37:41,789 [INFO] storybook_api - [REQ_START] id=30b21e4f4e7c method=GET path=/job-status/b17b0286-8d84-45ec-9702-9134e91bf991-e1
+2026-01-20 04:37:42,210 [INFO] storybook_api - [REQ_END] id=30b21e4f4e7c status=200 duration_ms=420.97
+2026-01-20 04:38:15,961 [INFO] storybook_api - [REQ_START] id=f1bebbf1dba5 method=GET path=/genres
+2026-01-20 04:38:16,098 [INFO] storybook_api - [REQ_END] id=f1bebbf1dba5 status=200 duration_ms=137.62
+2026-01-20 04:38:16,178 [INFO] storybook_api - [REQ_START] id=be0ba16d609c method=GET path=/genres
+2026-01-20 04:38:16,214 [INFO] storybook_api - [REQ_END] id=be0ba16d609c status=200 duration_ms=36.45
+2026-01-20 04:38:16,272 [INFO] storybook_api - [REQ_START] id=92d729ddcab6 method=GET path=/genres
+2026-01-20 04:38:16,302 [INFO] storybook_api - [REQ_END] id=92d729ddcab6 status=200 duration_ms=31.27
+2026-01-20 04:39:09,007 [INFO] storybook_api - [REQ_START] id=b86f1b8e0a94 method=GET path=/genres
+2026-01-20 04:39:09,075 [INFO] storybook_api - [REQ_END] id=b86f1b8e0a94 status=200 duration_ms=71.08
+2026-01-20 04:39:09,138 [INFO] storybook_api - [REQ_START] id=f1596bb6dd8d method=GET path=/genres
+2026-01-20 04:39:09,170 [INFO] storybook_api - [REQ_END] id=f1596bb6dd8d status=200 duration_ms=32.03
+2026-01-20 04:42:46,922 [INFO] storybook_api - [REQ_START] id=877af5932f23 method=POST path=/caption
+2026-01-20 04:43:38,052 [INFO] storybook_api - [REQ_END] id=877af5932f23 status=200 duration_ms=51140.68
+2026-01-20 04:44:09,268 [INFO] storybook_api - [REQ_START] id=ec5e9f763fe9 method=POST path=/upload-and-process
+2026-01-20 04:44:54,430 [INFO] storybook_api - [REQ_END] id=ec5e9f763fe9 status=200 duration_ms=45162.08
+2026-01-20 04:44:54,508 [INFO] storybook_api - [REQ_START] id=3853eb80a707 method=POST path=/train-character
+2026-01-20 04:44:55,123 [INFO] storybook_api - [REQ_END] id=3853eb80a707 status=200 duration_ms=614.91
+2026-01-20 04:45:10,206 [INFO] storybook_api - [REQ_START] id=9ed338bf6bd8 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:45:10,612 [INFO] storybook_api - [REQ_END] id=9ed338bf6bd8 status=200 duration_ms=405.57
+2026-01-20 04:45:25,672 [INFO] storybook_api - [REQ_START] id=9df5e671c1a7 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:45:26,095 [INFO] storybook_api - [REQ_END] id=9df5e671c1a7 status=200 duration_ms=423.56
+2026-01-20 04:45:41,143 [INFO] storybook_api - [REQ_START] id=6396c23c2b22 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:45:41,567 [INFO] storybook_api - [REQ_END] id=6396c23c2b22 status=200 duration_ms=424.13
+2026-01-20 04:45:56,631 [INFO] storybook_api - [REQ_START] id=d333bec73036 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:45:57,035 [INFO] storybook_api - [REQ_END] id=d333bec73036 status=200 duration_ms=404.63
+2026-01-20 04:46:12,096 [INFO] storybook_api - [REQ_START] id=aadf310c7241 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:46:12,557 [INFO] storybook_api - [REQ_END] id=aadf310c7241 status=200 duration_ms=461.19
+2026-01-20 04:46:27,616 [INFO] storybook_api - [REQ_START] id=e5928b1362a4 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:46:28,027 [INFO] storybook_api - [REQ_END] id=e5928b1362a4 status=200 duration_ms=409.75
+2026-01-20 04:46:43,089 [INFO] storybook_api - [REQ_START] id=1131c22c746d method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:46:43,512 [INFO] storybook_api - [REQ_END] id=1131c22c746d status=200 duration_ms=422.6
+2026-01-20 04:46:58,578 [INFO] storybook_api - [REQ_START] id=cfde86e94e7e method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:46:58,978 [INFO] storybook_api - [REQ_END] id=cfde86e94e7e status=200 duration_ms=400.05
+2026-01-20 04:47:14,016 [INFO] storybook_api - [REQ_START] id=8ab155adb450 method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:47:14,395 [INFO] storybook_api - [REQ_END] id=8ab155adb450 status=200 duration_ms=378.68
+2026-01-20 04:47:29,449 [INFO] storybook_api - [REQ_START] id=738da2f0027a method=GET path=/job-status/1ed15296-ae86-47fe-bc62-9ccb88cace19-e2
+2026-01-20 04:47:29,833 [INFO] storybook_api - [REQ_END] id=738da2f0027a status=200 duration_ms=384.47
+2026-01-20 04:47:43,993 [INFO] storybook_api - [REQ_START] id=a05e5af3f0e7 method=POST path=/gist/preview-images
+2026-01-20 04:47:45,370 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 04:47:51,198 [INFO] storybook_api - [REQ_END] id=a05e5af3f0e7 status=200 duration_ms=7205.15
+2026-01-20 04:48:45,570 [INFO] storybook_api - [REQ_START] id=cf5f43bb4544 method=POST path=/story/generate
+2026-01-20 04:48:47,459 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 04:49:00,969 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 04:49:21,188 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 04:49:36,707 [INFO] storybook_api - [ARTIFACT] req=cf5f43bb4544 type=story pages=4 ttl=24h
+2026-01-20 04:49:36,712 [INFO] storybook_api - [ARTIFACT] req=cf5f43bb4544 type=story pages=4 ttl=24h
+2026-01-20 04:49:36,716 [INFO] storybook_api - [ARTIFACT] req=cf5f43bb4544 type=story pages=4 ttl=24h
+2026-01-20 04:49:36,719 [INFO] storybook_api - [ARTIFACT] req=cf5f43bb4544 type=story pages=4 ttl=24h
+2026-01-20 04:49:38,334 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 04:49:41,041 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=fictional short story / magical realism
+2026-01-20 04:49:41,063 [INFO] storybook_api - [REQ_END] id=cf5f43bb4544 status=200 duration_ms=55492.52
+2026-01-20 05:12:42,362 [INFO] storybook_api - [REQ_START] id=97d52e3bda9e method=POST path=/upload-and-process
+2026-01-20 05:13:35,698 [INFO] storybook_api - [REQ_END] id=97d52e3bda9e status=200 duration_ms=53344.76
+2026-01-20 05:13:36,349 [INFO] storybook_api - [REQ_START] id=64e373665da9 method=POST path=/train-character
+2026-01-20 05:13:37,693 [INFO] storybook_api - [REQ_END] id=64e373665da9 status=200 duration_ms=1343.33
+2026-01-20 05:13:52,769 [INFO] storybook_api - [REQ_START] id=4b4ba1367054 method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:13:53,211 [INFO] storybook_api - [REQ_END] id=4b4ba1367054 status=200 duration_ms=441.57
+2026-01-20 05:14:08,261 [INFO] storybook_api - [REQ_START] id=5f44b510e9df method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:14:08,801 [INFO] storybook_api - [REQ_END] id=5f44b510e9df status=200 duration_ms=540.26
+2026-01-20 05:14:23,887 [INFO] storybook_api - [REQ_START] id=4bdf873f1f23 method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:14:24,359 [INFO] storybook_api - [REQ_END] id=4bdf873f1f23 status=200 duration_ms=471.94
+2026-01-20 05:14:39,405 [INFO] storybook_api - [REQ_START] id=c76169416a0a method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:14:39,924 [INFO] storybook_api - [REQ_END] id=c76169416a0a status=200 duration_ms=519.15
+2026-01-20 05:14:54,968 [INFO] storybook_api - [REQ_START] id=0dea4818b462 method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:14:55,599 [INFO] storybook_api - [REQ_END] id=0dea4818b462 status=200 duration_ms=631.43
+2026-01-20 05:15:10,688 [INFO] storybook_api - [REQ_START] id=bed05bce24b2 method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:15:11,165 [INFO] storybook_api - [REQ_END] id=bed05bce24b2 status=200 duration_ms=476.34
+2026-01-20 05:15:26,228 [INFO] storybook_api - [REQ_START] id=ae95a44d2e5e method=GET path=/job-status/df29a45c-a7dd-4370-8861-68e244b4a9e9-e1
+2026-01-20 05:15:26,722 [INFO] storybook_api - [REQ_END] id=ae95a44d2e5e status=200 duration_ms=494.16
+2026-01-20 05:20:40,723 [INFO] storybook_api - [REQ_START] id=35d5c94b5f53 method=POST path=/upload-and-process
+2026-01-20 05:21:41,302 [INFO] storybook_api - [REQ_END] id=35d5c94b5f53 status=200 duration_ms=60624.92
+2026-01-20 05:21:41,605 [INFO] storybook_api - [REQ_START] id=c2ca2ba7cf55 method=POST path=/train-character
+2026-01-20 05:21:42,462 [INFO] storybook_api - [REQ_END] id=c2ca2ba7cf55 status=200 duration_ms=864.88
+2026-01-20 05:21:57,526 [INFO] storybook_api - [REQ_START] id=ae566699efa1 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:21:57,981 [INFO] storybook_api - [REQ_END] id=ae566699efa1 status=200 duration_ms=454.52
+2026-01-20 05:22:13,068 [INFO] storybook_api - [REQ_START] id=de84e6685864 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:22:14,187 [INFO] storybook_api - [REQ_END] id=de84e6685864 status=200 duration_ms=1119.41
+2026-01-20 05:22:29,381 [INFO] storybook_api - [REQ_START] id=f88d6715f68f method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:22:29,949 [INFO] storybook_api - [REQ_END] id=f88d6715f68f status=200 duration_ms=568.1
+2026-01-20 05:22:45,013 [INFO] storybook_api - [REQ_START] id=7272ef18d367 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:22:45,570 [INFO] storybook_api - [REQ_END] id=7272ef18d367 status=200 duration_ms=557.39
+2026-01-20 05:23:00,649 [INFO] storybook_api - [REQ_START] id=9ed454f9410d method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:23:01,390 [INFO] storybook_api - [REQ_END] id=9ed454f9410d status=200 duration_ms=741.06
+2026-01-20 05:23:16,429 [INFO] storybook_api - [REQ_START] id=e1cbdea263d4 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:23:17,193 [INFO] storybook_api - [REQ_END] id=e1cbdea263d4 status=200 duration_ms=764.25
+2026-01-20 05:23:32,271 [INFO] storybook_api - [REQ_START] id=5fd85bdc752c method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:23:32,729 [INFO] storybook_api - [REQ_END] id=5fd85bdc752c status=200 duration_ms=457.85
+2026-01-20 05:23:47,882 [INFO] storybook_api - [REQ_START] id=3dee66e78a21 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:23:48,302 [INFO] storybook_api - [REQ_END] id=3dee66e78a21 status=200 duration_ms=420.07
+2026-01-20 05:24:03,360 [INFO] storybook_api - [REQ_START] id=55b8f60e4406 method=GET path=/job-status/2592694d-dd45-4017-9f00-545f9b19739b-e2
+2026-01-20 05:24:03,803 [INFO] storybook_api - [REQ_END] id=55b8f60e4406 status=200 duration_ms=442.95
+2026-01-20 05:30:01,047 [INFO] storybook_api - [REQ_START] id=5e71b2375ab1 method=POST path=/title/generate
+2026-01-20 05:30:04,103 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:30:07,359 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:30:08,081 [INFO] storybook_api - [REQ_END] id=5e71b2375ab1 status=200 duration_ms=7055.74
+2026-01-20 05:30:25,511 [INFO] storybook_api - [REQ_START] id=7adfe9e68f38 method=GET path=/genres
+2026-01-20 05:30:25,624 [INFO] storybook_api - [REQ_END] id=7adfe9e68f38 status=200 duration_ms=110.57
+2026-01-20 05:30:25,731 [INFO] storybook_api - [REQ_START] id=ddae3aa4151f method=GET path=/genres
+2026-01-20 05:30:25,894 [INFO] storybook_api - [REQ_END] id=ddae3aa4151f status=200 duration_ms=163.78
+2026-01-20 05:31:17,082 [INFO] storybook_api - [REQ_START] id=4cb15d9b1a98 method=POST path=/caption
+2026-01-20 05:32:17,313 [INFO] storybook_api - [REQ_END] id=4cb15d9b1a98 status=200 duration_ms=60231.25
+2026-01-20 05:32:39,294 [INFO] storybook_api - [REQ_START] id=98d5cb266b04 method=POST path=/upload-and-process
+2026-01-20 05:33:31,358 [INFO] storybook_api - [REQ_END] id=98d5cb266b04 status=200 duration_ms=52063.59
+2026-01-20 05:33:31,429 [INFO] storybook_api - [REQ_START] id=fc21f5a28640 method=POST path=/train-character
+2026-01-20 05:33:32,183 [INFO] storybook_api - [REQ_END] id=fc21f5a28640 status=200 duration_ms=754.11
+2026-01-20 05:33:47,227 [INFO] storybook_api - [REQ_START] id=0637c1c11b04 method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:33:48,060 [INFO] storybook_api - [REQ_END] id=0637c1c11b04 status=200 duration_ms=832.94
+2026-01-20 05:34:03,141 [INFO] storybook_api - [REQ_START] id=82ce9502f969 method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:34:03,700 [INFO] storybook_api - [REQ_END] id=82ce9502f969 status=200 duration_ms=556.65
+2026-01-20 05:34:18,758 [INFO] storybook_api - [REQ_START] id=15dac6da1aea method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:34:19,294 [INFO] storybook_api - [REQ_END] id=15dac6da1aea status=200 duration_ms=536.09
+2026-01-20 05:34:34,354 [INFO] storybook_api - [REQ_START] id=5c48bf08eda3 method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:34:34,762 [INFO] storybook_api - [REQ_END] id=5c48bf08eda3 status=200 duration_ms=408.75
+2026-01-20 05:34:49,819 [INFO] storybook_api - [REQ_START] id=66220ec28f65 method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:34:50,224 [INFO] storybook_api - [REQ_END] id=66220ec28f65 status=200 duration_ms=405.16
+2026-01-20 05:34:54,283 [INFO] storybook_api - [REQ_START] id=1d73d30a7361 method=POST path=/gist/preview-images
+2026-01-20 05:34:58,303 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:35:05,167 [INFO] storybook_api - [REQ_END] id=1d73d30a7361 status=200 duration_ms=10883.84
+2026-01-20 05:35:05,288 [INFO] storybook_api - [REQ_START] id=1c2a4872edcc method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:35:05,705 [INFO] storybook_api - [REQ_END] id=1c2a4872edcc status=200 duration_ms=416.1
+2026-01-20 05:35:20,758 [INFO] storybook_api - [REQ_START] id=dfe89791f861 method=GET path=/job-status/c100d550-9a10-454f-9f15-08efcbbfa631-e1
+2026-01-20 05:35:21,250 [INFO] storybook_api - [REQ_END] id=dfe89791f861 status=200 duration_ms=494.94
+2026-01-20 05:40:19,187 [INFO] storybook_api - [REQ_START] id=84fe7dc13d3e method=POST path=/story/generate
+2026-01-20 05:40:23,026 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:40:33,147 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:40:50,869 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:41:03,166 [INFO] storybook_api - [ARTIFACT] req=84fe7dc13d3e type=story pages=4 ttl=24h
+2026-01-20 05:41:03,181 [INFO] storybook_api - [ARTIFACT] req=84fe7dc13d3e type=story pages=4 ttl=24h
+2026-01-20 05:41:03,182 [INFO] storybook_api - [ARTIFACT] req=84fe7dc13d3e type=story pages=4 ttl=24h
+2026-01-20 05:41:03,185 [INFO] storybook_api - [ARTIFACT] req=84fe7dc13d3e type=story pages=4 ttl=24h
+2026-01-20 05:41:04,418 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:41:06,439 [INFO] storybook_api - [STYLE_SAVED] user=693f9d52cef2f9280426fa5f genre=children's coloring book, nature, emotional learning
+2026-01-20 05:41:06,477 [INFO] storybook_api - [REQ_END] id=84fe7dc13d3e status=200 duration_ms=47333.7
+2026-01-20 05:41:17,199 [INFO] storybook_api - [REQ_START] id=241bdc948c75 method=POST path=/title/generate
+2026-01-20 05:41:19,862 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:41:21,978 [INFO] httpx - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-20 05:41:22,515 [INFO] storybook_api - [REQ_END] id=241bdc948c75 status=200 duration_ms=5315.74
+2026-01-20 05:42:20,143 [INFO] storybook_api - [REQ_START] id=7adc0ad1c9ee method=POST path=/images/generate-lora
+2026-01-20 05:42:20,292 [INFO] storybook_api - [REQ_END] id=7adc0ad1c9ee status=422 duration_ms=149.02
+2026-01-20 05:44:08,782 [INFO] storybook_api - [REQ_START] id=04ecaee3996e method=POST path=/images/generate-lora
+2026-01-20 05:44:09,078 [INFO] storybook_api - [REQ_END] id=04ecaee3996e status=422 duration_ms=313.24
+2026-01-20 05:45:43,907 [INFO] storybook_api - [REQ_START] id=74cdbe5b4c34 method=POST path=/images/generate-lora
+2026-01-20 05:45:44,419 [INFO] storybook_api - [REQ_END] id=74cdbe5b4c34 status=422 duration_ms=538.44
+2026-01-20 05:49:14,827 [INFO] storybook_api - [REQ_START] id=b6dc4110b583 method=POST path=/images/generate-lora
+2026-01-20 05:49:15,033 [INFO] storybook_api - [REQ_END] id=b6dc4110b583 status=422 duration_ms=220.46
+2026-01-20 05:49:55,140 [INFO] storybook_api - [REQ_START] id=bb4150a67fbf method=POST path=/images/generate-lora
+2026-01-20 05:49:55,289 [INFO] storybook_api - [REQ_END] id=bb4150a67fbf status=422 duration_ms=160.0
+2026-01-20 05:51:15,404 [INFO] storybook_api - [REQ_START] id=b49ef59e1434 method=POST path=/images/generate-lora
+2026-01-20 05:55:20,444 [INFO] storybook_api - [REQ_END] id=b49ef59e1434 status=200 duration_ms=245084.99
+2026-01-20 05:55:31,628 [INFO] storybook_api - [REQ_START] id=8df8e3271137 method=POST path=/images/flux_generate
+2026-01-20 05:55:31,654 [INFO] storybook_api - /images/flux_generate called. Orientation=Landscape
+2026-01-20 05:56:05,256 [INFO] storybook_api - [REQ_END] id=8df8e3271137 status=200 duration_ms=33627.82
+2026-01-20 05:56:08,118 [INFO] storybook_api - [REQ_START] id=bb7d3c775983 method=POST path=/coverback/generate
+2026-01-20 05:56:08,130 [INFO] storybook_api - /coverback/generate called. Genre=children's coloring book, nature, emotional learning, Title=Dreams Take Root
+2026-01-20 05:58:57,856 [INFO] storybook_api - [REQ_END] id=bb7d3c775983 status=200 duration_ms=169737.84
