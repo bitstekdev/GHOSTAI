@@ -1,7 +1,6 @@
 const CharacterTrainingJob = require("../models/CharacterTrainingJob");
-const TrainedCharacter = require("../models/TrainedCharacter");
-const Story = require("../models/Story");
 const { runCharacterTrainingJob } = require("../jobs/characterTrainingJob");
+const { consumeUsage, getActiveSubscriptionOrFail, assertCanConsume } = require("../services/subscriptionUsage.service");
 const fastApiService = require("../services/fastApiService");
 
 exports.startTraining = async (req, res) => {
@@ -11,6 +10,10 @@ exports.startTraining = async (req, res) => {
     if (!triggerWord || !req.files || req.files.length === 0) {
       return res.status(400).json({ message: "Trigger word and images required" });
     }
+
+    // PRE-CHECK USAGE
+    const subscription = await getActiveSubscriptionOrFail(req.user.id);
+    assertCanConsume(subscription, "characterTraining", 1);
 
     console.log("🟡 Creating character training job...");
     const job = await CharacterTrainingJob.create({

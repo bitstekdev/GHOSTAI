@@ -47,7 +47,7 @@ const InitialPlansPage = () => {
 
   // Razorpay payment processing state--------------------------
  const handlePlanAction = async (plan) => {
-    // console.log("Selected plan:", plan);
+    console.log("Selected plan:", plan);
     
     if (processingPayment) return;
 

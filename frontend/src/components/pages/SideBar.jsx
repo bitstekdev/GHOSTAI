@@ -30,7 +30,7 @@ export default function Sidebar({
   const [planOpen, setPlanOpen] = useState(false);
 
   const navigate = useNavigate();
-  const { logout, activeSubscription, fetchActiveSubscription  } = useContext(AppContext);
+  const { logout, activeSubscription, fetchActiveSubscription, navigateTo  } = useContext(AppContext);
 
 
   // Sidebar visible if manually opened OR hovered
@@ -70,8 +70,8 @@ useEffect(() => {
       icon: BookMarked,
       dropdown: true,
       items: [
-        { id: "characterdump", label: "Character", path: "/characterdump"},
-        { id: "datadump", label: "Data Dump", path: "/datadump" },
+        { id: "characterdump", label: "Character", path: "/characterdump", locked: true },
+        { id: "datadump", label: "Data Dump", path: "/datadump", locked: true },
       ]
     },
 
@@ -79,6 +79,16 @@ useEffect(() => {
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
     { id: "orders", label: "Order History", icon: History, path: "/orderhistory" },
   ];
+
+
+  // Navigate to upgrade plan page
+  const handleNavigate = () => {
+    if(!planInfo.plan?.name){
+    navigateTo("/plans");
+    } else {
+    navigateTo("/upgradeplan");
+    }
+  }
 
   return (
     <>
@@ -240,7 +250,8 @@ useEffect(() => {
         {planOpen && (
           <div className="border-t border-gray-700 px-3 pb-3">
             <button
-              onClick={() => navigate("/upgradeplan")}
+              onClick={() => handleNavigate()}
+              // onClick={() => navigate("/upgradeplan")}
               className="mt-3 w-full rounded-lg border border-gray-600 bg-gray-800 py-2 text-sm text-gray-200 hover:bg-gray-700 transition"
             >
               Upgrade Plan

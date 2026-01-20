@@ -3,10 +3,13 @@ const TrainedCharacter = require("../models/TrainedCharacter");
 const fastApiService = require("../services/fastApiService");
 const User = require("../models/User");
 const { emitJobUpdate } = require("../services/socket");
-// const { finalizeTraining } = require("../controllers/characterTrainingController");
+const { consumeUsage, getActiveSubscriptionOrFail, assertCanConsume } = require("../services/subscriptionUsage.service");
 
 
 exports.runCharacterTrainingJob = async (jobId, payload) => {
+  // PRE-CHECK USAGE
+  const subscription = await getActiveSubscriptionOrFail(payload.userId);
+  assertCanConsume(subscription, "characterTraining", 1);
   try {
     await CharacterTrainingJob.findByIdAndUpdate(jobId, { status: "processing", stage: "uploading", progress: 5, startedAt: new Date() });
     emitJobUpdate(jobId, { stage: "uploading", progress: 5 });
@@ -59,6 +62,10 @@ exports.runCharacterTrainingJob = async (jobId, payload) => {
         if (status.status === "COMPLETED") {
           completed = true;
           console.log("🟢 RunPod training completed");
+
+          // consume 
+          const subscription = await getActiveSubscriptionOrFail(payload.userId);
+          await consumeUsage(subscription, "characterTraining", 1);
           // await finalizeTraining(jobId);
         } else if (status.status === "FAILED") {
           throw new Error(`RunPod training failed: ${status.error || "Unknown error"}`);
