@@ -140,7 +140,7 @@ const Navbar = () => {
           >
             <img src={logoImg} alt="Ghostverse.ai Logo" className="h-7 sm:h-9 inline" />
             <span className="ml-[-0.5px] hidden xs:inline">hostverse.ai</span>
-            <span className="ml-[-0.5px] xs:hidden">host</span>
+            <span className="ml-[-0.5px] xs:hidden">hostverse.ai</span>
           </div>
 
           {/* DESKTOP MENU + BUTTON */}
