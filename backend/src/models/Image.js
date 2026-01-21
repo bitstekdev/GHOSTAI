@@ -56,5 +56,7 @@ const imageSchema = new mongoose.Schema({
 // Index for efficient queries
 imageSchema.index({ story: 1, imageType: 1 });
 imageSchema.index({ storyPage: 1, imageType: 1 });
+imageSchema.index({ _id: 1 });
+imageSchema.index({ story: 1, imageType: 1 });
 
 module.exports = mongoose.model('Image', imageSchema);

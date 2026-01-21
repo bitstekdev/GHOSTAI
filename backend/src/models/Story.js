@@ -112,6 +112,7 @@ const storySchema = new mongoose.Schema(
 
 // Index for faster queries
 storySchema.index({ user: 1, createdAt: -1 });
+storySchema.index({ _id: 1 });
 storySchema.index({ status: 1 });
 
 module.exports = mongoose.model("Story", storySchema);
