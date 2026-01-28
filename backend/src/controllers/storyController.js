@@ -308,6 +308,7 @@ exports.createStory = async (req, res, next) => {
 
     const pages = await StoryPage.find({ story: story._id }).sort({ pageNumber: 1 });
 
+    // send email
     res.status(201).json({
       success: true,
       message: 'Story created successfully',
