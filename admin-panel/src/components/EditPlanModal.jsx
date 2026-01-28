@@ -51,18 +51,18 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
     const { name, value } = e.target;
     if (name.startsWith("limits.")) {
       const key = name.split(".")[1];
-      setForm(p => ({ ...p, limits: { ...p.limits, [key]: value } }));
+      setForm((p) => ({ ...p, limits: { ...p.limits, [key]: value } }));
     } else {
-      setForm(p => ({ ...p, [name]: value }));
+      setForm((p) => ({ ...p, [name]: value }));
     }
   };
 
   const toggleCtx = (c) => {
-    setForm(p => ({
+    setForm((p) => ({
       ...p,
       showOnContext: p.showOnContext.includes(c)
-        ? p.showOnContext.filter(x => x !== c)
-        : [...p.showOnContext, c]
+        ? p.showOnContext.filter((x) => x !== c)
+        : [...p.showOnContext, c],
     }));
   };
 
@@ -78,9 +78,15 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
         showOnContext: form.showOnContext,
         printType: plan.type === "purchase" ? form.printType : undefined,
         printSubType: plan.type === "purchase" ? form.printSubType : undefined,
-        limits: plan.type === "subscription"
-          ? Object.fromEntries(Object.entries(form.limits).map(([k,v]) => [k, Number(v || 0)]))
-          : undefined,
+        limits:
+          plan.type === "subscription"
+            ? Object.fromEntries(
+                Object.entries(form.limits).map(([k, v]) => [
+                  k,
+                  Number(v || 0),
+                ]),
+              )
+            : undefined,
       };
 
       await api.put(`/api/v1/subscriptions/plans/${plan._id}`, payload);
@@ -103,8 +109,7 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
           <h2 className="text-3xl font-bold magic-shine">Edit: {plan.name}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition"
-          >
+            className="p-2 hover:bg-white/10 rounded-lg transition">
             <X size={24} />
           </button>
         </div>
@@ -114,61 +119,81 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
           <div>
             <h3 className="admin-section">Basic Information</h3>
             <div className="grid grid-cols-2 gap-4">
-              <input
-                className="admin-input"
-                name="name"
-                placeholder="Plan Name"
-                value={form.name}
+              <div>
+                <label className="block text-xs text-white/70">Plan Name</label>
+                <input
+                  className="admin-input"
+                  name="name"
+                  placeholder="Plan Name"
+                  value={form.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/70">Price</label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  name="price"
+                  placeholder="Price"
+                  value={form.price}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/70">Badge</label>
+                <input
+                  className="admin-input"
+                  name="badge"
+                  placeholder="Badge"
+                  value={form.badge}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/70">
+                  Validity (days)
+                </label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  name="validityDays"
+                  placeholder="Validity (days)"
+                  value={form.validityDays}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-white/70 mt-4">
+                Description
+              </label>
+              <textarea
+                className="admin-input w-full mt-4"
+                name="description"
+                placeholder="Description"
+                value={form.description}
                 onChange={handleChange}
-              />
-              <input
-                className="admin-input"
-                type="number"
-                name="price"
-                placeholder="Price"
-                value={form.price}
-                onChange={handleChange}
-              />
-              <input
-                className="admin-input"
-                name="badge"
-                placeholder="Badge"
-                value={form.badge}
-                onChange={handleChange}
-              />
-              <input
-                className="admin-input"
-                type="number"
-                name="validityDays"
-                placeholder="Validity (days)"
-                value={form.validityDays}
-                onChange={handleChange}
+                rows="3"
               />
             </div>
-            <textarea
-              className="admin-input w-full mt-4"
-              name="description"
-              placeholder="Description"
-              value={form.description}
-              onChange={handleChange}
-              rows="3"
-            />
           </div>
 
           {/* CONTEXT */}
           <div className="bg-black/40 border border-white/10 rounded-2xl p-6">
             <h3 className="admin-section">Show On Context</h3>
             <div className="flex gap-4 flex-wrap">
-              {["initial","purchase","generate","upgrade","all"].map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => toggleCtx(c)}
-                  className={`admin-chip ${form.showOnContext.includes(c) ? "admin-chip-active" : ""}`}
-                >
-                  {c}
-                </button>
-              ))}
+              {["initial", "purchase", "generate", "upgrade", "all"].map(
+                (c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => toggleCtx(c)}
+                    className={`admin-chip ${form.showOnContext.includes(c) ? "admin-chip-active" : ""}`}>
+                    {c}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
@@ -179,21 +204,27 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
                 {[
-                  ["maxPages","Max Pages","📄"],
-                  ["maxBooks","Max Books","📚"],
-                  ["faceSwaps","Face Swaps","🙂"],
-                  ["regenerations","Regenerations","♻️"],
-                  ["edits","Edits","✏️"],
-                  ["erases","Erases","🧹"],
-                ].map(([key,label,icon]) => (
+                  ["maxPages", "Max Pages", "📄"],
+                  ["maxBooks", "Max Books", "📚"],
+                  ["faceSwaps", "Face Swaps", "🙂"],
+                  ["regenerations", "Regenerations", "♻️"],
+                  ["edits", "Edits", "✏️"],
+                  ["erases", "Erases", "🧹"],
+                ].map(([key, label, icon]) => (
                   <div key={key} className="flex flex-col gap-1">
                     <label className="text-xs text-white/60 flex items-center gap-2">
-                      <span>{icon}</span>{label}
+                      <span>{icon}</span>
+                      {label}
                     </label>
                     <input
                       type="number"
                       value={form.limits[key] || 0}
-                      onChange={e => setForm(p=>({...p, limits:{...p.limits, [key]:e.target.value}}))}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          limits: { ...p.limits, [key]: e.target.value },
+                        }))
+                      }
                       className="admin-input"
                     />
                   </div>
@@ -206,13 +237,14 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
           {plan.type === "purchase" && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-white/70 mb-2">Print Type</label>
+                <label className="block text-sm text-white/70 mb-2">
+                  Print Type
+                </label>
                 <select
                   name="printType"
                   value={form.printType}
                   onChange={handleChange}
-                  className="admin-input w-full"
-                >
+                  className="admin-input w-full">
                   <option value="">Select Print Type</option>
                   <option value="softcover">softcover</option>
                   <option value="hardcover">hardcover</option>
@@ -220,13 +252,14 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-white/70 mb-2">Print Series</label>
+                <label className="block text-sm text-white/70 mb-2">
+                  Print Series
+                </label>
                 <select
                   name="printSubType"
                   value={form.printSubType}
                   onChange={handleChange}
-                  className="admin-input w-full"
-                >
+                  className="admin-input w-full">
                   <option value="">Select Print Series</option>
                   <option value="Spark">Spark</option>
                   <option value="Bloom">Bloom</option>
@@ -244,16 +277,14 @@ const EditPlanModal = ({ open, plan, onClose, onSaved }) => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="admin-btn-primary flex-1 disabled:opacity-50"
-            >
+              className="admin-btn-primary flex-1 disabled:opacity-50">
               {saving ? "Saving..." : "Save Changes"}
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-white/10 border border-white/30 rounded-2xl py-4 text-white font-semibold hover:bg-white/20 transition"
-            >
+              className="flex-1 bg-white/10 border border-white/30 rounded-2xl py-4 text-white font-semibold hover:bg-white/20 transition">
               Cancel
             </button>
           </div>

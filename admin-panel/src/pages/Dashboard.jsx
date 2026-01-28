@@ -50,19 +50,6 @@ const Dashboard = () => {
     fetchStories();
   }, []);
 
-  const getResumeRoute = (story) => {
-    const sid = story?._id;
-    if (!sid) return "/generatestory";
-
-    if (story.step <= 2) return `/questioner/${sid}`;
-    if (story.step === 3) return `/templateselection/${sid}`;
-    if (story.step === 4) return `/titlegenerator/${sid}`;
-    if (story.step === 5 && story.currentJob)
-      return `/generatorPage/${sid}?jobId=${story.currentJob}`;
-    if (story.step === 6) return `/flipbook/${sid}`;
-
-    return "/generatestory";
-  };
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -80,6 +67,7 @@ const Dashboard = () => {
         Welcome {userData?.name || "Guest"}
       </h1>
 
+{/*----------------------------------to be done------------------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-purple-700 rounded-xl p-6">
           <h3 className="text-white text-sm mb-2">Total Stories</h3>
@@ -92,9 +80,8 @@ const Dashboard = () => {
             {storiesInProgress.length}
           </p>
         </div>
-
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-          <h3 className="text-white text-sm mb-2">Credits</h3>
+          <h3 className="text-white text-sm mb-2">Website Visitors</h3>
           <p className="text-5xl font-bold text-white">{userData?.credits || 0}</p>
         </div>
 
@@ -138,12 +125,6 @@ const Dashboard = () => {
                 {formatDate(story.createdAt)}
               </p>
             </div>
-            <button
-              onClick={() => navigate(getResumeRoute(story))}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
-            >
-              {story.step <= 5 ? "Continue" : "Open"}
-            </button>
           </div>
         ))}
       </div>

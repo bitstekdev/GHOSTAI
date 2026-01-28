@@ -8,66 +8,73 @@ const transformOrders = (apiOrders) => {
   return apiOrders.map((order) => {
     // Format date
     const orderDate = new Date(order.createdAt);
-    const dateStr = orderDate.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
+    const dateStr = orderDate.toLocaleDateString("en-US", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
-    
+
     // Calculate expected delivery (example: 7 days from order date)
     const deliveryDate = new Date(orderDate);
     deliveryDate.setDate(deliveryDate.getDate() + 7);
-    const deliveryStr = deliveryDate.toLocaleDateString('en-US', {  
-      weekday: 'long', 
-      day: '2-digit', 
-      month: 'short' 
+    const deliveryStr = deliveryDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      day: "2-digit",
+      month: "short",
     });
-    
+
     // Map status
     const statusMap = {
-      'pending': 'Ordered',
-      'processing': 'Processing',
-      'shipped': 'Shipped',
-      'delivered': 'Delivered'
+      pending: "Pending",
+      processing: "Processing",
+      shipped: "Shipped",
+      delivered: "Delivered",
+      failed: "Failed",
     };
-    
+
     // Transform all items
-    const transformedItems = order.items.map(item => {
+    const transformedItems = order.items.map((item) => {
       const story = item.story;
-      const pages = story.numOfPages;
-      let pageRange;
-      if (pages <= 5) pageRange = '3-5 Pages';
-      else if (pages <= 10) pageRange = '6-10 Pages';
-      else if (pages <= 15) pageRange = '11-15 Pages';
-      else pageRange = '15+ Pages';
-      
+
       return {
         storyId: story._id,
         title: story.title,
-        genre: story.genres.length > 0 ? story.genres[0] : 'General',
-        length: pageRange,
+        genre: story.genres.length > 0 ? story.genres[0] : "General",
+        length: story.numOfPages,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,
         image: story.coverImageUrl,
-        planName: item.plan.name
+        planName: item.plan.name,
       };
     });
     const a = order.shippingAddress || {};
-    
+
     return {
       id: order._id,
       items: transformedItems,
-      status: statusMap[order.status] || 'Ordered',
+      status: statusMap[order.status] || "Pending",
       totalAmount: order.amount,
-      expected: order.status === 'delivered' 
-        ? `Delivered on ${deliveryStr}` 
-        : `Expected Delivery on ${deliveryStr}`,
-      address: [a.name,a.phone,a.addressLine1,a.addressLine2,a.city,a.state,a.postalCode,a.country].filter(Boolean).join(", "),
+      expected:
+        order.status === "delivered"
+          ? `Delivered on ${deliveryStr}`
+          : `Expected Delivery on ${deliveryStr}`,
+      address: [
+        a.name,
+        a.phone,
+        a.addressLine1,
+        a.addressLine2,
+        a.city,
+        a.state,
+        a.postalCode,
+        a.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
       date: `On ${dateStr}`,
       userName: order.user?.name || "Unknown User",
-      userEmail: order.user?.email || ""
+      userEmail: order.user?.email || "",
     };
   });
 };
@@ -78,15 +85,14 @@ function StatusBadge({ status }) {
     Delivered: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     Shipped: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     Processing: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    Failed: "bg-red-500/20 text-red-400 border-red-500/30",
   };
 
   return (
     <span
       className={`inline-block px-2.5 py-1 rounded text-xs font-medium border ${
-        styles[status] ||
-        "bg-gray-500/20 text-gray-400 border-gray-500/30"
-      }`}
-    >
+        styles[status] || "bg-gray-500/20 text-gray-400 border-gray-500/30"
+      }`}>
       {status}
     </span>
   );
@@ -98,6 +104,7 @@ export default function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const { backendUrl } = useContext(AppContext);
 
   // Fetch orders from API
@@ -106,7 +113,7 @@ export default function OrderHistory() {
       try {
         setLoading(true);
         const response = await api.get("/api/v1/order/all-orders");
-        
+
         if (response.data.success) {
           const transformedOrders = transformOrders(response.data.orders);
           setOrders(transformedOrders);
@@ -125,25 +132,61 @@ export default function OrderHistory() {
   const filtered = useMemo(() => {
     return orders.filter((order) => {
       const matchesFilter = filter === "All Orders" || order.status === filter;
-      const matchesQuery = !query || order.items.some(item => 
-        item.title.toLowerCase().includes(query.toLowerCase())
-      );
+      const matchesQuery =
+        !query ||
+        order.items.some((item) =>
+          item.title.toLowerCase().includes(query.toLowerCase()),
+        );
       return matchesFilter && matchesQuery;
     });
   }, [query, filter, orders]);
 
   // Handlers for invoice and download=========================================
-const handleViewInvoice = (orderId) => {
-  const url = `${backendUrl}/api/v1/purchase/order/${orderId}/invoice/view`;
-  window.open(url, "_blank"); // opens PDF in new tab
-};
+  const handleViewInvoice = (orderId) => {
+    const url = `${backendUrl}/api/v1/purchase/order/${orderId}/invoice/view`;
+    window.open(url, "_blank"); // opens PDF in new tab
+  };
 
-const handleDownloadInvoice = (orderId) => {
-  const url = `${backendUrl}/api/v1/purchase/order/${orderId}/invoice/download`;
-  window.open(url); // browser download
-};
-// ==========================================================================
+  const handleDownloadInvoice = (orderId) => {
+    const url = `${backendUrl}/api/v1/purchase/order/${orderId}/invoice/download`;
+    window.open(url); // browser download
+  };
+  // ==========================================================================
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    const confirm = window.confirm(
+      `Are you sure you want to mark this order as "${newStatus.toUpperCase()}"?`,
+    );
+
+    if (!confirm) return;
+
+    try {
+      setUpdatingOrderId(orderId);
+
+      const res = await api.patch(`/api/v1/order/status/${orderId}`, {
+        status: newStatus,
+      });
+
+      if (res.data.success) {
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId
+              ? {
+                  ...order,
+                  status:
+                    newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
+                }
+              : order,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Status update failed:", err);
+      alert("Failed to update order status");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -163,8 +206,7 @@ const handleDownloadInvoice = (orderId) => {
           <p className="text-red-400 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-          >
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors">
             Retry
           </button>
         </div>
@@ -193,22 +235,23 @@ const handleDownloadInvoice = (orderId) => {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {["All Orders", "Delivered", "Processing", "Shipped", "Ordered"].map((status) => {
-            const active = filter === status;
-            return (
-              <button
-                key={status}
-                onClick={() => setFilter(status)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  active
-                    ? "border border-purple-600 bg-purple-600/20 text-white"
-                    : "bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-gray-800"
-                }`}
-              >
-                {status}
-              </button>
-            );
-          })}
+          {["All Orders", "Pending", "Processing", "Shipped", "Delivered", "Failed"].map(
+            (status) => {
+              const active = filter === status;
+              return (
+                <button
+                  key={status}
+                  onClick={() => setFilter(status)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    active
+                      ? "border border-purple-600 bg-purple-600/20 text-white"
+                      : "bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-gray-800"
+                  }`}>
+                  {status}
+                </button>
+              );
+            },
+          )}
         </div>
 
         {/* Order List */}
@@ -221,23 +264,31 @@ const handleDownloadInvoice = (orderId) => {
             filtered.map((order) => (
               <article
                 key={order.id}
-                className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-800"
-              >
+                className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-800">
                 {/* Order Header */}
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-800">
                   <div className="flex items-center gap-3">
                     <Package className="w-5 h-5 text-purple-400" />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-semibold">Order #{order.id.slice(-8)}</span>
+                        <span className="text-white font-semibold">
+                          Order #{order.id.slice(-8)}
+                        </span>
                         <StatusBadge status={order.status} />
                       </div>
-                      <span className="text-gray-500 text-xs">{order.date}</span>
+                      <span className="text-gray-500 text-xs">
+                        {order.date}
+                      </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white font-bold">₹{order.totalAmount}</div>
-                    <div className="text-xs text-gray-500">{order.items.length} item{order.items.length > 1 ? 's' : ''}</div>
+                    <div className="text-white font-bold">
+                      ₹{order.totalAmount}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {order.items.length} item
+                      {order.items.length > 1 ? "s" : ""}
+                    </div>
                   </div>
                 </div>
 
@@ -246,8 +297,7 @@ const handleDownloadInvoice = (orderId) => {
                   {order.items.map((item, index) => (
                     <div
                       key={index}
-                      className="flex flex-col sm:flex-row gap-4 pb-3 last:pb-0 border-b border-gray-800/50 last:border-0"
-                    >
+                      className="flex flex-col sm:flex-row gap-4 pb-3 last:pb-0 border-b border-gray-800/50 last:border-0">
                       {/* IMAGE */}
                       <div className="flex-shrink-0 mx-auto sm:mx-0">
                         <img
@@ -266,7 +316,9 @@ const handleDownloadInvoice = (orderId) => {
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                           <div className="flex gap-2">
                             <span className="text-gray-500">Plan:</span>
-                            <span className="text-gray-300">{item.planName}</span>
+                            <span className="text-gray-300">
+                              {item.planName}
+                            </span>
                           </div>
 
                           <div className="flex gap-2">
@@ -276,22 +328,28 @@ const handleDownloadInvoice = (orderId) => {
 
                           <div className="flex gap-2">
                             <span className="text-gray-500">Length:</span>
-                            <span className="text-gray-300">{item.length}</span>
+                            <span className="text-gray-300">{item.length} Pages (per book)</span>
                           </div>
 
                           <div className="flex gap-2">
                             <span className="text-gray-500">Qty:</span>
-                            <span className="text-gray-300">{item.quantity}</span>
+                            <span className="text-gray-300">
+                              {item.quantity}
+                            </span>
                           </div>
 
                           <div className="flex gap-2">
                             <span className="text-gray-500">Unit Price:</span>
-                            <span className="text-gray-300">₹{item.unitPrice}</span>
+                            <span className="text-gray-300">
+                              ₹{item.unitPrice}
+                            </span>
                           </div>
 
                           <div className="flex gap-2">
                             <span className="text-gray-500">Subtotal:</span>
-                            <span className="text-gray-300 font-semibold">₹{item.totalPrice}</span>
+                            <span className="text-gray-300 font-semibold">
+                              ₹{item.totalPrice}
+                            </span>
                           </div>
                         </div>
 
@@ -302,40 +360,11 @@ const handleDownloadInvoice = (orderId) => {
                             onClick={() => handleDownload(item)}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
                                       bg-blue-600/20 text-blue-400 border border-blue-600/30
-                                      rounded-lg hover:bg-blue-600/30 transition"
-                          >
-                            📥 Download PDF
+                                      rounded-lg hover:bg-blue-600/30 transition">
+                            ⬇ Download PDF
                           </button>
-
-                            <div className="inline-flex rounded-lg overflow-hidden border border-purple-600/30">
-                              {/* VIEW */}
-                              <button
-                                onClick={() => handleViewInvoice(order.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                                          bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition"
-                                title="View Invoice"
-                              >
-                              Invoice
-                                <div className="w-px bg-purple-600/30" />
-                                👁 
-                              </button>
-
-                              {/* DIVIDER */}
-                              <div className="w-px bg-purple-600/30" />
-
-                              {/* DOWNLOAD */}
-                              <button
-                                onClick={() => handleDownloadInvoice(order.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                                          bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition"
-                                title="Download Invoice"
-                              >
-                                ⬇
-                              </button>
-                            </div>
-
                         </div>
-{/* -------------------------------------------------- */}
+                        {/* -------------------------------------------------- */}
                       </div>
                     </div>
                   ))}
@@ -350,25 +379,69 @@ const handleDownloadInvoice = (orderId) => {
                           order.status === "Delivered"
                             ? "text-emerald-400"
                             : order.status === "Shipped"
-                            ? "text-blue-400"
-                            : "text-purple-400"
-                        }`}
-                      >
+                              ? "text-blue-400"
+                              : "text-purple-400"
+                        }`}>
                         {order.expected}
                       </p>
-               <p className="text-xs text-gray-500 mt-1">
-                  <span className="text-gray-400">User:</span>{" "}
-                  <span className="text-white">{order.userName}</span>
-                </p>
-
-                <p className="text-xs text-gray-500 mt-1">
-                  <span className="text-gray-400">Email:</span>{" "}
-                  <span className="text-gray-300">{order.userEmail}</span>
-                </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        <span className="text-gray-400">User:</span>{" "}
+                        <span className="text-white">{order.userName}</span>
+                      </p>
 
                       <p className="text-xs text-gray-500 mt-1">
-                        <span className="text-gray-400">Delivery to:</span> {order.address}
+                        <span className="text-gray-400">Email:</span>{" "}
+                        <span className="text-gray-300">{order.userEmail}</span>
                       </p>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        <span className="text-gray-400">Delivery to:</span>{" "}
+                        {order.address}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <select
+                        value={order.status.toLowerCase() === "pending" ? "ordered" : order.status.toLowerCase()}
+                        disabled={updatingOrderId === order.id}
+                        onChange={(e) =>
+                          handleStatusChange(order.id, e.target.value)
+                        }
+                        className="bg-[#1a1a1a] border border-purple-600/30 text-sm
+                          text-purple-400 rounded-lg px-3 py-1.5
+                          focus:outline-none focus:border-purple-500
+                          disabled:opacity-50">
+                        <option value="pending">Pending</option>    
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="failed">Failed</option>
+                      </select>
+
+                      <div className="inline-flex rounded-lg overflow-hidden border border-purple-600/30">
+                        {/* VIEW */}
+                        <button
+                          onClick={() => handleViewInvoice(order.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                                          bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition"
+                          title="View Invoice">
+                          Invoice
+                          <div className="w-px bg-purple-600/30" />
+                          👁
+                        </button>
+
+                        {/* DIVIDER */}
+                        <div className="w-px bg-purple-600/30" />
+
+                        {/* DOWNLOAD */}
+                        <button
+                          onClick={() => handleDownloadInvoice(order.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                                          bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 transition"
+                          title="Download Invoice">
+                          ⬇
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
