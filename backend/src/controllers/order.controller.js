@@ -3,7 +3,7 @@ const Image = require("../models/Image");
 
 
 /**
- * Get all orders with story images resolved
+ * Get all my orders with story images resolved
  */
 exports.getMyOrders = async (req, res) => {
     const userId = req.user.id;
@@ -86,5 +86,96 @@ exports.getOrderById = async (req, res) => {
     res.status(200).json({ success: true, order });
     } catch (error) {   
     res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+
+/**
+ * ADMIN - Get all orders (including deleted stories)
+ */
+exports.allOrders = async (req, res) => {
+  try {
+    // 1️⃣ Fetch all orders
+    const orders = await Order.find({})
+      .populate("user", "name email")
+      .populate({
+        path: "items.story",
+        select: "title genres numOfPages coverImage backCoverImage isDeleted"
+      })
+      .populate("items.plan")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // 2️⃣ Collect all image IDs safely
+    const imageIds = new Set();
+
+    orders.forEach(order => {
+      if (!Array.isArray(order.items)) return;
+
+      order.items.forEach(item => {
+        if (!item.story) return;
+
+        if (item.story.coverImage) {
+          imageIds.add(item.story.coverImage.toString());
+        }
+        if (item.story.backCoverImage) {
+          imageIds.add(item.story.backCoverImage.toString());
+        }
+      });
+    });
+
+    // 3️⃣ Fetch images only if needed
+    let images = [];
+    if (imageIds.size > 0) {
+      images = await Image.find({
+        _id: { $in: [...imageIds] }
+      })
+        .select("_id s3Url")
+        .lean();
+    }
+
+    // 4️⃣ Map images by ID
+    const imageMap = {};
+    images.forEach(img => {
+      imageMap[img._id.toString()] = img.s3Url;
+    });
+
+    // 5️⃣ Attach image URLs + deleted flags
+    orders.forEach(order => {
+      if (!Array.isArray(order.items)) return;
+
+      order.items.forEach(item => {
+        if (!item.story) {
+          // Story hard-deleted from DB
+          item.story = {
+            title: "Deleted Story",
+            isDeleted: true,
+            coverImageUrl: null,
+            backCoverImageUrl: null
+          };
+          return;
+        }
+
+        item.story.coverImageUrl =
+          imageMap[item.story.coverImage?.toString()] || null;
+
+        item.story.backCoverImageUrl =
+          imageMap[item.story.backCoverImage?.toString()] || null;
+      });
+    });
+
+    // 6️⃣ Response
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+
+  } catch (error) {
+    console.error("ADMIN allOrders Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders"
+    });
   }
 };

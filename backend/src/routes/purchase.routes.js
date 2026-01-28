@@ -7,6 +7,7 @@ const {
   verifyPurchasePayment,
   purchaseWebhook,
   downloadInvoice,
+  viewInvoice,
   getMyOrders
 } = require("../controllers/purchase.controller");
 
@@ -16,7 +17,10 @@ router.post("/verify", protect, verifyPurchasePayment);
 router.post("/webhook", purchaseWebhook);
 
 // download invoice
-router.get("/:orderId/invoice", protect, downloadInvoice);
+// router.get("/:orderId/invoice", protect, downloadInvoice);
+router.get("/order/:orderId/invoice/view", protect, viewInvoice);
+router.get("/order/:orderId/invoice/download", protect, downloadInvoice);
+
 // get purchase history
 router.get("/history", protect, getMyOrders);
 
