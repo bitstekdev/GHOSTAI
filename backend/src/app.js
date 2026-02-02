@@ -14,10 +14,8 @@ const coverRoutes = require('./routes/cover');
 const addressRoutes = require('./routes/address');
 const pdfRoutes = require('./routes/pdf');
 const subscriptionRoutes = require('./routes/subscription.routes');
-const ordersROutes = require('./routes/orderRoute')
-
-
-const orderRoutes = require("./routes/orderRoute");       // testing order !
+const orderRoutes = require('./routes/order.routes');
+const purchaseRoutes = require('./routes/purchase.routes');
 
 
 
@@ -83,7 +81,8 @@ app.use('/api/v1/images', imageRoutes);
 // app.use('/api/v1/cover', coverRoutes);
 app.use('/api/v1/address', addressRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
-app.use("/api/v1/orders", ordersROutes);  // testing order !
+app.use('/api/v1/order', orderRoutes);
+app.use('/api/v1/purchase', purchaseRoutes);
 app.use('/api/v1/pdf', pdfRoutes);
 
 
