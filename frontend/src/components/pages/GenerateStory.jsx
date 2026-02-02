@@ -248,7 +248,8 @@ const GenerateStory = () => {
           setCurrentStep("characterName");
           setCurrentCharacter({ index: nextIndex, name: "", details: "" });
         } else {
-          showConfirmation(updatedFormData);
+          addBotMessage("Which character should be the **main character** for training? (Type the name)");
+          setCurrentStep("selectMainCharacter");
         }
         break;
 
@@ -297,6 +298,22 @@ How would you like to continue?
         const nextData = { ...formData, entryMode: "gist", gist: input.trim() };
         setFormData(nextData);
         handleSubmit(nextData);
+        break;
+
+      case "selectMainCharacter":
+        const selected = formData.characterDetails.find(c =>
+          c.name.toLowerCase() === input.toLowerCase()
+        );
+
+        if (!selected) {
+          addBotMessage("Please type the exact character name from the list.");
+          return;
+        }
+
+        setFormData(prev => ({ ...prev, mainCharacter: selected.name }));
+        addBotMessage(`Great! Upload **5–20 images** of ${selected.name} for training.`);
+        setCurrentStep("trainCharacterImages");
+        setShowUploadMenu(true);
         break;
 
       case "edit":
@@ -365,8 +382,7 @@ How would you like to continue?
       "🌟Weaving the narrative...",
       "✨Almost there...",
       "🌟Thank you for your patience...",
-      "💫Putting on the finishing touches...",
-      "✨Finalizing..."
+      "💫Putting on the finishing touches..."
     ];
     return messages[loadingPhase];
   };
@@ -550,10 +566,35 @@ How would you like to continue?
         setCurrentCharacter({ index: nextIndex, name: "", details: "" });
         setCurrentStep("characterName");
       } else {
-        showConfirmation(updated);
+        addBotMessage("Which character should be the **main character** for training? (Type the name)");
+        setCurrentStep("selectMainCharacter");
       }
     } catch (err) {
       addBotMessage("❌ Failed to analyze image. Please try again.");
+    }
+  };
+
+  const handleTrainCharacterUpload = async (files) => {
+    if (!files || files.length < 5 || files.length > 20) {
+      addBotMessage("Please upload between 5 and 20 images.");
+      return;
+    }
+
+    addBotMessage("🚀 Training started. You can continue building your story.");
+
+    const fd = new FormData();
+    Array.from(files).forEach(f => fd.append("files", f));
+    fd.append("triggerWord", formData.mainCharacter);
+
+    try {
+      await api.post("/api/v1/character-training/train", fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      showConfirmation(formData);
+    } catch (err) {
+      addBotMessage("❌ Training upload failed. Please try again.");
+      console.error("Training upload error:", err);
     }
   };
 
@@ -757,6 +798,8 @@ How would you like to continue?
 
                 if (currentStep === "characterImages") {
                   handleCharacterImageUpload(e.target.files);
+                } else if (currentStep === "trainCharacterImages") {
+                  handleTrainCharacterUpload(e.target.files);
                 } else {
                   setIsCustomGenreProcessing(true);
                   handleCustomGenreUpload(e.target.files);

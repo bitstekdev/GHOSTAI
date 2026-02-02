@@ -1,127 +1,3 @@
-// import { useState } from "react";
-// import api from "../services/axiosInstance";
-
-// export default function AdminCreatePlan() {
-//   const [type, setType] = useState("subscription"); // subscription | purchase
-
-//   const [form, setForm] = useState({
-//     code: "",
-//     name: "",
-//     price: "",
-//     description: "",
-//     validityDays: 30,
-//     displayOrder: 1,
-//     badge: "",
-//     isPopular: false,
-//     showOnContext: ["initial"],
-//     printType: "",
-//     printSubType: "",
-//     limits: {
-//       maxPages: "",
-//       maxBooks: "",
-//       faceSwaps: "",
-//       regenerations: "",
-//       edits: "",
-//       erases: "",
-//     },
-//   });
-
-//   const handleChange = (e) => {
-//     const { name, value, type: t, checked } = e.target;
-
-//     if (name.startsWith("limits.")) {
-//       const key = name.split(".")[1];
-//       setForm((p) => ({ ...p, limits: { ...p.limits, [key]: value } }));
-//     } else if (t === "checkbox") {
-//       setForm((p) => ({ ...p, [name]: checked }));
-//     } else {
-//       setForm((p) => ({ ...p, [name]: value }));
-//     }
-//   };
-
-//   const toggleContext = (ctx) => {
-//     setForm((p) => ({
-//       ...p,
-//       showOnContext: p.showOnContext.includes(ctx)
-//         ? p.showOnContext.filter((c) => c !== ctx)
-//         : [...p.showOnContext, ctx],
-//     }));
-//   };
-
-//   const submit = async (e) => {
-//     e.preventDefault();
-
-//     const payload = {
-//       ...form,
-//       type,
-//       price: Number(form.price),
-//       validityDays: Number(form.validityDays),
-//       displayOrder: Number(form.displayOrder),
-//       limits:
-//         type === "subscription"
-//           ? Object.fromEntries(
-//               Object.entries(form.limits).map(([k, v]) => [k, Number(v || 0)])
-//             )
-//           : {},
-//     };
-
-//     await api.post("/api/v1/subscriptions/plans", payload);
-//     alert("Plan created!");
-//   };
-
-//   return (
-//     <div className="p-10 text-white max-w-5xl mx-auto">
-//       <h1 className="text-4xl font-bold mb-8">Admin – Create Plan</h1>
-
-//       <form onSubmit={submit} className="bg-gray-900 p-8 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <select value={type} onChange={(e) => setType(e.target.value)} className="input">
-//           <option value="subscription">Subscription Plan</option>
-//           <option value="purchase">Purchase (Print) Plan</option>
-//         </select>
-
-//         <input className="input" name="code" placeholder="Code" onChange={handleChange} required />
-//         <input className="input" name="name" placeholder="Name" onChange={handleChange} required />
-//         <input className="input" type="number" name="price" placeholder="Price" onChange={handleChange} required />
-//         <input className="input" name="badge" placeholder="Badge" onChange={handleChange} />
-
-//         <textarea className="input md:col-span-2" name="description" placeholder="Description" onChange={handleChange} />
-
-//         <div className="flex gap-3 md:col-span-2">
-//           {["initial", "purchase", "upgrade", "test"].map((c) => (
-//             <button
-//               type="button"
-//               key={c}
-//               onClick={() => toggleContext(c)}
-//               className={`px-4 py-2 rounded ${form.showOnContext.includes(c) ? "bg-purple-600" : "bg-gray-700"}`}
-//             >
-//               {c}
-//             </button>
-//           ))}
-//         </div>
-
-//         {type === "purchase" && (
-//           <>
-//             <input className="input" name="printType" placeholder="softcover / hardcover / both" onChange={handleChange} />
-//             <input className="input" name="printSubType" placeholder="Spark / Bloom / Legacy" onChange={handleChange} />
-//           </>
-//         )}
-
-//         {type === "subscription" && (
-//           <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-//             {Object.keys(form.limits).map((k) => (
-//               <input key={k} name={`limits.${k}`} type="number" placeholder={k} onChange={handleChange} className="input" />
-//             ))}
-//           </div>
-//         )}
-
-//         <button className="bg-purple-600 hover:bg-purple-700 py-4 rounded-xl md:col-span-2">
-//           Create Plan
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }
-
 import { useState } from "react";
 import api from "../services/axiosInstance";
 
@@ -154,7 +30,7 @@ export default function AdminCreatePlan() {
     const { name, value, type: t, checked } = e.target;
     if (name.startsWith("limits.")) {
       const key = name.split(".")[1];
-      setForm(p => ({ ...p, limits: { ...p.limits, [key]: value }}));
+      setForm(p => ({ ...p, limits: { ...p.limits, [key]: value } }));
     } else if (t === "checkbox") {
       setForm(p => ({ ...p, [name]: checked }));
     } else {
@@ -192,7 +68,7 @@ export default function AdminCreatePlan() {
       printType: type === "purchase" ? form.printType : undefined,
       printSubType: type === "purchase" ? form.printSubType : undefined,
       limits: type === "subscription"
-        ? Object.fromEntries(Object.entries(form.limits).map(([k,v]) => [k, Number(v || 0)]))
+        ? Object.fromEntries(Object.entries(form.limits).map(([k, v]) => [k, Number(v || 0)]))
         : undefined,
     };
 
@@ -234,28 +110,86 @@ export default function AdminCreatePlan() {
         {/* PLAN TYPE */}
         <div className="md:col-span-2">
           <label className="block mb-2 text-white/70">Plan Type</label>
-          <select value={type} onChange={e=>setType(e.target.value)} className="admin-input">
+          <select value={type} onChange={e => setType(e.target.value)} className="admin-input">
             <option value="subscription">Subscription Plan</option>
             <option value="purchase">Purchase (Print) Plan</option>
           </select>
         </div>
 
         {/* BASIC INFO */}
-        <input className="admin-input" name="code" placeholder="Code (BASIC_199)" onChange={handleChange} required />
-        <input className="admin-input" name="name" placeholder="Plan Name" onChange={handleChange} required />
-        <input className="admin-input" type="number" name="price" placeholder="Price" onChange={handleChange} required />
-        <input className="admin-input" name="badge" placeholder="Badge (Starter / Pro / Best Value)" onChange={handleChange} />
-        <textarea className="admin-input md:col-span-2" name="description" placeholder="Description" onChange={handleChange} />
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+
+          {/* ROW 1 — FULL WIDTH */}
+          <div className="md:col-span-2">
+            <label className="block mb-2 text-white/70">Code</label>
+            <input
+              className="admin-input w-full"
+              name="code"
+              placeholder="Code (BASIC_199)"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* ROW 2 — TWO COLUMNS */}
+          <div>
+            <label className="block mb-2 text-white/70">Plan Name</label>
+            <input
+              className="admin-input w-full"
+              name="name"
+              placeholder="Plan Name"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-white/70">Price</label>
+            <input
+              className="admin-input w-full"
+              type="number"
+              name="price"
+              placeholder="Price"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* ROW 3 — TWO COLUMNS */}
+          <div>
+            <label className="block mb-2 text-white/70">Badge</label>
+            <input
+              className="admin-input w-full"
+              name="badge"
+              placeholder="Badge (Starter / Pro / Best Value)"
+              onChange={handleChange}
+            />
+          </div>
+
+          <div /> {/* optional placeholder */}
+
+          {/* ROW 4 — FULL WIDTH */}
+          <div className="md:col-span-2">
+            <label className="block mb-2 text-white/70">Description</label>
+            <textarea
+              className="admin-input w-full"
+              name="description"
+              placeholder="Description"
+              rows={4}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
 
         {/* CONTEXT */}
         <div className="md:col-span-2 bg-black/40 border border-white/10 rounded-2xl p-6">
           <h2 className="admin-section">Show On Context</h2>
           <div className="flex gap-4 flex-wrap">
-            {["initial","purchase","generate","upgrade","all"].map(c => (
+            {["initial", "purchase", "upgrade", "all"].map(c => (
               <button
                 key={c}
                 type="button"
-                onClick={()=>toggleCtx(c)}
+                onClick={() => toggleCtx(c)}
                 className={`admin-chip ${form.showOnContext.includes(c) ? "admin-chip-active" : ""}`}
               >
                 {c}

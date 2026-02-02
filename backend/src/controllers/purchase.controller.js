@@ -3,7 +3,23 @@ const razorpay = require("../config/razorpay");
 const Order = require("../models/Order");
 const SubscriptionPlan = require("../models/SubscriptionPlan");
 const User = require("../models/User");
-const { generateInvoicePdf } = require("../services/invoice.service");
+const { generateInvoicePdfStream } = require("../services/invoice.service");
+
+// Helper to normalize shipping address
+const normalizeShippingAddress = (address = {}) => ({
+  name: address.fullName || address.name || "",
+  phone: address.phoneNumber || address.phone || "",
+  addressLine1: [
+    address.houseNumber,
+    address.streetName
+  ].filter(Boolean).join(", "),
+  addressLine2: address.addressLine2 || "",
+  city: address.city || "",
+  state: address.state || "",
+  postalCode: address.zipCode || address.postalCode || "",
+  country: address.country || "India"
+});
+
 
 // PURCHASE SINGLE ITEM----------
 exports.createPurchaseOrder = async (req, res) => {
@@ -32,7 +48,7 @@ exports.createPurchaseOrder = async (req, res) => {
       user: req.user.id,
       type: "purchase",
       items: [item],
-      shippingAddress,
+      shippingAddress: normalizeShippingAddress(shippingAddress),
       amount: plan.price * (quantity || 1),
       razorpay: { orderId: rpOrder.id },
     });
@@ -81,7 +97,7 @@ exports.createPurchaseOrderFromCart = async (req, res) => {
       user: req.user.id,
       type: "purchase",
       items,
-      shippingAddress,
+      shippingAddress: normalizeShippingAddress(shippingAddress),
       amount: totalAmount,
       razorpay: { orderId: rpOrder.id },
     });
@@ -210,29 +226,44 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
-// DOWNLOAD INVOICE----------
-exports.downloadInvoice = async (req, res) => {
-  try {
-    const { orderId } = req.params;
 
-    const order = await Order.findOne({
-      _id: orderId,
-      user: req.user.id,
-      status: "processing",
-    })
-      .populate("items.story")
-      .populate("items.plan");
+
+// VIEW INVOICE (inline)
+exports.viewInvoice = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId)
+      .populate("user", "name email")
+      .populate("items.story", "title")
+      .populate("items.plan", "name price");
 
     if (!order) {
-      return res.status(404).json({
-        message: "Invoice not available",
-      });
+      return res.status(404).json({ message: "Invoice not found" });
     }
 
-    const { filePath, filename } = await generateInvoicePdf(order);
+    generateInvoicePdfStream(order, res, "inline");
+  } catch (err) {
+    console.error("View invoice error:", err);
+    res.status(500).json({ message: "Failed to generate invoice" });
+  }
+};
 
-    res.download(filePath, filename);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+
+
+// DOWNLOAD INVOICE
+exports.downloadInvoice = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId)
+      .populate("user", "name email")
+      .populate("items.story", "title")
+      .populate("items.plan", "name price");
+
+    if (!order) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    generateInvoicePdfStream(order, res, "attachment");
+  } catch (err) {
+    console.error("Download invoice error:", err);
+    res.status(500).json({ message: "Failed to generate invoice" });
   }
 };
