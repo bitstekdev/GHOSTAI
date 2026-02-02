@@ -1,3 +1,5 @@
+// storyController
+
 const Story = require('../models/Story');
 const StoryPage = require('../models/StoryPage');
 const Image = require('../models/Image');
@@ -114,7 +116,7 @@ exports.startStory = async (req, res, next) => {
 // @access  Private
 exports.nextQuestion = async (req, res, next) => {
   try {
-    const {storyId, conversation, answer } = req.body;
+    const { storyId, conversation, answer } = req.body;
 
     const story = await Story.findById(storyId);
 
@@ -210,7 +212,7 @@ exports.generateGist = async (req, res, next) => {
         await story.save();
       }
     }
-
+    
     res.status(200).json({
       success: true,
       storyId,
@@ -292,22 +294,31 @@ exports.createStory = async (req, res, next) => {
         { upsert: true, new: true, setDefaultsOnInsert: true }
       )
     );
-
-
+    
+    
     await Promise.all(pagePromises);
-
+    
     // Update
     story.generationMetadata = {
       completedAt: Date.now()
     };
     await story.save();
-
+    
     // Populate pages
     const populatedStory = await Story.findById(story._id)
-      .populate('user', 'name email');
-
+    .populate('user', 'name email');
+    
     const pages = await StoryPage.find({ story: story._id }).sort({ pageNumber: 1 });
-
+    
+    // emailN-notification
+    sendStoryGeneratedEmail({
+      user: populatedStory.user,
+      story: populatedStory,
+      pages
+    }).catch(err => {
+      console.error('Story email failed:', err);
+    }); 
+    
     res.status(201).json({
       success: true,
       message: 'Story created successfully',
@@ -460,13 +471,16 @@ exports.getStory = async (req, res, next) => {
     const pages = await StoryPage.find({ story: story._id })
       .sort({ pageNumber: 1 })
       .populate({
-      path: 'characterImage',
+        path: 'characterImage',
+        select: '-base64Data'
       })
       .populate({
-      path: 'backgroundImage',
+        path: 'backgroundImage',
+        select: '-base64Data'
       })
       .populate({
-      path: 'finalCompositeImage',
+        path: 'finalCompositeImage',
+        select: '-base64Data'
       });
 
     res.status(200).json({
@@ -492,7 +506,7 @@ exports.generateTitles = async (req, res, next) => {
 
     const pages = await StoryPage.find({ story: storyId }).sort({ pageNumber: 1 });
     const fullText = pages.map(page => page.text).join(' ');
-    
+
     await updatedStory.save();
 
     const genreString = Array.isArray(genres) ? genres.join(', ') : (Array.isArray(genre) ? genre.join(', ') : genre);
@@ -516,11 +530,11 @@ exports.regenerateTitles = async (req, res, next) => {
 
     const updatedStory = await Story.findByIdAndUpdate(storyId, { title: selectedTitle }, { new: true });
 
-    if(!updatedStory) {
+    if (!updatedStory) {
       return res.status(404).json({
         success: false,
         message: 'Story not found'
-      }); 
+      });
     }
     await updatedStory.save();
 

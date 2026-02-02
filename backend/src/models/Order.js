@@ -85,7 +85,7 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "processing", "shipped", "delivered", "failed"],
+      enum: ["pending", "paid", "failed"],
       default: "pending"
     },
 
@@ -99,7 +99,7 @@ const orderSchema = new mongoose.Schema(
       number: String,
       pdfUrl: String,
       generatedAt: Date
-    }
+    },
   },
   { timestamps: true }
 );
