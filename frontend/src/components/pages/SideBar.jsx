@@ -53,9 +53,7 @@ useEffect(() => {
 
 
   // Determine plan info
-  const planInfo = activeSubscription ? {
-    plan: activeSubscription.subscription,
-  } : null;
+  const planInfo = activeSubscription ? { plan: activeSubscription.subscription } : null;
 
   console.log("Active Subscription in Sidebar:", activeSubscription);
   // Menu list + routing paths
@@ -235,29 +233,31 @@ useEffect(() => {
               Current Plan
             </div>
             <div className="text-sm font-medium">
-              {planInfo.plan?.name || "Plan Expired"}
+              {planInfo.plan?.name || "No Active Plan"}
             </div>
           </div>
-
-          {planOpen ? (
-            <ChevronUp size={16} className="text-gray-400" />
-          ) : (
-            <ChevronDown size={16} className="text-gray-400" />
-          )}
+          
+            {planInfo?.plan?.code !== "FREE-FOR-DEVELOPMENT-ONLY" && (
+              planOpen ? (
+                <ChevronUp size={16} className="text-gray-400" />
+              ) : (
+                <ChevronDown size={16} className="text-gray-400" />
+              )
+            )}
+            
         </button>
 
-        {/* EXPANDABLE CONTENT */}
-        {planOpen && (
-          <div className="border-t border-gray-700 px-3 pb-3">
-            <button
-              onClick={() => handleNavigate()}
-              // onClick={() => navigate("/upgradeplan")}
-              className="mt-3 w-full rounded-lg border border-gray-600 bg-gray-800 py-2 text-sm text-gray-200 hover:bg-gray-700 transition"
-            >
-              Upgrade Plan
-            </button>
-          </div>
-        )}
+      {/* EXPANDABLE CONTENT */}
+      {planInfo?.plan?.code !== "FREE-FOR-DEVELOPMENT-ONLY" && planOpen && (
+        <div className="border-t border-gray-700 px-3 pb-3">
+          <button
+            onClick={() => handleNavigate()}
+            className="mt-3 w-full rounded-lg border border-gray-600 bg-gray-800 py-2 text-sm text-gray-200 hover:bg-gray-700 transition"
+          >
+          {planInfo.plan ?  "Upgrade Plan" : "Buy Plan"}
+          </button>
+        </div>
+      )}
       </div>
     )}
   </>

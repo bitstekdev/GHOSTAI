@@ -1,3 +1,422 @@
+// const axios = require("axios");
+// const FormData = require("form-data");
+
+
+// const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
+
+// const fastApiClient = axios.create({
+//   baseURL: FASTAPI_BASE_URL,
+//   timeout: 3600000 // 30 minutes for long-running operations
+// });
+
+// // Questionnaire endpoints--------------------------------------------------
+// exports.startQuestionnaire = async () => {
+//   const response = await fastApiClient.post('/start');
+//   return response.data;
+// };
+
+// // Get next question based on previous answer----------------------------------
+// exports.nextQuestion = async (conversation, answer) => {
+//   const response = await fastApiClient.post('/next', {
+//     conversation,
+//     answer
+//   });
+//   return response.data;
+// };
+
+// // Gist generation--------------------------------------------------
+// exports.generateGist = async (conversation, genre, userId) => {
+//   // Send the genre/style label verbatim to FastAPI. Do not attempt to transform it.
+//   const payload = {
+//     user_id: userId,
+//     conversation,
+//     genre
+//   };
+
+//   const response = await fastApiClient.post('/gist', payload);
+//   return response.data;
+// };
+
+// // Story generation--------------------------------------------------
+// exports.generateStory = async (
+//   gist,
+//   numCharacters,
+//   fixedCharacterDetails,
+//   genre,
+//   numPages,
+//   options = {}
+// ) => {
+//   const response = await fastApiClient.post('/story/generate', {
+//     gist,
+//     num_characters: numCharacters,
+//     character_details: fixedCharacterDetails,
+//     genre,
+//     num_pages: numPages,
+//     ...options
+//   });
+//   return response.data;
+// };
+
+// // Generate temporary preview images from a gist (no storage)
+// // FastAPI: POST /gist/preview-images
+// exports.generateGistPreviewImages = async ({ userId, genres, gist }) => {
+//   // console.log("Generating gist preview images in FastAPI service for user:", userId, "genres:", genres, "gist:", gist);
+//   try {
+//     const response = await fastApiClient.post('/gist/preview-images', {
+//       user_id: userId,
+//       genres: Array.isArray(genres) ? genres : [genres || "Family"],
+//       gist
+//     });
+
+//     // console.log("Received gist preview images response:", response);
+
+//     return response.data;
+
+//   } catch (err) {
+//     console.error(
+//       'FastAPI gist preview error:',
+//       err.response?.data || err.message
+//     );
+//     throw new Error('Failed to generate gist preview images');
+//   }
+// };
+
+// // Image generation--------------------------------------------------
+// exports.generateImages = async (pages, orientation, genre) => {
+//   const payload = { pages, orientation };
+//   if (genre) payload.genre = genre;
+
+//   const response = await fastApiClient.post('/images/generate', payload);
+//   return response.data;
+// };
+
+// // SDXL Background generation------------------------------------------
+// // exports.generateSDXLBackgrounds = async (pages, orientation) => {
+// //   const response = await fastApiClient.post('/images/sdxl_generate', {
+// exports.generateFLUXBackgrounds = async (pages, orientation) => {
+//   const response = await fastApiClient.post('/images/flux_generate', {
+//     pages,
+//     orientation
+//   });
+//   return response.data;
+// };
+
+// // Cover generation--------------------------------------------------------
+// exports.generateCoverAndBack = async (pages, genre, orientation, storyTitle, qrUrl) => {
+//   const response = await fastApiClient.post('/coverback/generate', {
+//     pages,
+//     genre,
+//     orientation,
+//     story_title: storyTitle,
+//     qr_url: qrUrl
+//   });
+//   return response.data;
+// };
+
+// // Title generation-----------------------------------------------------
+// exports.generateTitles = async (fullText, genre) => {
+//   const response = await fastApiClient.post('/title/generate', {
+//     story: fullText,
+//     genre
+//   });
+//   return response.data;
+// };
+
+
+// // Title regeneration-----------------------------------------------------
+// exports.regenerateTitles = async (story, genre, previousTitles) => {
+//   const response = await fastApiClient.post('/title/regenerate', {
+//     story,
+//     genre,
+//     previous_titles: previousTitles
+//   });
+//   return response.data;
+// };
+
+
+
+// // Face swap--------------------------------------------------------------
+// exports.faceSwap = async (sourceBuffer, targetBuffer, options) => {
+//   try {
+//     // Defensive sanitization: ensure index values are valid for model
+//     const sanitizeIndex = (v) => {
+//       const n = Number(v);
+//       return Number.isInteger(n) && n >= 0 ? n : 0;
+//     };
+
+//     // Sanitize indexes before sending to model
+//     if (options.source_index !== undefined) {
+//       options.source_index = sanitizeIndex(options.source_index);
+//     }
+//     if (options.target_index !== undefined) {
+//       options.target_index = sanitizeIndex(options.target_index);
+//     }
+
+//     const form = new FormData();
+
+//     form.append("source", sourceBuffer, {
+//       filename: "source.png",
+//       contentType: "image/png"
+//     });
+
+//     form.append("target", targetBuffer, {
+//       filename: "target.png",
+//       contentType: "image/png"
+//     });
+
+//     for (const [key, value] of Object.entries(options)) {
+//       if (value !== undefined && value !== null) {
+//         form.append(key, String(value));
+//       }
+//     }
+
+//     const response = await axios.post(
+//       `${FASTAPI_BASE_URL}/faceswap`,
+//       form,
+//       {
+//         timeout: 1800000, // 30 minutes - explicit timeout for long RunPod operations
+//         maxBodyLength: Infinity,
+//         maxContentLength: Infinity,
+//         headers: form.getHeaders(), // REQUIRED for `form-data`
+//       }
+//     );
+
+//     return response.data;
+
+//   } catch (err) {
+//     console.error("Error in faceSwap:", err);
+//     throw err;
+//   }
+// };
+
+// // Edit image --------------------------------------------------------
+// exports.editImage = async (targetBuffer, prompt) => {
+//   console.log("Editing image with prompt in fast api:", prompt);
+//   try {
+//     const form = new FormData();
+//     form.append("file", targetBuffer, {
+//       filename: "target.png",
+//       contentType: "image/png"
+//     });
+//     form.append("prompt", prompt);
+//     const response = await axios.post(
+//       `${FASTAPI_BASE_URL}/edit-image`,
+//       form,
+//       {
+//         maxBodyLength: Infinity,
+//         maxContentLength: Infinity,
+//         headers: form.getHeaders(), // REQUIRED for `form-data`
+//       }
+//     );
+//     return response.data;
+//   } catch (err) {
+//     console.error("Error in editImage:", err);
+//     throw err;
+//   }
+// };
+
+// // regenerate image--------------------------------------------------
+// exports.regenerateImages = async (payload) => {
+//   try {
+//     const response = await fastApiClient.post( "/images/regenerate", payload );
+
+//     return response.data;
+
+//   } catch (err) {
+//     console.error("FastAPI regenerate error:", err.response?.data || err);
+//     throw err;
+//   }
+// };
+
+// // Upload genre reference / books ------------------------------------------
+// exports.uploadBooks = async (files, userId) => {
+//   try {
+//     const form = new FormData();
+
+//     files.forEach((file) => {
+//       form.append("files", file.buffer, {
+//         filename: file.originalname,
+//         contentType: file.mimetype,
+//       });
+//     });
+
+//     // Note: FastAPI expects `user_id` as a query param (Query(...)), not in the multipart form
+//     const response = await axios.post(
+//       `${FASTAPI_BASE_URL}/upload-books?user_id=${encodeURIComponent(userId)}`,
+//       form,
+//       {
+//         timeout: 1800000,
+//         maxBodyLength: Infinity,
+//         maxContentLength: Infinity,
+//         headers: form.getHeaders(),
+//       }
+//     );
+
+//     return response.data;
+//   } catch (err) {
+//     console.error("uploadBooks error:", err.response?.data || err);
+//     throw err;
+//   }
+// };
+
+// // Trigger FastAPI to process uploaded books for a user
+// // FastAPI expects user_id as a query parameter on /process-books
+// exports.processBooksFromS3 = async (userId) => {
+//   try {
+//     const response = await fastApiClient.post(
+//       `/process-books?user_id=${encodeURIComponent(userId)}`
+//     );
+
+//     return response.data;
+//   } catch (err) {
+//     console.error(
+//       "processBooksFromS3 error:",
+//       err.response?.data || err
+//     );
+//     throw err;
+//   }
+// };
+
+// // Get learned genres for a user -------------------------------
+// exports.getUserGenres = async (userId) => {
+//   try {
+//     const response = await fastApiClient.get(
+//       "/genres",
+//       { params: { user_id: userId } }
+//     );
+//     return response.data;
+//   } catch (err) {
+//     console.error("getUserGenres error:", err.response?.data || err);
+//     throw err;
+//   }
+// };
+// // -------- Character Training --------
+
+// const { Readable } = require("stream");
+
+// exports.uploadAndProcessCharacter = async (userId, files) => {
+//   const form = new FormData();
+
+//   form.append("user_id", String(userId));
+
+//   files.forEach(f => {
+//     form.append(
+//       "files",
+//       Readable.from(f.buffer),
+//       {
+//         filename: f.originalname,
+//         contentType: f.mimetype,
+//         knownLength: f.buffer.length
+//       }
+//     );
+//   });
+
+//   const contentLength = await new Promise((resolve, reject) => {
+//     form.getLength((err, length) => {
+//       if (err) reject(err);
+//       else resolve(length);
+//     });
+//   });
+
+//   const res = await fastApiClient.post("/upload-and-process", form, {
+//     headers: {
+//       ...form.getHeaders(),
+//       "Content-Length": contentLength
+//     },
+//     maxBodyLength: Infinity,
+//     maxContentLength: Infinity
+//   });
+
+//   console.log("resultData", res.data);
+//   return res.data;
+// };
+
+// exports.generateCharacterCaptions = async (userId, triggerWord) => {
+//   const res = await fastApiClient.post(
+//     "/generate-captions",
+//     { sync: true },
+//     { params: { user_id: userId, trigger_word: triggerWord } }
+//   );
+
+//   return res.data;
+// };
+
+// exports.trainCharacterLoRA = async (userId, triggerWord) => {
+//   const form = new FormData();
+
+//   form.append("user_id", String(userId));
+//   form.append("trigger_word", String(triggerWord));
+
+//   const contentLength = await new Promise((resolve, reject) => {
+//     form.getLength((err, length) => {
+//       if (err) reject(err);
+//       else resolve(length);
+//     });
+//   });
+
+//   const res = await fastApiClient.post("/train-character", form, {
+//     headers: {
+//       ...form.getHeaders(),
+//       "Content-Length": contentLength
+//     },
+//     maxBodyLength: Infinity,
+//     maxContentLength: Infinity,
+//     timeout: 3600000
+//   });
+
+//   return res.data;
+// };
+
+// exports.generateLoRAImages = async ({ userId, triggerWord, pages, orientation, loraStrength }) => {
+//   const res = await fastApiClient.post("/images/generate-lora", {
+//     user_id: userId, trigger_word: triggerWord, pages, orientation, lora_strength: loraStrength || 1.0
+//   });
+//   return res.data;
+// };
+
+// exports.generateCharacterDetails = async (files, personName) => {
+//   if (!files || files.length === 0) {
+//     throw new Error("No image files provided");
+//   }
+
+//   const formData = new FormData();
+  
+//   // Add image file with proper formatting for FastAPI
+//   formData.append("images", files[0].buffer, {
+//     filename: files[0].originalname,
+//     contentType: files[0].mimetype
+//   });
+  
+//   // Add person name for context
+//   if (personName) {
+//     formData.append("person_name", personName);
+//   }
+
+//   formData.append("sync", "true");
+//   formData.append("save_txt", "true");
+
+//   try {
+//     const res = await fastApiClient.post("/caption", formData, {
+//       headers: formData.getHeaders(),
+//       timeout: 300000 // 5 minutes for caption generation
+//     });
+
+//     if (!res.data) {
+//       throw new Error("No response from FastAPI caption service");
+//     }
+
+//     return res.data; // Expected: { captions: [...] }
+//   } catch (error) {
+//     console.error("❌ FastAPI caption error:", error.message);
+//     throw error;
+//   }
+// };
+
+// exports.getTrainingStatus = async (runpodJobId) => {
+//   const res = await fastApiClient.get(`/job-status/${runpodJobId}`);
+//   return res.data;
+// };
+
 const axios = require("axios");
 const FormData = require("form-data");
 

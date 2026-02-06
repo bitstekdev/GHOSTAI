@@ -179,3 +179,46 @@ exports.allOrders = async (req, res) => {
     });
   }
 };
+
+
+// ADMIN - Update Order Status
+// UPDATE ORDER STATUS (ADMIN)
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = [ "pending","processing", "shipped", "delivered", "failed"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order status"
+      });
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status}`,
+      status
+    });
+  } catch (error) {
+    console.error("Update order status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status"
+    });
+  }
+};

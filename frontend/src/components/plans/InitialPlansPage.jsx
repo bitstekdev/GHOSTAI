@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import PlansGrid  from "./PlansGrid";
 
 const InitialPlansPage = () => {
-  const { getPlansByContext, getProfile, navigateTo, fetchUsageLeft} = useContext(AppContext);
+  const { getPlansByContext, getProfile, navigateTo, fetchUsageLeft, fetchActiveSubscription} = useContext(AppContext);
   const [plans, setPlans] = useState([]);
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
@@ -83,6 +83,7 @@ const InitialPlansPage = () => {
 
             if (verifyResponse.data.success) {
               fetchUsageLeft();
+              fetchActiveSubscription();
               navigateTo(from ? `${from}/${storyId}` : "/");
             }
           } catch (error) {

@@ -4,7 +4,7 @@ import api from "../../services/axiosInstance";
 import PlansGrid  from "./PlansGrid";
 
 const UpgradePlansPage = () => {
-  const { getPlansByContext, navigateTo, fetchUsageLeft, getProfile } = useContext(AppContext);
+  const { getPlansByContext, navigateTo, fetchUsageLeft, fetchActiveSubscription, getProfile } = useContext(AppContext);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -81,6 +81,7 @@ const UpgradePlansPage = () => {
             if (verifyResponse.data.success) {
               // Navigate to success page
               fetchUsageLeft();
+              fetchActiveSubscription();
               navigateTo("/dashboard");
             }
           } catch (error) {

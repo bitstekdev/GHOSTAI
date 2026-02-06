@@ -103,7 +103,7 @@ export default function AdminCreatePlan() {
 
   return (
     <div className="p-10 max-w-6xl mx-auto text-white">
-      <h1 className="admin-title">Admin – Create Plan</h1>
+      <h1 className="admin-title">Create Plan</h1>
 
       <form onSubmit={submit} className="admin-card grid grid-cols-1 md:grid-cols-2 gap-8">
 

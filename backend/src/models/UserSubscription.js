@@ -76,8 +76,11 @@ const userSubscriptionSchema = new mongoose.Schema(
 );
 
 /**
- * Helpful compound index
+ *  Prevent more than ONE active subscription per user
  */
-userSubscriptionSchema.index({ user: 1, status: 1 });
+userSubscriptionSchema.index(
+  { user: 1, status: 1 },
+  { partialFilterExpression: { status: "active" } }
+);
 
 module.exports = mongoose.model("UserSubscription", userSubscriptionSchema);

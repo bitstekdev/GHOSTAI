@@ -2,12 +2,29 @@ const crypto = require("crypto");
 const razorpay = require("../config/razorpay");
 const SubscriptionPlan = require("../models/SubscriptionPlan");
 const UserSubscription = require("../models/UserSubscription");
+const User = require("../models/User");
 const { upgradeSubscription } = require("../services/subscriptionUpgrade.service");
 
 // CREATE ORDER
 exports.createOrder = async (req, res) => {
   try {
     const { planId, isUpgrade = false } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const pendingPurchase = await UserSubscription.find({
+      user: req.user.id,
+      status: "pending"
+    });
+
+    if (pendingPurchase.length > 0) {
+      pendingPurchase.forEach(async (purchase) => {
+        await UserSubscription.findByIdAndUpdate(purchase._id, { status: "cancelled" });
+      });
+    }
 
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan || !plan.isActive) {
@@ -33,6 +50,16 @@ exports.createOrder = async (req, res) => {
       currency: plan.currency,
       receipt: `sub_${Date.now()}`
     });
+
+    
+    if (isUpgrade) {
+      return res.json({
+        success: true,
+        order,
+        upgrade: true
+      });
+    }
+
 
     const sub = await UserSubscription.create({
       user: req.user.id,

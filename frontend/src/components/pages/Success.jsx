@@ -77,7 +77,7 @@ export const Success = ({ onNavigate }) => {
           <div className="space-y-6">
             <div className="text-center py-4">
               <p className="text-white text-xl font-medium mb-2">Thank you for your purchase!</p>
-              <p className="text-gray-400">Your AI-generated storybook is being prepared and will be shipped to your address shortly.</p>
+              <p className="text-gray-400">Your storybook is being prepared and will be shipped to your address shortly.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

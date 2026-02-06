@@ -8,9 +8,12 @@ import { useTourContext } from "../../context/TourContext";
 import { dashboardTourSteps, tourStyles } from "../../config/tourSteps";
 
 const Dashboard = () => {
-  const { userData, usageLeft, fetchUsageLeft } = React.useContext(AppContext);
+  const { userData, usageLeft, fetchUsageLeft, activeSubscription, fetchActiveSubscription } = React.useContext(AppContext);
   const navigate = useNavigate();
-  console.log("Usage Left in Dashboard:", usageLeft);
+  
+  if (import.meta.env.VITE_DEV === 'true') {
+    console.log("Usage Left in Dashboard:", usageLeft);
+  }
 
   const [allStories, setAllStories] = useState([]);
   const [storiesInProgress, setStoriesInProgress] = useState([]);
@@ -66,7 +69,9 @@ const Dashboard = () => {
         setStoriesInProgress(inProgress);
         setCompletedStories(completed);
       } catch (err) {
-        console.error("Error fetching stories:", err);
+        if (import.meta.env.VITE_DEV === 'true') {
+          console.error("Error fetching stories:", err);
+        }
         setError(
           err.response?.data?.message || err.message || "Failed to load stories"
         );
@@ -78,6 +83,17 @@ const Dashboard = () => {
     fetchStories();
     fetchUsageLeft();
   }, []);
+
+
+  useEffect(() => {
+  if (!activeSubscription) {
+    fetchActiveSubscription();
+  }
+}, [activeSubscription, fetchActiveSubscription]);
+
+
+  // Determine plan info
+  const planInfo = activeSubscription ? { plan: activeSubscription.subscription } : null;
 
   // Auto-start tour for first-time users on Dashboard
   useEffect(() => {
@@ -218,6 +234,8 @@ const Dashboard = () => {
             {storiesInProgress.length}
           </p>
         </div>
+
+        {/* usage credits */}
         <div className="credits-card bg-gray-800 rounded-xl p-6 border border-gray-700 relative hover:cursor-pointer hover:border-purple-500"
         onClick={() => setShowUsageModal((prev) => !prev)}
         >
@@ -225,18 +243,30 @@ const Dashboard = () => {
             <h3 className="text-white text-sm">Credits</h3>
 
             <button
-              onClick={() => setShowUsageModal((prev) => !prev)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowUsageModal((prev) => !prev);
+              }}
               className="text-gray-400 hover:text-white">
-              <CreditCard size={18}  />
+              <CreditCard size={18} />
             </button>
           </div>
 
           <p className="text-5xl font-bold text-white">
-            {usageLeft?.credits || 0}
+            {planInfo?.plan?.code !== "FREE-FOR-DEVELOPMENT-ONLY" &&
+            (usageLeft?.credits || 0)}{' '}
+
+            {planInfo?.plan?.code === "FREE-FOR-DEVELOPMENT-ONLY" && (
+                <span className="flex flex-col items-start">
+            <span>∞</span>
+            <span className="text-xs text-gray-400 font-normal">Unlimited</span>
+                </span>
+              )}
           </p>
 
           {/* Usage Modal */}
-          {showUsageModal && (
+          {planInfo?.plan?.code !== "FREE-FOR-DEVELOPMENT-ONLY" &&
+          showUsageModal && (
             <div className="absolute top-12 right-4 z-50 w-64 bg-gray-900 border border-gray-700 rounded-lg shadow-lg p-4">
               <h4 className="text-sm font-semibold text-white mb-3">
                 Usage Remaining
